@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NapCart Architecture Spec v1</title>
+    <style>
+      :root {
+        --paper: #fffdf9;
+        --ink: #1f2937;
+        --accent: #8b3b17;
+        --accent-soft: #f0e2d3;
+        --border: #e5ddd1;
+        --code-bg: #f5f2ec;
+        --muted: #5b6472;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #efe7db 0%, #f7f4ed 100%);
+        color: var(--ink);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 44px 52px 60px;
+        background: var(--paper);
+        box-shadow: 0 12px 40px rgba(56, 42, 18, 0.08);
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        line-height: 1.25;
+        color: #111827;
+        margin: 1.25em 0 0.5em;
+        page-break-after: avoid;
+      }
+      h1 {
+        margin-top: 0;
+        color: var(--accent);
+        font-size: 2.1rem;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 0.35em;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.32rem;
+        margin-top: 1.8em;
+      }
+      h3 {
+        font-size: 1.02rem;
+      }
+      p {
+        margin: 0.55em 0;
+        color: var(--ink);
+      }
+      ul {
+        margin: 0.35em 0 0.9em 1.35em;
+        padding: 0;
+      }
+      li {
+        margin: 0.18em 0;
+      }
+      pre {
+        margin: 0.8em 0 1em;
+        padding: 14px 16px;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: auto;
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      code {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.08em 0.35em;
+        font-size: 0.92em;
+      }
+      pre code {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font-size: inherit;
+      }
+      blockquote {
+        margin: 1em 0;
+        padding: 0.8em 1em;
+        border-left: 4px solid var(--accent);
+        background: var(--accent-soft);
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1em 0 1.2em;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        vertical-align: top;
+        text-align: left;
+      }
+      th {
+        background: #f8f3eb;
+        color: #111827;
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--border);
+        margin: 2em 0;
+      }
+      @page {
+        size: A4;
+        margin: 18mm 14mm 18mm 14mm;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>NapCart Architecture Spec v1</h1>
+      <p>System Architecture Specification</p>
+      <p>
+        Version: v1.0 Date: 2026-05-28 Status: Draft Author: Codex with Naptime
+        AI
+      </p>
+      <h2>1. Purpose</h2>
+      <p>
+        This document defines the target MVP architecture for NapCart after
+        approval of:
+      </p>
+      <ul>
+        <li>NapCart Project Roadmap</li>
+        <li>NapCart PRD v1</li>
+        <li>NapCart ERD v1</li>
+      </ul>
+      <p>
+        It translates the approved product scope into a practical technical
+        design that can be implemented step by step.
+      </p>
+      <h2>2. Architecture Goals</h2>
+      <p>The architecture must:</p>
+      <ul>
+        <li>support one real restaurant launch first</li>
+        <li>remain multi-tenant-ready for future restaurant onboarding</li>
+        <li>keep restaurant staff WhatsApp-first</li>
+        <li>keep the dashboard and database as the system of record</li>
+        <li>support standalone storefront deployment now</li>
+        <li>
+          remain API-first for future integration into existing restaurant
+          websites
+        </li>
+        <li>avoid overengineering while preserving clean upgrade paths</li>
+      </ul>
+      <h2>3. Launch Context Defaults</h2>
+      <p>The first production target for NapCart is:</p>
+      <ul>
+        <li>country: Pakistan</li>
+        <li>currency: PKR</li>
+        <li>default language: English</li>
+        <li>default timezone: <code>Asia/Karachi</code></li>
+        <li>distance unit: kilometers</li>
+        <li>
+          default phone normalization target: Pakistan mobile format with
+          <code>+92</code>
+        </li>
+      </ul>
+      <p>Architecture note:</p>
+      <ul>
+        <li>these are launch defaults, not hardcoded product limitations</li>
+        <li>
+          the schema and config model must still support future region expansion
+        </li>
+      </ul>
+      <h2>4. Architecture Principles</h2>
+      <ul>
+        <li>Modular monolith first, not microservices</li>
+        <li>
+          Server-owned data access, not direct client-to-database business logic
+        </li>
+        <li>Tenant and branch awareness in every operational workflow</li>
+        <li>Integration adapters for external providers</li>
+        <li>Snapshot important business data at order time</li>
+        <li>
+          Keep operational truth in the backend even when staff work from
+          WhatsApp
+        </li>
+        <li>
+          Use configuration over custom code when onboarding new restaurants
+          later
+        </li>
+      </ul>
+      <h2>5. Recommended Stack</h2>
+      <h3>5.1 Core Stack</h3>
+      <ul>
+        <li>Frontend framework: <code>Next.js</code></li>
+        <li>Language: <code>TypeScript</code></li>
+        <li>Runtime/deployment: <code>Vercel</code></li>
+        <li>Database: <code>PostgreSQL</code></li>
+        <li>Database platform: <code>Supabase Postgres</code></li>
+        <li>ORM: <code>Prisma</code></li>
+        <li>Admin auth: <code>Supabase Auth</code></li>
+        <li>Media storage: <code>Supabase Storage</code></li>
+      </ul>
+      <h3>5.2 Why This Stack Fits NapCart</h3>
+      <ul>
+        <li>
+          <code>Next.js</code> supports storefront, admin dashboard, route
+          handlers, and API-first evolution in one codebase
+        </li>
+        <li>
+          <code>TypeScript</code> reduces integration and domain-model mistakes
+        </li>
+        <li>
+          <code>PostgreSQL</code> is ideal for relational commerce and
+          operational data
+        </li>
+        <li>
+          <code>Prisma</code> gives fast MVP development with clear schema
+          control
+        </li>
+        <li>
+          <code>Supabase</code> gives production-ready Postgres, auth, and
+          storage without forcing us into a no-code workflow
+        </li>
+        <li>
+          <code>Vercel</code> fits the application deployment model well for a
+          modern Next.js app
+        </li>
+      </ul>
+      <h2>6. High-Level Architecture Choice</h2>
+      <h3>6.1 Architecture Style</h3>
+      <p>NapCart should be built as a <code>modular monolith</code>.</p>
+      <p>This means:</p>
+      <ul>
+        <li>one main application codebase</li>
+        <li>one primary database</li>
+        <li>clear internal modules</li>
+        <li>external integrations behind service boundaries</li>
+      </ul>
+      <p>Why this is correct for MVP:</p>
+      <ul>
+        <li>faster to build and operate</li>
+        <li>easier to reason about</li>
+        <li>lower DevOps complexity</li>
+        <li>enough flexibility for multi-tenant growth</li>
+      </ul>
+      <h3>6.2 Future Evolution Path</h3>
+      <p>
+        If scale later requires it, NapCart can split selected capabilities into
+        separate services:
+      </p>
+      <ul>
+        <li>WhatsApp messaging processor</li>
+        <li>analytics/reporting worker</li>
+        <li>media processing</li>
+        <li>external integration gateway</li>
+      </ul>
+      <p>That is not needed for MVP.</p>
+      <h2>7. System Context</h2>
+      <pre><code class="language-text">+---------------------------+       +----------------------------------+
+| Customer Storefront       |       | Restaurant Admin Dashboard      |
+| Next.js Web App           |       | Next.js Web App                 |
++-------------+-------------+       +----------------+-----------------+
+              |                                      |
+              +------------------+-------------------+
+                                 |
+                                 v
+                   +-------------+--------------+
+                   | NapCart Application Core   |
+                   | API + Domain Services      |
+                   +------+------+------+-------+
+                          |      |      |
+                          |      |      |
+                          v      v      v
+                +---------+   +--+----------------+   +------------------+
+                | Postgres |   | WhatsApp Adapter |   | Media Storage     |
+                | Supabase |   | Mock + Meta      |   | Supabase Storage  |
+                +----+-----+   +--------+---------+   +------------------+
+                     |                   |
+                     |                   v
+                     |         +---------+----------+
+                     |         | Meta WhatsApp      |
+                     |         | Cloud API          |
+                     |         +--------------------+
+                     |
+                     v
+          +----------+-----------+
+          | Logs / Audit /       |
+          | Status History       |
+          +----------------------+
+</code></pre>
+      <h2>8. Application Layers</h2>
+      <p>NapCart should be structured into the following layers.</p>
+      <h3>8.1 Presentation Layer</h3>
+      <p>Contains:</p>
+      <ul>
+        <li>storefront UI</li>
+        <li>checkout UI</li>
+        <li>admin dashboard UI</li>
+        <li>admin settings screens</li>
+      </ul>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>collect validated input</li>
+        <li>render tenant and branch-specific data</li>
+        <li>call server APIs and server actions</li>
+        <li>never own critical business rules by itself</li>
+      </ul>
+      <h3>8.2 API / Transport Layer</h3>
+      <p>Contains:</p>
+      <ul>
+        <li>public storefront endpoints</li>
+        <li>admin endpoints</li>
+        <li>webhook endpoints</li>
+        <li>internal route handlers</li>
+      </ul>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>request parsing</li>
+        <li>authentication / authorization entry</li>
+        <li>validation</li>
+        <li>response shaping</li>
+        <li>handoff to domain services</li>
+      </ul>
+      <h3>8.3 Domain Service Layer</h3>
+      <p>Contains the real application logic:</p>
+      <ul>
+        <li>branch selection logic</li>
+        <li>menu retrieval logic</li>
+        <li>delivery eligibility logic</li>
+        <li>order creation logic</li>
+        <li>customer matching logic</li>
+        <li>WhatsApp send / receive orchestration</li>
+        <li>audit/status updates</li>
+      </ul>
+      <p>This is the most important layer in the system.</p>
+      <h3>8.4 Data Access Layer</h3>
+      <p>Contains:</p>
+      <ul>
+        <li>Prisma repositories / query services</li>
+        <li>transaction boundaries</li>
+        <li>persistence helpers</li>
+      </ul>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>isolate database interactions</li>
+        <li>keep writes consistent</li>
+        <li>avoid duplicated query logic across controllers</li>
+      </ul>
+      <h3>8.5 Integration Layer</h3>
+      <p>Contains provider adapters:</p>
+      <ul>
+        <li>WhatsApp mock adapter</li>
+        <li>Meta WhatsApp Cloud API adapter</li>
+        <li>future payment adapter</li>
+        <li>future analytics / export adapter</li>
+      </ul>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>map internal domain operations to external provider APIs</li>
+        <li>normalize provider responses</li>
+        <li>isolate vendor-specific details</li>
+      </ul>
+      <h2>9. Product Modules</h2>
+      <h3>9.1 Tenant Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>restaurant record management</li>
+        <li>branding data</li>
+        <li>tenant activation state</li>
+        <li>default locale/currency/timezone settings</li>
+      </ul>
+      <h3>9.2 Branch Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>branch listing and configuration</li>
+        <li>manual branch selection support</li>
+        <li>branch operating hours</li>
+        <li>branch open/closed state</li>
+        <li>branch-level WhatsApp mapping</li>
+      </ul>
+      <h3>9.3 Catalog Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>categories</li>
+        <li>products</li>
+        <li>variants</li>
+        <li>add-on groups</li>
+        <li>add-ons</li>
+        <li>availability toggles</li>
+        <li>delivery/pickup availability</li>
+      </ul>
+      <h3>9.4 Delivery Rules Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>delivery zones</li>
+        <li>fees</li>
+        <li>minimum order amount</li>
+        <li>branch-specific coverage logic</li>
+      </ul>
+      <h3>9.5 Customer Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>normalized phone matching</li>
+        <li>internal customer profiles</li>
+        <li>address capture</li>
+        <li>repeat-order counters</li>
+      </ul>
+      <h3>9.6 Ordering Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>cart-to-order conversion</li>
+        <li>pricing snapshot</li>
+        <li>fulfillment mode handling</li>
+        <li>order numbering</li>
+        <li>order status transitions</li>
+        <li>audit history</li>
+      </ul>
+      <h3>9.7 WhatsApp Operations Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>outbound order message generation</li>
+        <li>branch routing</li>
+        <li>interactive action mapping</li>
+        <li>inbound webhook handling</li>
+        <li>customer confirm/cancel messaging</li>
+        <li>delivery of message logs</li>
+      </ul>
+      <h3>9.8 Admin Operations Module</h3>
+      <p>Responsibilities:</p>
+      <ul>
+        <li>order visibility</li>
+        <li>customer visibility</li>
+        <li>menu management</li>
+        <li>settings management</li>
+        <li>branch management</li>
+        <li>reporting dashboard</li>
+      </ul>
+      <h2>10. Frontend Architecture</h2>
+      <h3>10.1 Frontend Model</h3>
+      <p>
+        MVP frontend should be a
+        <code>standalone storefront + admin dashboard</code> inside the same
+        Next.js application.
+      </p>
+      <p>This gives us:</p>
+      <ul>
+        <li>fastest launch path</li>
+        <li>shared design tokens and app infrastructure</li>
+        <li>a single deployment target</li>
+        <li>simpler tenant branding support</li>
+      </ul>
+      <h3>10.2 Frontend Areas</h3>
+      <pre><code class="language-text">/                     -&gt; storefront landing
+/menu                 -&gt; menu browsing
+/cart                 -&gt; cart
+/checkout             -&gt; guest checkout
+/order-confirmation   -&gt; order placed state
+
+/admin                -&gt; protected dashboard shell
+/admin/orders         -&gt; management order list
+/admin/customers      -&gt; customers
+/admin/menu           -&gt; menu management
+/admin/branches       -&gt; branch management
+/admin/settings       -&gt; restaurant and WhatsApp settings
+/admin/analytics      -&gt; basic reporting
+</code></pre>
+      <h3>10.3 Future Frontend Flexibility</h3>
+      <p>The backend must remain usable by:</p>
+      <ul>
+        <li>NapCart-hosted storefronts</li>
+        <li>future custom restaurant frontends</li>
+        <li>future integrations into existing restaurant websites</li>
+      </ul>
+      <p>
+        That means domain logic must live in backend services, not only in UI
+        components.
+      </p>
+      <h2>11. Backend Architecture</h2>
+      <h3>11.1 API Style</h3>
+      <p>Use an <code>API-first backend inside Next.js</code> with:</p>
+      <ul>
+        <li>route handlers for public APIs</li>
+        <li>route handlers for webhook endpoints</li>
+        <li>protected admin APIs</li>
+        <li>
+          server actions only where they improve ergonomics, not as the only
+          business interface
+        </li>
+      </ul>
+      <h3>11.2 Why API-First Matters</h3>
+      <p>This supports:</p>
+      <ul>
+        <li>current standalone storefront</li>
+        <li>future existing-website integrations</li>
+        <li>future mobile or third-party channels</li>
+        <li>cleaner separation between UI and business logic</li>
+      </ul>
+      <h3>11.3 Core Backend Domains</h3>
+      <pre><code class="language-text">Tenant Service
+Branch Service
+Catalog Service
+Delivery Rule Service
+Customer Service
+Order Service
+WhatsApp Service
+Admin Reporting Service
+</code></pre>
+      <h2>12. Auth and Access Model</h2>
+      <h3>12.1 Customer Access</h3>
+      <p>MVP customer checkout is:</p>
+      <ul>
+        <li>guest only</li>
+        <li>no login</li>
+        <li>no OTP</li>
+      </ul>
+      <h3>12.2 Admin Access</h3>
+      <p>MVP admin access should use:</p>
+      <ul>
+        <li><code>Supabase Auth</code> for admin authentication</li>
+        <li>one main admin account per restaurant</li>
+      </ul>
+      <p>Recommended model:</p>
+      <ul>
+        <li>Supabase Auth stores login identity</li>
+        <li>
+          <code>admin_users</code> table stores NapCart business association and
+          restaurant scope
+        </li>
+      </ul>
+      <h3>12.3 Authorization Model</h3>
+      <p>MVP authorization is simple:</p>
+      <ul>
+        <li>admin session must resolve to one restaurant</li>
+        <li>all admin queries must be restaurant-scoped</li>
+        <li>branch operations must also be restaurant-scoped</li>
+      </ul>
+      <p>Important:</p>
+      <ul>
+        <li>never trust client-provided restaurant IDs alone</li>
+        <li>derive effective tenant scope from the admin session</li>
+      </ul>
+      <h2>13. Data and Persistence Architecture</h2>
+      <h3>13.1 Database Strategy</h3>
+      <p>Use one <code>PostgreSQL</code> database for MVP.</p>
+      <p>Why:</p>
+      <ul>
+        <li>all main entities are relational</li>
+        <li>reporting needs joins and filters</li>
+        <li>transaction integrity matters during order creation</li>
+      </ul>
+      <h3>13.2 Multi-Tenant Strategy</h3>
+      <p>
+        NapCart should use
+        <code>shared database, shared schema, tenant-scoped rows</code>.
+      </p>
+      <p>Tenant isolation rule:</p>
+      <ul>
+        <li>
+          every major operational table must contain tenant ownership directly
+          or be reachable through tenant-owned parents
+        </li>
+      </ul>
+      <p>Practical model:</p>
+      <ul>
+        <li><code>restaurant_id</code> on most top-level business tables</li>
+        <li>
+          branch-owned tables must always resolve cleanly back to the parent
+          restaurant
+        </li>
+      </ul>
+      <h3>13.3 Order Write Transaction</h3>
+      <p>Order persistence must happen inside a transaction:</p>
+      <pre><code class="language-text">validate branch
+validate catalog availability
+validate fulfillment rules
+find or create customer
+create order
+create order items
+create order item add-ons
+create initial status history
+commit
+then attempt WhatsApp send
+</code></pre>
+      <p>Reason:</p>
+      <ul>
+        <li>
+          the order must exist before any WhatsApp notification is attempted
+        </li>
+      </ul>
+      <h3>13.4 Snapshotting Rule</h3>
+      <p>At order time, the backend must snapshot:</p>
+      <ul>
+        <li>customer name</li>
+        <li>customer phone</li>
+        <li>branch name</li>
+        <li>address text</li>
+        <li>pricing totals</li>
+        <li>ordered item names</li>
+        <li>selected variants</li>
+        <li>selected add-ons</li>
+      </ul>
+      <p>This prevents later menu edits from corrupting historical orders.</p>
+      <h2>14. Media and File Handling</h2>
+      <h3>14.1 MVP Media Scope</h3>
+      <p>MVP media uploads:</p>
+      <ul>
+        <li>restaurant logo</li>
+        <li>product images</li>
+      </ul>
+      <h3>14.2 Storage Choice</h3>
+      <p>Use <code>Supabase Storage</code>.</p>
+      <p>Benefits:</p>
+      <ul>
+        <li>matches the selected data platform</li>
+        <li>easy URL management</li>
+        <li>suitable for product images and branding assets</li>
+      </ul>
+      <h3>14.3 Media Rules</h3>
+      <ul>
+        <li>uploads must be validated for type and size</li>
+        <li>stored paths should include tenant-aware structure</li>
+        <li>public delivery URLs should be controlled and predictable</li>
+      </ul>
+      <p>Suggested path pattern:</p>
+      <pre><code class="language-text">/restaurants/{restaurant_id}/branding/logo
+/restaurants/{restaurant_id}/products/{product_id}/image
+</code></pre>
+      <h2>15. WhatsApp Integration Architecture</h2>
+      <h3>15.1 Integration Strategy</h3>
+      <p>NapCart must use an adapter-based WhatsApp integration layer.</p>
+      <p>Core interface:</p>
+      <pre><code class="language-text">sendOrderForConfirmation(order, branchConnection)
+sendCustomerConfirmation(order)
+sendCustomerCancellation(order)
+handleInboundWebhook(payload)
+</code></pre>
+      <h3>15.2 Provider Adapters</h3>
+      <p>MVP adapters:</p>
+      <ul>
+        <li><code>MockWhatsAppAdapter</code></li>
+        <li><code>MetaWhatsAppCloudAdapter</code></li>
+      </ul>
+      <p>Why:</p>
+      <ul>
+        <li>development can proceed without paid API dependency</li>
+        <li>
+          each restaurant later can connect real credentials without redesigning
+          order logic
+        </li>
+      </ul>
+      <h3>15.3 Outbound Order Message Flow</h3>
+      <pre><code class="language-text">Order persisted
+  -&gt; resolve branch
+  -&gt; load branch WhatsApp connection
+  -&gt; render structured order payload
+  -&gt; send interactive message to branch destination
+  -&gt; write outbound message log
+</code></pre>
+      <h3>15.4 Inbound Staff Action Flow</h3>
+      <pre><code class="language-text">Staff taps Confirm or Cancel
+  -&gt; Meta webhook hits NapCart
+  -&gt; payload verified
+  -&gt; provider message mapped to order/action
+  -&gt; order status updated
+  -&gt; order_status_history inserted
+  -&gt; inbound message log stored
+  -&gt; customer notification sent
+  -&gt; outbound customer log stored
+</code></pre>
+      <h3>15.5 Message Correlation Requirement</h3>
+      <p>
+        NapCart must be able to correlate inbound WhatsApp actions to the
+        correct order.
+      </p>
+      <p>Required mechanisms:</p>
+      <ul>
+        <li>short order reference</li>
+        <li>action payload metadata or button IDs</li>
+        <li>persistent provider message logs</li>
+      </ul>
+      <h3>15.6 WhatsApp Reliability Rules</h3>
+      <ul>
+        <li>
+          do not mark provider send success without recording the provider
+          response
+        </li>
+        <li>capture failures in <code>whatsapp_message_logs</code></li>
+        <li>allow operational review of failed sends later</li>
+      </ul>
+      <h2>16. Mock Mode Architecture</h2>
+      <p>During development and early demos:</p>
+      <ul>
+        <li>real WhatsApp API may be absent</li>
+        <li>order logic must still behave consistently</li>
+      </ul>
+      <p>Mock mode behavior:</p>
+      <ul>
+        <li>pretend to send the order</li>
+        <li>create outbound message log rows</li>
+        <li>allow simulated confirm/cancel action paths</li>
+        <li>keep the same internal service contract as the real adapter</li>
+      </ul>
+      <p>This is mandatory for clean MVP development.</p>
+      <h2>17. Order Flow Architecture</h2>
+      <h3>17.1 Public Ordering Flow</h3>
+      <pre><code class="language-text">Customer enters storefront
+  -&gt; chooses branch
+  -&gt; browses menu
+  -&gt; adds items
+  -&gt; selects fulfillment type
+  -&gt; enters guest checkout details
+  -&gt; server validates branch/menu/delivery rules
+  -&gt; order transaction commits
+  -&gt; WhatsApp confirmation request is sent to branch
+  -&gt; customer sees order placed state
+</code></pre>
+      <h3>17.2 Operational Confirmation Flow</h3>
+      <pre><code class="language-text">Branch WhatsApp receives order
+  -&gt; staff chooses Confirm or Cancel
+  -&gt; webhook updates backend
+  -&gt; customer receives matching response
+  -&gt; admin dashboard reflects final state
+</code></pre>
+      <h3>17.3 No-Response Flow</h3>
+      <pre><code class="language-text">Order placed
+  -&gt; pending_confirmation
+  -&gt; no response from branch
+  -&gt; remain pending_confirmation
+  -&gt; dashboard shows it for management visibility
+</code></pre>
+      <h2>18. Delivery and Branch Routing Architecture</h2>
+      <h3>18.1 Branch Routing Model</h3>
+      <p>MVP routing rule:</p>
+      <ul>
+        <li>customer selects branch manually</li>
+        <li>that branch becomes the routing owner of the order</li>
+      </ul>
+      <h3>18.2 Delivery Validation Model</h3>
+      <p>For delivery orders, backend validates:</p>
+      <ul>
+        <li>branch accepts delivery</li>
+        <li>branch is open/accepting orders</li>
+        <li>relevant zone exists or selected rule matches</li>
+        <li>minimum order amount is satisfied</li>
+      </ul>
+      <h3>18.3 Pickup Validation Model</h3>
+      <p>For pickup orders, backend validates:</p>
+      <ul>
+        <li>branch accepts pickup</li>
+        <li>branch is open/accepting orders</li>
+      </ul>
+      <h3>18.4 Future Upgrade Path</h3>
+      <p>Later, this module can support:</p>
+      <ul>
+        <li>area-based automatic branch selection</li>
+        <li>coordinate-based delivery coverage</li>
+        <li>branch load balancing</li>
+      </ul>
+      <h2>19. API Boundary Design</h2>
+      <h3>19.1 Public Storefront API Areas</h3>
+      <pre><code class="language-text">GET    /api/storefront/{restaurantSlug}/branches
+GET    /api/storefront/{restaurantSlug}/menu
+GET    /api/storefront/{restaurantSlug}/settings
+POST   /api/storefront/orders
+GET    /api/storefront/orders/{publicRef}
+</code></pre>
+      <h3>19.2 Admin API Areas</h3>
+      <pre><code class="language-text">GET    /api/admin/orders
+GET    /api/admin/orders/{id}
+GET    /api/admin/customers
+GET    /api/admin/analytics/summary
+
+POST   /api/admin/categories
+POST   /api/admin/products
+POST   /api/admin/branches
+POST   /api/admin/delivery-zones
+POST   /api/admin/whatsapp-connections
+
+PATCH  /api/admin/products/{id}
+PATCH  /api/admin/branches/{id}
+PATCH  /api/admin/settings
+</code></pre>
+      <h3>19.3 Webhook Endpoints</h3>
+      <pre><code class="language-text">POST /api/webhooks/whatsapp/meta
+GET  /api/webhooks/whatsapp/meta
+</code></pre>
+      <p>Purpose:</p>
+      <ul>
+        <li>GET handles webhook verification</li>
+        <li>POST handles inbound events and actions</li>
+      </ul>
+      <h2>20. Background Processing Approach</h2>
+      <h3>20.1 MVP Position</h3>
+      <p>
+        Do not introduce a heavy queueing platform in MVP unless needed by real
+        load.
+      </p>
+      <h3>20.2 Recommended MVP Approach</h3>
+      <p>Use:</p>
+      <ul>
+        <li>synchronous transaction for order persistence</li>
+        <li>immediate WhatsApp send attempt after commit</li>
+        <li>database-backed logging for recovery and audits</li>
+      </ul>
+      <p>Optional near-term enhancement:</p>
+      <ul>
+        <li>add a lightweight retry worker for failed outbound messages</li>
+      </ul>
+      <h2>21. Observability and Audit</h2>
+      <h3>21.1 What Must Be Logged</h3>
+      <ul>
+        <li>order creation attempts</li>
+        <li>order validation failures</li>
+        <li>WhatsApp outbound sends</li>
+        <li>WhatsApp inbound actions</li>
+        <li>status transitions</li>
+        <li>admin auth events</li>
+      </ul>
+      <h3>21.2 Business Audit Requirements</h3>
+      <p>Critical auditable events:</p>
+      <ul>
+        <li>who created or triggered a status change</li>
+        <li>when a branch confirmed or cancelled</li>
+        <li>what was sent to WhatsApp</li>
+        <li>what customer phone was notified</li>
+      </ul>
+      <h3>21.3 Monitoring Priorities</h3>
+      <p>Monitor at minimum:</p>
+      <ul>
+        <li>webhook failures</li>
+        <li>WhatsApp send failures</li>
+        <li>order creation errors</li>
+        <li>storage upload failures</li>
+      </ul>
+      <h2>22. Security Architecture</h2>
+      <h3>22.1 Core Security Rules</h3>
+      <ul>
+        <li>all admin routes require authenticated admin sessions</li>
+        <li>all admin reads/writes are restaurant-scoped server-side</li>
+        <li>webhook signatures or verification tokens must be validated</li>
+        <li>provider tokens must be encrypted at rest</li>
+        <li>never expose service-role secrets to the client</li>
+      </ul>
+      <h3>22.2 Input Validation</h3>
+      <p>Validate server-side:</p>
+      <ul>
+        <li>checkout payloads</li>
+        <li>phone numbers</li>
+        <li>branch selection</li>
+        <li>fulfillment type</li>
+        <li>menu item IDs and quantities</li>
+        <li>delivery rule assumptions</li>
+        <li>admin mutation payloads</li>
+      </ul>
+      <h3>22.3 Tenant Isolation</h3>
+      <p>
+        The most important application security risk is cross-tenant leakage.
+      </p>
+      <p>Protection rules:</p>
+      <ul>
+        <li>always resolve data under the authenticated restaurant scope</li>
+        <li>never use unscoped admin queries</li>
+        <li>store branch ownership explicitly</li>
+      </ul>
+      <h3>22.4 Sensitive Data Handling</h3>
+      <p>Sensitive fields include:</p>
+      <ul>
+        <li>WhatsApp access tokens</li>
+        <li>webhook verification secrets</li>
+        <li>admin auth identifiers</li>
+        <li>customer phone numbers</li>
+      </ul>
+      <h2>23. Performance and Scalability</h2>
+      <h3>23.1 MVP Performance Priorities</h3>
+      <ul>
+        <li>fast menu retrieval</li>
+        <li>reliable order creation</li>
+        <li>responsive admin dashboard filters</li>
+        <li>low-latency webhook processing</li>
+      </ul>
+      <h3>23.2 Main Scalability Levers</h3>
+      <p>NapCart can scale later through:</p>
+      <ul>
+        <li>read optimization and indexes</li>
+        <li>caching storefront menu responses</li>
+        <li>separating async messaging retries</li>
+        <li>adding branch-aware analytics views</li>
+        <li>partitioning heavy logs if needed later</li>
+      </ul>
+      <h3>23.3 What Not To Overbuild Now</h3>
+      <ul>
+        <li>microservices</li>
+        <li>event buses</li>
+        <li>distributed queues</li>
+        <li>advanced caching layers</li>
+      </ul>
+      <h2>24. Deployment Architecture</h2>
+      <h3>24.1 MVP Deployment Topology</h3>
+      <pre><code class="language-text">Vercel
+  -&gt; Next.js application
+     -&gt; storefront routes
+     -&gt; admin routes
+     -&gt; API routes
+     -&gt; webhook routes
+
+Supabase
+  -&gt; PostgreSQL
+  -&gt; Auth
+  -&gt; Storage
+</code></pre>
+      <h3>24.2 Environments</h3>
+      <p>Recommended environments:</p>
+      <ul>
+        <li>local</li>
+        <li>staging</li>
+        <li>production</li>
+      </ul>
+      <h3>24.3 Environment Rules</h3>
+      <ul>
+        <li>staging uses mock WhatsApp or safe test configuration</li>
+        <li>production uses real restaurant credentials when available</li>
+        <li>environment variables must be separated per deployment target</li>
+      </ul>
+      <h2>25. Configuration Architecture</h2>
+      <p>
+        Restaurant-specific configuration should be data-driven, not
+        code-driven.
+      </p>
+      <p>Config areas:</p>
+      <ul>
+        <li>branding</li>
+        <li>language/currency defaults</li>
+        <li>branch availability</li>
+        <li>delivery/pickup enablement</li>
+        <li>delivery zones and fees</li>
+        <li>WhatsApp connection mapping</li>
+        <li>minimum order amount</li>
+      </ul>
+      <p>
+        This is how NapCart becomes sellable to multiple restaurants without
+        custom rewrites.
+      </p>
+      <h2>26. Existing Website Integration Path</h2>
+      <p>NapCart is not only a website builder. It is an ordering platform.</p>
+      <p>Future integration options:</p>
+      <ul>
+        <li>link existing sites to a NapCart-hosted ordering flow</li>
+        <li>expose menu and order APIs for custom frontends</li>
+        <li>
+          later provide embeddable widgets or a lightweight storefront SDK
+        </li>
+      </ul>
+      <p>Therefore:</p>
+      <ul>
+        <li>backend contracts must stay stable</li>
+        <li>
+          business logic must not be tightly coupled to one specific storefront
+          theme
+        </li>
+      </ul>
+      <h2>27. Implementation Architecture Order</h2>
+      <p>Recommended build order:</p>
+      <pre><code class="language-text">1. Project foundation
+2. Database schema
+3. Admin auth and restaurant scoping
+4. Catalog and branch management
+5. Storefront menu and cart flow
+6. Checkout and order creation engine
+7. WhatsApp mock adapter
+8. WhatsApp webhook and confirm/cancel flow
+9. Real Meta Cloud API adapter
+10. Basic analytics and operational polish
+</code></pre>
+      <h2>28. Key Architecture Decisions</h2>
+      <h3>28.1 Chosen Decisions</h3>
+      <ul>
+        <li>modular monolith</li>
+        <li>Next.js + TypeScript</li>
+        <li>Postgres + Prisma</li>
+        <li>Supabase for Postgres/Auth/Storage</li>
+        <li>Vercel deployment</li>
+        <li>API-first backend</li>
+        <li>WhatsApp adapter abstraction</li>
+        <li>branch-driven routing</li>
+        <li>guest storefront</li>
+        <li>admin-only auth</li>
+        <li>Pakistan-first defaults with configurable expansion</li>
+      </ul>
+      <h3>28.2 Deferred Decisions</h3>
+      <ul>
+        <li>retry worker implementation style</li>
+        <li>exact analytics implementation detail</li>
+        <li>CDN/media optimization strategy</li>
+        <li>future widget SDK format</li>
+      </ul>
+      <h2>29. Risks and Mitigations</h2>
+      <h3>29.1 WhatsApp Interaction Complexity</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>
+          inbound action handling can become brittle if correlation is weak
+        </li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>use clear order references</li>
+        <li>log all provider message IDs</li>
+        <li>keep webhook parsing isolated in adapter layer</li>
+      </ul>
+      <h3>29.2 Tenant Leakage Risk</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>admin queries may accidentally cross restaurant boundaries</li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>enforce server-side restaurant scoping everywhere</li>
+        <li>keep repository patterns explicit</li>
+      </ul>
+      <h3>29.3 Restaurant Workflow Drift</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>
+          product may accidentally assume staff will use the dashboard actively
+        </li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>keep staff workflow centered on WhatsApp</li>
+        <li>keep dashboard focused on owner/management visibility</li>
+      </ul>
+      <h3>29.4 Pakistan-Specific Data Quality</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>inconsistent phone formatting and free-text addresses</li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>normalize phone numbers to Pakistan format</li>
+        <li>keep address schema ready for later geo-improvement</li>
+      </ul>
+      <h2>30. Final Recommendation</h2>
+      <p>NapCart should be implemented as:</p>
+      <ul>
+        <li>a modular monolith</li>
+        <li>deployed on Vercel</li>
+        <li>backed by Supabase Postgres, Auth, and Storage</li>
+        <li>organized around domain services</li>
+        <li>integrated with WhatsApp through a provider adapter layer</li>
+      </ul>
+      <p>This architecture is the right MVP fit because it gives NapCart:</p>
+      <ul>
+        <li>fast delivery speed</li>
+        <li>reliable operational foundations</li>
+        <li>clean per-restaurant configurability</li>
+        <li>
+          a realistic path to support both new and existing restaurant websites
+        </li>
+        <li>future scale without rewriting the core business model</li>
+      </ul>
+    </main>
+  </body>
+</html>

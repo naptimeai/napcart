@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NapCart ERD v1</title>
+    <style>
+      :root {
+        --paper: #fffdf9;
+        --ink: #1f2937;
+        --accent: #8b3b17;
+        --accent-soft: #f0e2d3;
+        --border: #e5ddd1;
+        --code-bg: #f5f2ec;
+        --muted: #5b6472;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #efe7db 0%, #f7f4ed 100%);
+        color: var(--ink);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 44px 52px 60px;
+        background: var(--paper);
+        box-shadow: 0 12px 40px rgba(56, 42, 18, 0.08);
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        line-height: 1.25;
+        color: #111827;
+        margin: 1.25em 0 0.5em;
+        page-break-after: avoid;
+      }
+      h1 {
+        margin-top: 0;
+        color: var(--accent);
+        font-size: 2.1rem;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 0.35em;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.32rem;
+        margin-top: 1.8em;
+      }
+      h3 {
+        font-size: 1.02rem;
+      }
+      p {
+        margin: 0.55em 0;
+        color: var(--ink);
+      }
+      ul {
+        margin: 0.35em 0 0.9em 1.35em;
+        padding: 0;
+      }
+      li {
+        margin: 0.18em 0;
+      }
+      pre {
+        margin: 0.8em 0 1em;
+        padding: 14px 16px;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: auto;
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      code {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.08em 0.35em;
+        font-size: 0.92em;
+      }
+      pre code {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font-size: inherit;
+      }
+      blockquote {
+        margin: 1em 0;
+        padding: 0.8em 1em;
+        border-left: 4px solid var(--accent);
+        background: var(--accent-soft);
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1em 0 1.2em;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        vertical-align: top;
+        text-align: left;
+      }
+      th {
+        background: #f8f3eb;
+        color: #111827;
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--border);
+        margin: 2em 0;
+      }
+      .meta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 0.8em 0 1.2em;
+      }
+      .meta span {
+        display: inline-block;
+        background: #f8f3eb;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.35em 0.75em;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      @page {
+        size: A4;
+        margin: 18mm 14mm 18mm 14mm;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>NapCart ERD v1</h1>
+      <p>Entity Relationship Design</p>
+      <p>
+        Version: v1.0 Date: 2026-05-28 Status: Draft Author: Codex with Naptime
+        AI
+      </p>
+      <h2>1. Purpose</h2>
+      <p>
+        This document defines the first database design for NapCart based on the
+        finalized PRD and MVP decisions.
+      </p>
+      <p>The schema is designed to be:</p>
+      <ul>
+        <li>multi-tenant-ready</li>
+        <li>branch-aware</li>
+        <li>WhatsApp-routing-aware</li>
+        <li>guest-checkout-friendly</li>
+        <li>future-ready without unnecessary MVP complexity</li>
+      </ul>
+      <h2>2. Design Principles</h2>
+      <ul>
+        <li>Every operational record belongs to a restaurant</li>
+        <li>Every order belongs to one branch</li>
+        <li>Restaurant staff remains WhatsApp-first</li>
+        <li>The dashboard/database is the system of record</li>
+        <li>
+          Orders must retain snapshot data even if menu items later change
+        </li>
+        <li>
+          Customer identity uses internal IDs, with normalized phone number as
+          the main matching key
+        </li>
+        <li>
+          Branch-level configuration is required for routing and future scale
+        </li>
+      </ul>
+      <h2>3. Schema Scope</h2>
+      <h3>3.1 Included in ERD v1</h3>
+      <ul>
+        <li>Restaurants</li>
+        <li>Branches</li>
+        <li>Admin users</li>
+        <li>Restaurant settings</li>
+        <li>WhatsApp connections</li>
+        <li>Categories</li>
+        <li>Products</li>
+        <li>Product variants</li>
+        <li>Add-on groups</li>
+        <li>Add-ons</li>
+        <li>Delivery zones</li>
+        <li>Customers</li>
+        <li>Customer addresses</li>
+        <li>Orders</li>
+        <li>Order items</li>
+        <li>Order item add-ons</li>
+        <li>Order status history</li>
+        <li>WhatsApp message logs</li>
+      </ul>
+      <h3>3.2 Intentionally Deferred</h3>
+      <ul>
+        <li>Rider tables</li>
+        <li>Coupon tables</li>
+        <li>Loyalty tables</li>
+        <li>Tax configuration tables</li>
+        <li>Scheduled order tables</li>
+        <li>Customer accounts/auth tables</li>
+        <li>Full media asset library</li>
+      </ul>
+      <h2>4. High-Level Domain Map</h2>
+      <pre><code class="language-text">Tenant Domain
+  Restaurant
+    -&gt; Branch
+    -&gt; Admin User
+    -&gt; Restaurant Settings
+    -&gt; WhatsApp Connection
+
+Catalog Domain
+  Category
+    -&gt; Product
+      -&gt; Product Variant
+      -&gt; Add-on Group
+        -&gt; Add-on
+
+Operations Domain
+  Customer
+    -&gt; Customer Address
+  Order
+    -&gt; Order Item
+      -&gt; Order Item Add-on
+    -&gt; Order Status History
+    -&gt; WhatsApp Message Log
+
+Delivery Domain
+  Branch
+    -&gt; Delivery Zone
+</code></pre>
+      <h2>5. Relationship Visualization</h2>
+      <h3>5.1 Core Relationship Diagram</h3>
+      <pre><code class="language-text">Restaurant
+  |--&lt; Branch
+  |--&lt; AdminUser
+  |--1 RestaurantSettings
+  |--&lt; Category
+  |--&lt; Product
+  |--&lt; Customer
+  |--&lt; Order
+  |--&lt; WhatsAppConnection
+
+Branch
+  |--&lt; DeliveryZone
+  |--&lt; Order
+  |--0..1 WhatsAppConnection
+
+Category
+  |--&lt; Product
+
+Product
+  |--&lt; ProductVariant
+  |--&lt; AddonGroup
+  |--&lt; OrderItem
+
+AddonGroup
+  |--&lt; Addon
+
+Customer
+  |--&lt; CustomerAddress
+  |--&lt; Order
+
+Order
+  |--&lt; OrderItem
+  |--&lt; OrderStatusHistory
+  |--&lt; WhatsAppMessageLog
+
+OrderItem
+  |--&lt; OrderItemAddon
+</code></pre>
+      <h3>5.2 WhatsApp Routing Model</h3>
+      <pre><code class="language-text">Restaurant
+  -&gt; Branch
+      -&gt; WhatsApp Connection
+
+Order placed
+  -&gt; branch_id selected
+  -&gt; branch WhatsApp connection loaded
+  -&gt; order message sent to that destination
+
+If one shared number exists:
+  multiple branches may still map to the same WhatsApp connection
+  while branch labels remain visible in the message payload
+</code></pre>
+      <h2>6. Key Enumerations</h2>
+      <h3>6.1 Fulfillment Type</h3>
+      <ul>
+        <li><code>delivery</code></li>
+        <li><code>pickup</code></li>
+      </ul>
+      <h3>6.2 Order Status</h3>
+      <ul>
+        <li><code>pending_confirmation</code></li>
+        <li><code>confirmed</code></li>
+        <li><code>cancelled</code></li>
+      </ul>
+      <h3>6.3 Payment Method</h3>
+      <ul>
+        <li><code>cash_on_delivery</code></li>
+        <li><code>cash_on_pickup</code></li>
+      </ul>
+      <h3>6.4 Payment Status</h3>
+      <ul>
+        <li><code>unpaid</code></li>
+        <li><code>paid</code></li>
+      </ul>
+      <p>MVP note:</p>
+      <ul>
+        <li>payment status exists mainly as a future-ready field</li>
+        <li>operationally, MVP uses cash flows only</li>
+      </ul>
+      <h3>6.5 WhatsApp Message Direction</h3>
+      <ul>
+        <li><code>outbound</code></li>
+        <li><code>inbound</code></li>
+      </ul>
+      <h3>6.6 WhatsApp Message Status</h3>
+      <ul>
+        <li><code>queued</code></li>
+        <li><code>sent</code></li>
+        <li><code>delivered</code></li>
+        <li><code>failed</code></li>
+        <li><code>received</code></li>
+        <li><code>processed</code></li>
+      </ul>
+      <h2>7. Table Specifications</h2>
+      <h2>7.1 restaurants</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>top-level tenant record</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+name
+slug
+logo_url
+support_phone
+default_currency
+default_language
+timezone
+contact_email nullable
+is_active
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li><code>slug</code> supports tenant-aware routing later</li>
+        <li>
+          <code>default_language</code> remains <code>English</code> in MVP, but
+          keeps the schema future-ready
+        </li>
+      </ul>
+      <h2>7.2 branches</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>
+          operational branch used for customer selection and order routing
+        </li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+name
+slug
+phone nullable
+address_text
+latitude nullable
+longitude nullable
+is_active
+is_accepting_orders
+is_temporarily_closed
+display_order
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>branch selection is manual in MVP</li>
+        <li>branch availability is operationally important</li>
+      </ul>
+      <h2>7.3 branch_operating_hours</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>define opening hours without bloating the branch table</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+branch_id (fk -&gt; branches.id)
+day_of_week
+open_time nullable
+close_time nullable
+is_closed
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>supports &quot;closed now&quot; + structured weekly hours</li>
+        <li><code>is_closed = true</code> allows full-day closure</li>
+      </ul>
+      <h2>7.4 restaurant_settings</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>store tenant-level operational settings</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id, unique)
+is_accepting_orders
+is_globally_closed
+minimum_order_amount nullable
+pickup_enabled
+delivery_enabled
+show_branch_selection
+customer_notifications_enabled
+tax_enabled
+created_at
+updated_at
+</code></pre>
+      <p>MVP note:</p>
+      <ul>
+        <li>
+          <code>tax_enabled</code> can default false until the tax module exists
+        </li>
+      </ul>
+      <h2>7.5 admin_users</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>dashboard login access</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+name
+email
+password_hash or auth_provider_id
+is_active
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>MVP supports one main admin account per restaurant</li>
+        <li>role-based permissions are deferred</li>
+      </ul>
+      <h2>7.6 whatsapp_connections</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>per-restaurant or per-branch WhatsApp destination configuration</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+branch_id nullable (fk -&gt; branches.id)
+provider
+business_name
+whatsapp_business_account_id nullable
+phone_number_id nullable
+display_phone_number
+api_base_url nullable
+access_token_encrypted nullable
+webhook_verify_token_encrypted nullable
+is_active
+is_default_for_restaurant
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>branch-specific routing uses <code>branch_id</code></li>
+        <li>
+          shared routing uses a restaurant-level or repeated mapped connection
+        </li>
+        <li>mock mode can exist without real credentials</li>
+      </ul>
+      <h2>7.7 categories</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>menu grouping</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+name
+slug
+description nullable
+sort_order
+is_active
+created_at
+updated_at
+</code></pre>
+      <h2>7.8 products</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>menu item master record</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+category_id (fk -&gt; categories.id)
+name
+slug
+description nullable
+image_url nullable
+base_price
+is_active
+is_available
+delivery_available
+pickup_available
+display_order
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li><code>is_active</code> is structural visibility</li>
+        <li><code>is_available</code> supports temporary unavailability</li>
+      </ul>
+      <h2>7.9 product_variants</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>variations like small/medium/large</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+product_id (fk -&gt; products.id)
+name
+sku nullable
+price_delta nullable
+fixed_price nullable
+is_default
+is_active
+sort_order
+created_at
+updated_at
+</code></pre>
+      <p>Rules:</p>
+      <ul>
+        <li>
+          either <code>price_delta</code> or <code>fixed_price</code> is used
+        </li>
+        <li>
+          default variant is optional if base product already covers the default
+          case
+        </li>
+      </ul>
+      <h2>7.10 addon_groups</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>group related add-ons per product</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+product_id (fk -&gt; products.id)
+name
+min_select
+max_select
+is_required
+sort_order
+is_active
+created_at
+updated_at
+</code></pre>
+      <h2>7.11 addons</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>individual selectable add-ons</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+addon_group_id (fk -&gt; addon_groups.id)
+name
+price
+is_active
+sort_order
+created_at
+updated_at
+</code></pre>
+      <h2>7.12 delivery_zones</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>branch-level delivery fee and coverage rule</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+branch_id (fk -&gt; branches.id)
+name
+max_distance_km nullable
+area_label nullable
+fee
+minimum_order_amount nullable
+is_active
+sort_order
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>
+          supports simple zone logic such as 5 km, 8 km, or named local areas
+        </li>
+        <li>future geospatial logic can build on top of this table</li>
+      </ul>
+      <h2>7.13 customers</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>internal customer record</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+name
+normalized_phone
+raw_phone_input
+email nullable
+total_orders_count
+first_order_at nullable
+last_order_at nullable
+notes nullable
+created_at
+updated_at
+</code></pre>
+      <p>Rules:</p>
+      <ul>
+        <li>unique index on <code>(restaurant_id, normalized_phone)</code></li>
+        <li>customer name is not a unique key</li>
+      </ul>
+      <h2>7.14 customer_addresses</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>future-friendly customer address storage</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+customer_id (fk -&gt; customers.id)
+label nullable
+address_text
+latitude nullable
+longitude nullable
+delivery_notes nullable
+is_default
+created_at
+updated_at
+</code></pre>
+      <p>MVP note:</p>
+      <ul>
+        <li>checkout uses free-text entry</li>
+        <li>table supports future repeat-address behavior later</li>
+      </ul>
+      <h2>7.15 orders</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>main order record</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+branch_id (fk -&gt; branches.id)
+customer_id nullable (fk -&gt; customers.id)
+whatsapp_connection_id nullable (fk -&gt; whatsapp_connections.id)
+order_number
+status
+fulfillment_type
+payment_method
+payment_status
+customer_name_snapshot
+customer_phone_snapshot
+address_text_snapshot nullable
+latitude_snapshot nullable
+longitude_snapshot nullable
+delivery_notes nullable
+branch_name_snapshot
+subtotal
+delivery_fee
+discount_total
+tax_total
+grand_total
+currency
+placed_at
+confirmed_at nullable
+cancelled_at nullable
+created_at
+updated_at
+</code></pre>
+      <p>MVP defaults:</p>
+      <ul>
+        <li><code>discount_total = 0</code></li>
+        <li><code>tax_total = 0</code></li>
+        <li><code>payment_status = unpaid</code></li>
+      </ul>
+      <p>Key rules:</p>
+      <ul>
+        <li>order starts as <code>pending_confirmation</code></li>
+        <li>
+          it becomes <code>confirmed</code> or <code>cancelled</code> only after
+          staff action
+        </li>
+      </ul>
+      <h2>7.16 order_items</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>ordered product lines with full snapshots</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+order_id (fk -&gt; orders.id)
+product_id nullable (fk -&gt; products.id)
+product_name_snapshot
+variant_name_snapshot nullable
+unit_price
+quantity
+line_total
+item_notes nullable
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>
+          <code>product_id</code> may be nullable long-term if product is ever
+          removed
+        </li>
+        <li>snapshots preserve historical integrity</li>
+      </ul>
+      <h2>7.17 order_item_addons</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>selected add-ons attached to an order item</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+order_item_id (fk -&gt; order_items.id)
+addon_name_snapshot
+addon_price_snapshot
+quantity
+line_total
+created_at
+updated_at
+</code></pre>
+      <h2>7.18 order_status_history</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>audit trail of status transitions</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+order_id (fk -&gt; orders.id)
+old_status nullable
+new_status
+change_source
+changed_by_admin_user_id nullable (fk -&gt; admin_users.id)
+changed_at
+notes nullable
+</code></pre>
+      <p>Change source examples:</p>
+      <ul>
+        <li><code>system</code></li>
+        <li><code>whatsapp_staff_action</code></li>
+        <li><code>admin_dashboard</code></li>
+      </ul>
+      <h2>7.19 whatsapp_message_logs</h2>
+      <p>Purpose:</p>
+      <ul>
+        <li>full message audit and routing visibility</li>
+      </ul>
+      <p>Fields:</p>
+      <pre><code class="language-text">id (uuid, pk)
+restaurant_id (fk -&gt; restaurants.id)
+branch_id nullable (fk -&gt; branches.id)
+order_id nullable (fk -&gt; orders.id)
+whatsapp_connection_id nullable (fk -&gt; whatsapp_connections.id)
+direction
+message_type
+provider_message_id nullable
+template_name nullable
+payload_json
+response_json nullable
+status
+error_message nullable
+sent_at nullable
+received_at nullable
+processed_at nullable
+created_at
+updated_at
+</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>critical for debugging, retries, and auditability</li>
+      </ul>
+      <h2>8. Index and Constraint Recommendations</h2>
+      <h3>8.1 Unique Constraints</h3>
+      <pre><code class="language-text">restaurants.slug
+restaurant_settings.restaurant_id
+customers (restaurant_id, normalized_phone)
+orders (restaurant_id, order_number)
+whatsapp_connections (restaurant_id, branch_id, display_phone_number) as needed by exact implementation
+</code></pre>
+      <h3>8.2 High-Value Indexes</h3>
+      <pre><code class="language-text">branches.restaurant_id
+products.restaurant_id
+products.category_id
+delivery_zones.branch_id
+orders.restaurant_id
+orders.branch_id
+orders.customer_id
+orders.status
+orders.placed_at
+order_items.order_id
+whatsapp_message_logs.order_id
+whatsapp_message_logs.provider_message_id
+</code></pre>
+      <h2>9. MVP vs Future-Ready Design Notes</h2>
+      <h3>9.1 Active in MVP</h3>
+      <ul>
+        <li>restaurants</li>
+        <li>branches</li>
+        <li>operating hours</li>
+        <li>settings</li>
+        <li>admin user</li>
+        <li>menu tables</li>
+        <li>delivery zones</li>
+        <li>customers</li>
+        <li>orders</li>
+        <li>order items</li>
+        <li>status history</li>
+        <li>WhatsApp logs</li>
+      </ul>
+      <h3>9.2 Future-Ready Fields Included Now</h3>
+      <ul>
+        <li>latitude/longitude snapshots</li>
+        <li>tax_total</li>
+        <li>discount_total</li>
+        <li>payment_status</li>
+        <li>branch/restaurant-level WhatsApp mapping</li>
+        <li>customer address storage beyond a single one-off order</li>
+      </ul>
+      <h3>9.3 Intentionally Not Added Yet</h3>
+      <ul>
+        <li>coupon tables</li>
+        <li>rider tables</li>
+        <li>loyalty program tables</li>
+        <li>customer auth tables</li>
+        <li>tax config tables</li>
+      </ul>
+      <p>Reason:</p>
+      <ul>
+        <li>these would add structural complexity without current MVP value</li>
+      </ul>
+      <h2>10. ERP-Level Logic Notes</h2>
+      <p>These are not tables, but rules the implementation must respect:</p>
+      <ul>
+        <li>Product availability check happens before order creation</li>
+        <li>
+          Restaurant and branch availability check happens before order creation
+        </li>
+        <li>
+          Delivery zone and minimum order rules must be validated server-side
+        </li>
+        <li>Order snapshots must be written at transaction time</li>
+        <li>
+          WhatsApp send attempt must happen only after order persistence
+          succeeds
+        </li>
+        <li>
+          Staff Confirm / Cancel action must update both
+          <code>orders.status</code> and <code>order_status_history</code>
+        </li>
+      </ul>
+      <h2>11. Example Order Flow Mapped to Tables</h2>
+      <pre><code class="language-text">1. Customer chooses branch
+   -&gt; branches
+
+2. Customer browses menu
+   -&gt; categories, products, variants, add-ons
+
+3. Customer submits order
+   -&gt; customers (find or create)
+   -&gt; customer_addresses (optional create/update)
+   -&gt; orders
+   -&gt; order_items
+   -&gt; order_item_addons
+   -&gt; order_status_history
+
+4. System sends WhatsApp message
+   -&gt; whatsapp_connections
+   -&gt; whatsapp_message_logs
+
+5. Staff confirms or cancels
+   -&gt; orders.status update
+   -&gt; order_status_history insert
+   -&gt; whatsapp_message_logs inbound/processed record
+</code></pre>
+      <h2>12. Open Design Notes for Next Artifact</h2>
+      <p>The ERD is now ready enough to support the next document:</p>
+      <ul>
+        <li>API specification</li>
+        <li>architecture specification</li>
+        <li>implementation sequencing</li>
+      </ul>
+      <p>
+        Remaining design work belongs in the architecture phase, not the ERD
+        phase:
+      </p>
+      <ul>
+        <li>exact webhook action payload format</li>
+        <li>exact branch-routing resolution logic</li>
+        <li>exact auth implementation choice</li>
+        <li>exact storage provider choice for images</li>
+      </ul>
+      <h2>13. Final Recommendation</h2>
+      <p>
+        NapCart ERD v1 should be implemented as a normalized relational schema
+        with:
+      </p>
+      <ul>
+        <li>strong tenant isolation</li>
+        <li>branch-aware routing</li>
+        <li>robust snapshotting for orders</li>
+        <li>minimal but future-ready operational fields</li>
+        <li>explicit WhatsApp audit logging</li>
+      </ul>
+      <p>This is the right level of complexity for MVP because it supports:</p>
+      <ul>
+        <li>one real restaurant launch</li>
+        <li>future onboarding of new restaurant clients</li>
+        <li>future branch expansion</li>
+        <li>future integration with existing websites</li>
+      </ul>
+    </main>
+  </body>
+</html>

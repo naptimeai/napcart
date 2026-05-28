@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NapCart Implementation Plan v1</title>
+    <style>
+      :root {
+        --paper: #fffdf9;
+        --ink: #1f2937;
+        --accent: #8b3b17;
+        --accent-soft: #f0e2d3;
+        --border: #e5ddd1;
+        --code-bg: #f5f2ec;
+        --muted: #5b6472;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #efe7db 0%, #f7f4ed 100%);
+        color: var(--ink);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 44px 52px 60px;
+        background: var(--paper);
+        box-shadow: 0 12px 40px rgba(56, 42, 18, 0.08);
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        line-height: 1.25;
+        color: #111827;
+        margin: 1.25em 0 0.5em;
+        page-break-after: avoid;
+      }
+      h1 {
+        margin-top: 0;
+        color: var(--accent);
+        font-size: 2.1rem;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 0.35em;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.32rem;
+        margin-top: 1.8em;
+      }
+      h3 {
+        font-size: 1.02rem;
+      }
+      p {
+        margin: 0.55em 0;
+        color: var(--ink);
+      }
+      ul {
+        margin: 0.35em 0 0.9em 1.35em;
+        padding: 0;
+      }
+      li {
+        margin: 0.18em 0;
+      }
+      pre {
+        margin: 0.8em 0 1em;
+        padding: 14px 16px;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: auto;
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      code {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.08em 0.35em;
+        font-size: 0.92em;
+      }
+      pre code {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font-size: inherit;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1em 0 1.2em;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        vertical-align: top;
+        text-align: left;
+      }
+      th {
+        background: #f8f3eb;
+        color: #111827;
+      }
+      @page {
+        size: A4;
+        margin: 18mm 14mm 18mm 14mm;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>NapCart Implementation Plan v1</h1>
+      <p>Execution Plan for MVP Delivery</p>
+      <p>
+        Version: v1.0 Date: 2026-05-28 Status: Draft Author: Codex with Naptime
+        AI
+      </p>
+      <h2>1. Purpose</h2>
+      <p>
+        This document converts the approved NapCart planning and system-design
+        artifacts into an execution-ready build plan.
+      </p>
+      <p>Source artifacts:</p>
+      <ul>
+        <li>NapCart Project Roadmap</li>
+        <li>NapCart PRD v1</li>
+        <li>NapCart ERD v1</li>
+        <li>NapCart Architecture Spec v1</li>
+      </ul>
+      <p>Its job is to define:</p>
+      <ul>
+        <li>implementation phases</li>
+        <li>milestone order</li>
+        <li>ticket groups</li>
+        <li>dependencies</li>
+        <li>delivery sequence</li>
+        <li>readiness criteria for starting development</li>
+      </ul>
+      <h2>2. Delivery Objective</h2>
+      <p>
+        The MVP goal is to deliver a production-ready first version of NapCart
+        that allows:
+      </p>
+      <ul>
+        <li>one restaurant to launch in Pakistan</li>
+        <li>customers to place guest delivery and pickup orders</li>
+        <li>branch-specific WhatsApp order routing</li>
+        <li>branch staff to confirm or cancel through WhatsApp</li>
+        <li>customer confirm/cancel notification</li>
+        <li>management visibility through the admin dashboard</li>
+      </ul>
+      <h2>3. Delivery Principles</h2>
+      <ul>
+        <li>Build in thin vertical slices</li>
+        <li>Finish foundations before feature acceleration</li>
+        <li>Keep the MVP aligned with approved scope only</li>
+        <li>Prefer reusable modules over restaurant-specific hacks</li>
+        <li>Treat mock WhatsApp mode as a first-class development tool</li>
+        <li>
+          Keep data, audit, and routing logic production-safe from the start
+        </li>
+      </ul>
+      <h2>4. Delivery Model</h2>
+      <p>Recommended delivery model:</p>
+      <ul>
+        <li>one codebase</li>
+        <li>one MVP branch strategy</li>
+        <li>one primary environment stack</li>
+        <li>milestone-based execution</li>
+        <li>task breakdown by module and dependency order</li>
+      </ul>
+      <p>Recommended cadence:</p>
+      <ul>
+        <li>1-week planning/setup sprint</li>
+        <li>4 to 6 core implementation sprints</li>
+        <li>1 stabilization and test sprint</li>
+        <li>1 deployment readiness sprint</li>
+      </ul>
+      <p>Estimated MVP timeline:</p>
+      <ul>
+        <li>
+          <code>7 to 10 weeks</code> depending on iteration speed and design
+          churn
+        </li>
+      </ul>
+      <h2>5. Implementation Overview</h2>
+      <pre><code class="language-text">Phase 0  -&gt; Project Setup and Delivery Foundations
+Phase 1  -&gt; Data Layer and Auth Foundations
+Phase 2  -&gt; Admin Core and Restaurant Configuration
+Phase 3  -&gt; Catalog, Branches, and Delivery Rules
+Phase 4  -&gt; Storefront, Cart, and Checkout
+Phase 5  -&gt; Order Engine and WhatsApp Mock Flow
+Phase 6  -&gt; Real WhatsApp Integration and Webhooks
+Phase 7  -&gt; Analytics, QA, Hardening, and Launch Readiness
+</code></pre>
+      <h2>6. Milestone Map</h2>
+      <h3>6.1 Milestone Sequence</h3>
+      <pre><code class="language-text">M1 Foundations Ready
+M2 Data Model and Admin Auth Ready
+M3 Admin Management Core Ready
+M4 Customer Ordering Flow Ready
+M5 WhatsApp Confirmation Flow Ready
+M6 MVP Stabilized
+M7 Production Launch Ready
+</code></pre>
+      <h3>6.2 Milestone Visualization</h3>
+      <pre><code class="language-text">M1 ---&gt; M2 ---&gt; M3 ---&gt; M4 ---&gt; M5 ---&gt; M6 ---&gt; M7
+ |       |       |       |       |       |       |
+setup   db      admin   order   whatsapp qa      launch
+</code></pre>
+      <h2>7. Phase-by-Phase Plan</h2>
+      <h2>7.1 Phase 0: Project Setup and Delivery Foundations</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          prepare the repo, environments, and engineering structure before
+          feature work
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>
+          the team can start building safely without re-deciding architecture
+          every day
+        </li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>create the GitHub repository under <code>Naptime AI</code></li>
+        <li>initialize the Next.js + TypeScript project</li>
+        <li>configure linting, formatting, and project scripts</li>
+        <li>define the app folder/module structure</li>
+        <li>create base environment variable strategy</li>
+        <li>create Vercel project</li>
+        <li>create Supabase project</li>
+        <li>connect local development env</li>
+        <li>set up Prisma</li>
+        <li>define initial CI expectations</li>
+        <li>create <code>.env.example</code></li>
+        <li>
+          create shared constants for Pakistan defaults:
+          <ul>
+            <li>currency <code>PKR</code></li>
+            <li>timezone <code>Asia/Karachi</code></li>
+            <li>country/phone assumptions</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>repo exists</li>
+        <li>app boots locally</li>
+        <li>Vercel project exists</li>
+        <li>Supabase project exists</li>
+        <li>Prisma can connect to database</li>
+        <li>base project structure is approved</li>
+      </ul>
+      <h2>7.2 Phase 1: Data Layer and Auth Foundations</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          implement the approved schema and secure admin access foundation
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>database and auth are ready for real feature development</li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>translate ERD into Prisma schema</li>
+        <li>create database migrations</li>
+        <li>create seed strategy for local development</li>
+        <li>
+          implement restaurant, branch, settings, admin, catalog, customer,
+          order, and WhatsApp tables
+        </li>
+        <li>set up Supabase Auth for admin accounts</li>
+        <li>link auth identities to <code>admin_users</code></li>
+        <li>implement restaurant-scoped admin session resolution</li>
+        <li>implement base repository/query layer</li>
+        <li>create audit-friendly timestamps and transaction helpers</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>migrations apply successfully</li>
+        <li>seed data works</li>
+        <li>admin can log in</li>
+        <li>admin session resolves restaurant scope</li>
+        <li>all core MVP tables exist and are queryable</li>
+      </ul>
+      <h2>7.3 Phase 2: Admin Core and Restaurant Configuration</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          give management the minimum control panel required to operate NapCart
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>
+          restaurant owner can configure operational settings and view the
+          dashboard shell
+        </li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>build admin layout and navigation shell</li>
+        <li>build dashboard home with summary cards placeholders</li>
+        <li>implement restaurant branding settings</li>
+        <li>implement branch CRUD</li>
+        <li>implement operating hours UI</li>
+        <li>implement open/closed and accepting-orders controls</li>
+        <li>
+          implement restaurant settings:
+          <ul>
+            <li>delivery enabled</li>
+            <li>pickup enabled</li>
+            <li>minimum order amount</li>
+            <li>global closed state</li>
+          </ul>
+        </li>
+        <li>implement WhatsApp connection settings UI</li>
+        <li>implement product image and logo upload plumbing</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>admin can manage restaurant identity</li>
+        <li>admin can manage branches</li>
+        <li>admin can manage operational availability</li>
+        <li>admin can save WhatsApp configuration records</li>
+      </ul>
+      <h2>7.4 Phase 3: Catalog, Branches, and Delivery Rules</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          complete the core commerce configuration layer before storefront
+          ordering starts
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>a restaurant can define a usable menu and delivery rule set</li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>implement category CRUD</li>
+        <li>implement product CRUD</li>
+        <li>implement variant CRUD</li>
+        <li>implement add-on group CRUD</li>
+        <li>implement add-on CRUD</li>
+        <li>implement product availability toggles</li>
+        <li>implement delivery/pickup availability toggles</li>
+        <li>implement branch assignment display behavior</li>
+        <li>implement delivery zone CRUD</li>
+        <li>implement delivery fee configuration</li>
+        <li>implement minimum-order validation rules</li>
+        <li>implement storefront-ready menu query services</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>menu is fully manageable from admin</li>
+        <li>delivery zones and fees are configurable</li>
+        <li>storefront can retrieve structured menu data from backend</li>
+      </ul>
+      <h2>7.5 Phase 4: Storefront, Cart, and Checkout</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>build the complete customer-facing ordering experience</li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>a customer can browse, select, and place a valid order</li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>build storefront landing shell</li>
+        <li>build branch selection flow</li>
+        <li>build menu listing and product detail interactions</li>
+        <li>build cart state management</li>
+        <li>build variation and add-on selection</li>
+        <li>
+          build fulfillment selection:
+          <ul>
+            <li>delivery</li>
+            <li>pickup</li>
+          </ul>
+        </li>
+        <li>build guest checkout form</li>
+        <li>implement Pakistan-friendly phone handling UX</li>
+        <li>implement free-text address capture</li>
+        <li>implement delivery notes field</li>
+        <li>implement checkout validation UX</li>
+        <li>build order placed / awaiting confirmation page</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>customer can complete guest checkout</li>
+        <li>all required order data reaches the backend correctly</li>
+        <li>invalid carts are blocked before placement</li>
+      </ul>
+      <h2>7.6 Phase 5: Order Engine and WhatsApp Mock Flow</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          make ordering operationally real before using live provider
+          integration
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>
+          orders are created reliably and can travel through the full
+          confirm/cancel logic in mock mode
+        </li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>implement order creation service</li>
+        <li>implement customer find-or-create logic</li>
+        <li>implement transactional order persistence</li>
+        <li>implement item/add-on snapshot logic</li>
+        <li>implement <code>pending_confirmation</code> initialization</li>
+        <li>implement order number generation</li>
+        <li>implement status history writes</li>
+        <li>implement WhatsApp adapter interface</li>
+        <li>implement mock WhatsApp adapter</li>
+        <li>implement outbound message log creation</li>
+        <li>implement simulated confirm/cancel action flow</li>
+        <li>implement customer notification service contract</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>order creation works end to end</li>
+        <li>mock branch confirmation updates order state</li>
+        <li>mock cancellation updates order state</li>
+        <li>logs and audit history are written correctly</li>
+      </ul>
+      <h2>7.7 Phase 6: Real WhatsApp Integration and Webhooks</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          replace simulation with real provider integration while preserving the
+          same business contract
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>branch staff can confirm or cancel from real WhatsApp</li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>implement Meta WhatsApp Cloud API adapter</li>
+        <li>implement outbound interactive order message format</li>
+        <li>implement webhook verification endpoint</li>
+        <li>implement inbound webhook parser</li>
+        <li>implement provider-to-order correlation logic</li>
+        <li>implement customer confirmation message send</li>
+        <li>implement customer cancellation message send</li>
+        <li>implement provider error handling</li>
+        <li>implement WhatsApp settings validation</li>
+        <li>verify branch-specific routing behavior</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>order message reaches correct branch number</li>
+        <li>branch action updates backend status</li>
+        <li>customer receives matching response</li>
+        <li>inbound and outbound logs are stored</li>
+      </ul>
+      <h2>7.8 Phase 7: Analytics, QA, Hardening, and Launch Readiness</h2>
+      <p>Goal:</p>
+      <ul>
+        <li>
+          stabilize the MVP and make it safe to deploy for a first restaurant
+        </li>
+      </ul>
+      <p>Primary outcome:</p>
+      <ul>
+        <li>MVP is testable, reviewable, and launch-ready</li>
+      </ul>
+      <h3>Tasks</h3>
+      <ul>
+        <li>implement admin orders list</li>
+        <li>implement admin order detail page</li>
+        <li>implement customer list</li>
+        <li>
+          implement basic analytics summary:
+          <ul>
+            <li>total orders</li>
+            <li>confirmed</li>
+            <li>cancelled</li>
+            <li>pending confirmation</li>
+            <li>total sales</li>
+          </ul>
+        </li>
+        <li>implement critical empty states and error states</li>
+        <li>add validation hardening</li>
+        <li>add audit/log review helpers</li>
+        <li>test branch availability and delivery rule edge cases</li>
+        <li>test image uploads</li>
+        <li>test auth boundaries</li>
+        <li>test Pakistan phone normalization assumptions</li>
+        <li>prepare staging review checklist</li>
+        <li>prepare production env checklist</li>
+      </ul>
+      <h3>Exit Criteria</h3>
+      <ul>
+        <li>MVP passes core functional QA</li>
+        <li>launch checklist is complete</li>
+        <li>first restaurant onboarding path is documented</li>
+      </ul>
+      <h2>8. Ticket Structure</h2>
+      <p>Recommended ticket hierarchy:</p>
+      <pre><code class="language-text">Epic
+  -&gt; Feature Group
+      -&gt; Implementation Task
+          -&gt; QA / Verification Task
+</code></pre>
+      <h3>Example Epic Breakdown</h3>
+      <pre><code class="language-text">Epic 1: Platform Foundations
+Epic 2: Admin Configuration
+Epic 3: Catalog and Delivery Rules
+Epic 4: Storefront Ordering Flow
+Epic 5: Order Engine
+Epic 6: WhatsApp Operations
+Epic 7: QA and Launch Readiness
+</code></pre>
+      <h2>9. Detailed Ticket Groups</h2>
+      <h2>9.1 Epic 1: Platform Foundations</h2>
+      <ul>
+        <li>initialize codebase</li>
+        <li>connect Vercel and Supabase</li>
+        <li>configure Prisma</li>
+        <li>add shared app config</li>
+        <li>add auth foundation</li>
+        <li>add file storage foundation</li>
+      </ul>
+      <h2>9.2 Epic 2: Admin Configuration</h2>
+      <ul>
+        <li>admin shell</li>
+        <li>restaurant settings</li>
+        <li>branch management</li>
+        <li>operating hours</li>
+        <li>open/closed controls</li>
+        <li>WhatsApp settings</li>
+      </ul>
+      <h2>9.3 Epic 3: Catalog and Delivery Rules</h2>
+      <ul>
+        <li>categories</li>
+        <li>products</li>
+        <li>variants</li>
+        <li>add-on groups</li>
+        <li>add-ons</li>
+        <li>product media</li>
+        <li>delivery zones</li>
+        <li>minimum order rules</li>
+      </ul>
+      <h2>9.4 Epic 4: Storefront Ordering Flow</h2>
+      <ul>
+        <li>branch selection</li>
+        <li>menu browsing</li>
+        <li>cart</li>
+        <li>checkout</li>
+        <li>phone and address handling</li>
+        <li>order placed state</li>
+      </ul>
+      <h2>9.5 Epic 5: Order Engine</h2>
+      <ul>
+        <li>order transaction</li>
+        <li>customer matching</li>
+        <li>snapshotting</li>
+        <li>order status history</li>
+        <li>audit writes</li>
+      </ul>
+      <h2>9.6 Epic 6: WhatsApp Operations</h2>
+      <ul>
+        <li>mock adapter</li>
+        <li>provider adapter</li>
+        <li>outbound order messages</li>
+        <li>inbound webhook actions</li>
+        <li>customer confirm/cancel notifications</li>
+        <li>message logs</li>
+      </ul>
+      <h2>9.7 Epic 7: QA and Launch Readiness</h2>
+      <ul>
+        <li>analytics summary</li>
+        <li>admin review flows</li>
+        <li>staging QA</li>
+        <li>production readiness</li>
+        <li>onboarding checklist</li>
+      </ul>
+      <h2>10. Dependency Logic</h2>
+      <h3>10.1 Critical Dependency Chain</h3>
+      <pre><code class="language-text">Repo Setup
+  -&gt; Database + Auth
+     -&gt; Admin Settings + Branches
+        -&gt; Catalog + Delivery Rules
+           -&gt; Storefront + Checkout
+              -&gt; Order Engine
+                 -&gt; WhatsApp Mock
+                    -&gt; Real WhatsApp
+                       -&gt; QA + Launch
+</code></pre>
+      <h3>10.2 Key Rules</h3>
+      <ul>
+        <li>
+          do not start real WhatsApp integration before the mock flow works
+        </li>
+        <li>do not start checkout finalization before delivery rules exist</li>
+        <li>
+          do not start storefront integration before menu queries are stable
+        </li>
+        <li>
+          do not start production deployment before role/scope security is
+          verified
+        </li>
+      </ul>
+      <h2>11. Testing Strategy by Phase</h2>
+      <h3>11.1 Unit/Logic Tests</h3>
+      <p>Focus on:</p>
+      <ul>
+        <li>price calculations</li>
+        <li>delivery fee logic</li>
+        <li>minimum order checks</li>
+        <li>phone normalization helpers</li>
+        <li>order status transitions</li>
+        <li>WhatsApp action parsing</li>
+      </ul>
+      <h3>11.2 Integration Tests</h3>
+      <p>Focus on:</p>
+      <ul>
+        <li>order creation transaction</li>
+        <li>customer matching</li>
+        <li>admin auth scoping</li>
+        <li>branch-specific WhatsApp routing</li>
+        <li>webhook confirm/cancel handling</li>
+      </ul>
+      <h3>11.3 Manual QA</h3>
+      <p>Focus on:</p>
+      <ul>
+        <li>full storefront flow</li>
+        <li>branch selection correctness</li>
+        <li>delivery vs pickup behavior</li>
+        <li>product availability edge cases</li>
+        <li>admin operations</li>
+        <li>failed WhatsApp send scenarios</li>
+      </ul>
+      <h2>12. Definition of Done</h2>
+      <p>A task is done only when:</p>
+      <ul>
+        <li>implementation is complete</li>
+        <li>validation rules are included</li>
+        <li>restaurant scoping is respected</li>
+        <li>happy path is verified</li>
+        <li>main failure path is handled</li>
+        <li>relevant tests or manual verification are performed</li>
+        <li>no approved-scope requirement was silently changed</li>
+      </ul>
+      <h2>13. Launch Readiness Checklist</h2>
+      <ul>
+        <li>repository and environments are stable</li>
+        <li>database migrations are clean</li>
+        <li>admin auth works in production</li>
+        <li>product images and logo uploads work</li>
+        <li>branch routing is verified</li>
+        <li>delivery and pickup both work</li>
+        <li>order logs are visible</li>
+        <li>WhatsApp confirm/cancel flow is verified</li>
+        <li>customer confirm/cancel message is verified</li>
+        <li>management dashboard shows correct metrics</li>
+        <li>
+          first restaurant configuration can be completed without code edits
+        </li>
+      </ul>
+      <h2>14. Risks During Implementation</h2>
+      <h3>14.1 Scope Creep</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>
+          requests for payments, coupons, or rider flows may interrupt MVP
+        </li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>keep P0/P1/P2 boundaries visible in every sprint</li>
+      </ul>
+      <h3>14.2 WhatsApp Provider Delays</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>real provider setup may lag behind development</li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>
+          treat mock mode as a required implementation milestone, not a fallback
+          afterthought
+        </li>
+      </ul>
+      <h3>14.3 Weak Tenant Isolation</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>admin functionality may accidentally leak restaurant data</li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>validate scope at repository and service layers early</li>
+      </ul>
+      <h3>14.4 Data Quality Issues</h3>
+      <p>Risk:</p>
+      <ul>
+        <li>
+          Pakistani phone formatting and free-text addresses may produce
+          inconsistent records
+        </li>
+      </ul>
+      <p>Mitigation:</p>
+      <ul>
+        <li>normalize phone numbers consistently</li>
+        <li>keep address parsing simple in MVP</li>
+        <li>preserve raw input where needed</li>
+      </ul>
+      <h2>15. Recommended Immediate Next Execution Step</h2>
+      <p>
+        After this implementation plan is approved, the next action should be:
+      </p>
+      <p><code>Set up the actual project foundation</code></p>
+      <p>That means:</p>
+      <ul>
+        <li>create GitHub repo</li>
+        <li>create Supabase project</li>
+        <li>create Vercel project</li>
+        <li>initialize the Next.js app</li>
+        <li>implement Prisma schema foundation</li>
+      </ul>
+      <h2>16. Final Recommendation</h2>
+      <p>
+        NapCart should now stop expanding planning artifacts and begin
+        controlled execution.
+      </p>
+      <p>The approved sequence from here is:</p>
+      <pre><code class="language-text">Implementation Plan
+  -&gt; Project Setup
+  -&gt; Schema + Auth
+  -&gt; Admin Config
+  -&gt; Storefront
+  -&gt; Order Engine
+  -&gt; WhatsApp
+  -&gt; QA
+  -&gt; Launch
+</code></pre>
+      <p>
+        This is the cleanest path to move from approved design into a real
+        working MVP without losing focus.
+      </p>
+    </main>
+  </body>
+</html>

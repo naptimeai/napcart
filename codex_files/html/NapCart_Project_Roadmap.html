@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NapCart Project Roadmap</title>
+    <style>
+      :root {
+        --paper: #fffdf9;
+        --ink: #1f2937;
+        --accent: #8b3b17;
+        --border: #e5ddd1;
+        --code-bg: #f5f2ec;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #efe7db 0%, #f7f4ed 100%);
+        color: var(--ink);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 44px 52px 60px;
+        background: var(--paper);
+        box-shadow: 0 12px 40px rgba(56, 42, 18, 0.08);
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        line-height: 1.25;
+        color: #111827;
+        margin: 1.25em 0 0.5em;
+        page-break-after: avoid;
+      }
+      h1 {
+        margin-top: 0;
+        color: var(--accent);
+        font-size: 2.1rem;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 0.35em;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.32rem;
+        margin-top: 1.8em;
+      }
+      h3 {
+        font-size: 1.02rem;
+      }
+      p {
+        margin: 0.55em 0;
+        color: var(--ink);
+      }
+      ul {
+        margin: 0.35em 0 0.9em 1.35em;
+        padding: 0;
+      }
+      li {
+        margin: 0.18em 0;
+      }
+      pre {
+        margin: 0.8em 0 1em;
+        padding: 14px 16px;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: auto;
+        font-family: Menlo, Monaco, Consolas, monospace;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      code {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.08em 0.35em;
+        font-size: 0.92em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>NapCart Project Roadmap</h1>
+      <h2>1. Problem Definition</h2>
+      <p>
+        Small restaurants often take orders through WhatsApp and phone calls.
+        That process creates four major problems:
+      </p>
+      <ul>
+        <li>Staff must manually collect missing customer details.</li>
+        <li>Order details are often incomplete or misread.</li>
+        <li>There is no structured order queue or reporting system.</li>
+        <li>
+          Growth becomes difficult because operations depend on chat handling
+          instead of a workflow.
+        </li>
+      </ul>
+      <p>
+        This project solves that by moving order capture to a restaurant-branded
+        website while keeping WhatsApp as the restaurant's preferred receiving
+        channel.
+      </p>
+      <h2>2. Product Vision</h2>
+      <p>Build NapCart as a reusable restaurant ordering platform where:</p>
+      <ul>
+        <li>Customers browse a live menu on a website.</li>
+        <li>
+          Customers place delivery orders through a structured checkout flow.
+        </li>
+        <li>Orders are saved in a central system.</li>
+        <li>
+          A clean order summary is automatically sent to the restaurant's
+          WhatsApp.
+        </li>
+        <li>
+          Restaurant staff manage order status through an admin dashboard.
+        </li>
+        <li>
+          The platform can later support multiple restaurants with configurable
+          branding, menus, and WhatsApp settings.
+        </li>
+      </ul>
+      <h2>3. Business Goals</h2>
+      <ul>
+        <li>Reduce time spent taking each order.</li>
+        <li>Reduce mistakes caused by incomplete chat-based ordering.</li>
+        <li>Make small restaurants look more professional.</li>
+        <li>
+          Create a repeatable product that can be deployed for multiple
+          restaurant clients.
+        </li>
+        <li>
+          Prepare the product for future monetization as a service or agency
+          solution.
+        </li>
+      </ul>
+      <h2>4. Target Users</h2>
+      <h3>Primary Users</h3>
+      <ul>
+        <li>Small restaurant owners</li>
+        <li>Restaurant managers</li>
+        <li>Cashiers/order handlers</li>
+        <li>Kitchen/admin staff</li>
+      </ul>
+      <h3>Secondary Users</h3>
+      <ul>
+        <li>Customers placing food orders</li>
+        <li>Delivery coordinators</li>
+        <li>Future riders/drivers</li>
+      </ul>
+      <h2>5. Final System Goals</h2>
+      <h3>Customer Side</h3>
+      <ul>
+        <li>Fast menu browsing</li>
+        <li>Simple cart and checkout</li>
+        <li>Accurate delivery information capture</li>
+        <li>Clear order confirmation</li>
+        <li>Optional customer order-status notifications</li>
+      </ul>
+      <h3>Restaurant Side</h3>
+      <ul>
+        <li>Receive structured orders instantly</li>
+        <li>View all orders in one dashboard</li>
+        <li>Track daily sales and order statuses</li>
+        <li>
+          Manage menu items, categories, pricing, add-ons, and availability
+        </li>
+        <li>Configure WhatsApp delivery settings</li>
+      </ul>
+      <h3>Platform Side</h3>
+      <ul>
+        <li>Reusable architecture for multiple restaurants</li>
+        <li>Secure data separation per restaurant</li>
+        <li>Clean admin workflows</li>
+        <li>
+          Upgrade-ready modules for payments, branches, promotions, and loyalty
+        </li>
+      </ul>
+      <h2>6. Core MVP Features</h2>
+      <h3>Customer Website</h3>
+      <ul>
+        <li>Restaurant landing page</li>
+        <li>Menu categories</li>
+        <li>Product listing with image, description, price</li>
+        <li>Product options/variations</li>
+        <li>Add-ons</li>
+        <li>Cart</li>
+        <li>Checkout</li>
+        <li>Customer information form</li>
+        <li>Address and delivery notes</li>
+        <li>Cash on delivery support</li>
+        <li>Order confirmation screen</li>
+      </ul>
+      <h3>Order Management</h3>
+      <ul>
+        <li>Create order</li>
+        <li>Save line items and totals</li>
+        <li>
+          Pending/confirmed/preparing/dispatched/delivered/cancelled statuses
+        </li>
+        <li>Order history</li>
+        <li>Daily order view</li>
+      </ul>
+      <h3>WhatsApp Integration</h3>
+      <ul>
+        <li>Send structured order notification to restaurant WhatsApp</li>
+        <li>Retry logic for failed sends</li>
+        <li>Delivery/read log storage</li>
+      </ul>
+      <h3>Admin Dashboard</h3>
+      <ul>
+        <li>Login</li>
+        <li>Overview dashboard</li>
+        <li>Orders list</li>
+        <li>Status updates</li>
+        <li>Menu management</li>
+        <li>Category management</li>
+        <li>Product option/add-on management</li>
+        <li>Customer list</li>
+        <li>Basic settings</li>
+        <li>WhatsApp settings</li>
+      </ul>
+      <h2>7. Future Features</h2>
+      <ul>
+        <li>Online payments</li>
+        <li>Branch support</li>
+        <li>Multi-language menu</li>
+        <li>Coupon and discount engine</li>
+        <li>Minimum order rules</li>
+        <li>Delivery zones and fees</li>
+        <li>Rider assignment and tracking</li>
+        <li>Inventory sync/light stock control</li>
+        <li>Loyalty points</li>
+        <li>Customer accounts and saved addresses</li>
+        <li>Reorder flow</li>
+        <li>Scheduled orders</li>
+        <li>Analytics and exports</li>
+        <li>Kitchen display mode</li>
+        <li>POS integration</li>
+        <li>CRM and marketing broadcasts</li>
+        <li>AI-assisted upsell suggestions</li>
+      </ul>
+      <h2>8. Missing Requirements To Confirm Early</h2>
+      <p>
+        These are the main decisions that should be finalized before
+        development:
+      </p>
+      <ul>
+        <li>Single-restaurant first or true multi-tenant from day one.</li>
+        <li>WhatsApp provider choice:</li>
+        <li>Meta WhatsApp Cloud API</li>
+        <li>Twilio WhatsApp</li>
+        <li>360dialog</li>
+        <li>
+          Whether restaurants only receive orders on WhatsApp or also update
+          status through WhatsApp.
+        </li>
+        <li>Delivery model:</li>
+        <li>Restaurant-managed delivery</li>
+        <li>Pickup only</li>
+        <li>Third-party rider handling later</li>
+        <li>Pricing model:</li>
+        <li>One custom install per client</li>
+        <li>Shared SaaS platform</li>
+        <li>White-label product</li>
+        <li>Whether customers can order as guests only, or create accounts.</li>
+        <li>
+          Whether each restaurant needs a custom domain and branding panel in
+          phase 1.
+        </li>
+        <li>Geographic rules:</li>
+        <li>Delivery zones</li>
+        <li>Currency</li>
+        <li>Tax/VAT</li>
+        <li>Language</li>
+        <li>
+          Whether order confirmation should be automatic or require restaurant
+          approval.
+        </li>
+        <li>
+          Whether messages should also go to customers on WhatsApp/SMS/email.
+        </li>
+      </ul>
+      <h2>9. Recommended Product Strategy</h2>
+      <p>Best practical launch approach:</p>
+      <ul>
+        <li>
+          Phase 1 product model: single codebase with multi-tenant-ready
+          structure
+        </li>
+        <li>MVP market model: onboard one restaurant first</li>
+        <li>
+          Operational model: guest checkout, cash on delivery, delivery-only or
+          delivery + pickup
+        </li>
+        <li>
+          Messaging model: system sends order to restaurant WhatsApp, admin
+          dashboard remains source of truth
+        </li>
+      </ul>
+      <p>This reduces launch risk while preserving scalability.</p>
+      <h2>10. Recommended Technology Stack</h2>
+      <h3>Frontend</h3>
+      <ul>
+        <li>Next.js (App Router)</li>
+        <li>TypeScript</li>
+        <li>Tailwind CSS</li>
+        <li>shadcn/ui for admin components</li>
+      </ul>
+      <h3>Backend</h3>
+      <ul>
+        <li>Next.js API routes or route handlers for early speed</li>
+        <li>Option to split into dedicated backend service later</li>
+      </ul>
+      <h3>Database</h3>
+      <ul>
+        <li>PostgreSQL</li>
+        <li>Prisma ORM</li>
+      </ul>
+      <h3>Authentication</h3>
+      <ul>
+        <li>Better Auth, Clerk, or NextAuth for admin users</li>
+        <li>For MVP, admin-only authentication is enough</li>
+      </ul>
+      <h3>Hosting</h3>
+      <ul>
+        <li>Vercel for frontend/app</li>
+        <li>Supabase or Neon for PostgreSQL</li>
+      </ul>
+      <h3>File/Image Storage</h3>
+      <ul>
+        <li>Cloudinary, Supabase Storage, or S3-compatible storage</li>
+      </ul>
+      <h3>WhatsApp</h3>
+      <ul>
+        <li>
+          Meta WhatsApp Cloud API preferred for direct ownership and lower
+          vendor lock-in
+        </li>
+      </ul>
+      <h3>Background Jobs</h3>
+      <ul>
+        <li>Trigger.dev, Inngest, or a simple queue worker later</li>
+        <li>For MVP, synchronous send + retry log is acceptable</li>
+      </ul>
+      <h3>Monitoring</h3>
+      <ul>
+        <li>Sentry</li>
+        <li>PostHog or Plausible for analytics</li>
+      </ul>
+      <h2>11. Why This Stack Fits</h2>
+      <ul>
+        <li>Fast to build and deploy</li>
+        <li>Type-safe end to end</li>
+        <li>Good developer velocity for reusable SaaS-style systems</li>
+        <li>Easy to scale from one restaurant to many</li>
+        <li>Strong ecosystem for forms, dashboards, APIs, and integrations</li>
+      </ul>
+      <h2>12. High-Level Architecture</h2>
+      <h3>Core Modules</h3>
+      <ul>
+        <li>Storefront</li>
+        <li>Checkout and order engine</li>
+        <li>Admin dashboard</li>
+        <li>Menu/catalog service</li>
+        <li>Customer/order database</li>
+        <li>WhatsApp notification service</li>
+        <li>Settings/configuration module</li>
+      </ul>
+      <h3>Suggested Architecture Pattern</h3>
+      <ul>
+        <li>Frontend: Next.js web app</li>
+        <li>Backend: modular monolith</li>
+        <li>Database: PostgreSQL</li>
+        <li>External integration: WhatsApp API service layer</li>
+        <li>Tenant-awareness built into schema and middleware</li>
+      </ul>
+      <h3>Why Modular Monolith First</h3>
+      <ul>
+        <li>Easier for MVP</li>
+        <li>Lower infrastructure complexity</li>
+        <li>Faster iteration</li>
+        <li>
+          Can later split notifications, analytics, or delivery modules into
+          services if needed
+        </li>
+      </ul>
+      <h2>13. Multi-Tenant Approach</h2>
+      <p>
+        Even if only one restaurant launches first, design the schema for tenant
+        isolation:
+      </p>
+      <ul>
+        <li>restaurants table</li>
+        <li>Every operational table references restaurant_id</li>
+        <li>Domain/subdomain mapping per restaurant later</li>
+        <li>
+          Per-restaurant settings, branding, menu, and WhatsApp configuration
+        </li>
+      </ul>
+      <p>Possible routing models later:</p>
+      <ul>
+        <li>restaurantname.yourapp.com</li>
+        <li>custom domain per restaurant</li>
+      </ul>
+      <h2>14. Database Structure Overview</h2>
+      <h3>Core Entities</h3>
+      <h4>Restaurants</h4>
+      <ul>
+        <li>id</li>
+        <li>name</li>
+        <li>slug</li>
+        <li>logo_url</li>
+        <li>support_phone</li>
+        <li>whatsapp_number</li>
+        <li>currency</li>
+        <li>timezone</li>
+        <li>address</li>
+        <li>is_active</li>
+      </ul>
+      <h4>Restaurant Settings</h4>
+      <ul>
+        <li>restaurant_id</li>
+        <li>order_prefix</li>
+        <li>auto_confirm_orders</li>
+        <li>delivery_enabled</li>
+        <li>pickup_enabled</li>
+        <li>default_delivery_fee</li>
+        <li>min_order_amount</li>
+        <li>tax_mode</li>
+        <li>whatsapp_template_config</li>
+      </ul>
+      <h4>Admin Users</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>name</li>
+        <li>email</li>
+        <li>password_hash or auth_provider_id</li>
+        <li>role</li>
+        <li>is_active</li>
+      </ul>
+      <h4>Categories</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>name</li>
+        <li>sort_order</li>
+        <li>is_active</li>
+      </ul>
+      <h4>Products</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>category_id</li>
+        <li>name</li>
+        <li>slug</li>
+        <li>description</li>
+        <li>image_url</li>
+        <li>base_price</li>
+        <li>is_active</li>
+        <li>is_featured</li>
+      </ul>
+      <h4>Product Variants</h4>
+      <ul>
+        <li>id</li>
+        <li>product_id</li>
+        <li>name</li>
+        <li>price_delta or fixed_price</li>
+        <li>is_default</li>
+      </ul>
+      <h4>Add-on Groups</h4>
+      <ul>
+        <li>id</li>
+        <li>product_id</li>
+        <li>name</li>
+        <li>min_select</li>
+        <li>max_select</li>
+      </ul>
+      <h4>Add-ons</h4>
+      <ul>
+        <li>id</li>
+        <li>addon_group_id</li>
+        <li>name</li>
+        <li>price</li>
+      </ul>
+      <h4>Customers</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>name</li>
+        <li>phone</li>
+        <li>email nullable</li>
+        <li>notes</li>
+        <li>first_order_at</li>
+        <li>last_order_at</li>
+      </ul>
+      <h4>Customer Addresses</h4>
+      <ul>
+        <li>id</li>
+        <li>customer_id</li>
+        <li>label</li>
+        <li>full_address</li>
+        <li>area</li>
+        <li>latitude nullable</li>
+        <li>longitude nullable</li>
+        <li>delivery_notes</li>
+      </ul>
+      <h4>Orders</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>customer_id</li>
+        <li>order_number</li>
+        <li>source</li>
+        <li>status</li>
+        <li>subtotal</li>
+        <li>delivery_fee</li>
+        <li>discount_total</li>
+        <li>tax_total</li>
+        <li>grand_total</li>
+        <li>payment_method</li>
+        <li>payment_status</li>
+        <li>fulfillment_type</li>
+        <li>delivery_address_snapshot</li>
+        <li>customer_phone_snapshot</li>
+        <li>customer_name_snapshot</li>
+        <li>notes</li>
+        <li>placed_at</li>
+        <li>confirmed_at</li>
+        <li>delivered_at</li>
+      </ul>
+      <h4>Order Items</h4>
+      <ul>
+        <li>id</li>
+        <li>order_id</li>
+        <li>product_id</li>
+        <li>product_name_snapshot</li>
+        <li>variant_name_snapshot</li>
+        <li>unit_price</li>
+        <li>quantity</li>
+        <li>line_total</li>
+        <li>item_notes</li>
+      </ul>
+      <h4>Order Item Add-ons</h4>
+      <ul>
+        <li>id</li>
+        <li>order_item_id</li>
+        <li>addon_name_snapshot</li>
+        <li>addon_price</li>
+        <li>quantity</li>
+      </ul>
+      <h4>Order Status History</h4>
+      <ul>
+        <li>id</li>
+        <li>order_id</li>
+        <li>old_status</li>
+        <li>new_status</li>
+        <li>changed_by</li>
+        <li>changed_at</li>
+      </ul>
+      <h4>WhatsApp Message Logs</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>order_id nullable</li>
+        <li>direction</li>
+        <li>template_name nullable</li>
+        <li>payload_json</li>
+        <li>provider_message_id</li>
+        <li>send_status</li>
+        <li>error_message</li>
+        <li>sent_at</li>
+      </ul>
+      <h4>Delivery Zones</h4>
+      <ul>
+        <li>id</li>
+        <li>restaurant_id</li>
+        <li>name</li>
+        <li>fee</li>
+        <li>min_order</li>
+        <li>is_active</li>
+      </ul>
+      <h2>15. Customer Website Flow</h2>
+      <ul>
+        <li>Customer lands on restaurant website.</li>
+        <li>Customer browses categories and products.</li>
+        <li>Customer opens product details.</li>
+        <li>Customer chooses variant and add-ons.</li>
+        <li>Customer adds items to cart.</li>
+        <li>Customer reviews cart.</li>
+        <li>Customer proceeds to checkout.</li>
+        <li>Customer enters name, phone, address, area, and notes.</li>
+        <li>System validates serviceability and totals.</li>
+        <li>Order is created in database.</li>
+        <li>System sends order details to restaurant WhatsApp.</li>
+        <li>Customer sees order confirmation page.</li>
+        <li>Optional: customer receives confirmation message later.</li>
+      </ul>
+      <h2>16. Order Management Flow</h2>
+      <ul>
+        <li>New order is created with status pending.</li>
+        <li>Order notification is sent to restaurant WhatsApp.</li>
+        <li>Order appears in dashboard instantly.</li>
+        <li>Staff updates order to confirmed.</li>
+        <li>Kitchen prepares order.</li>
+        <li>Order moves to preparing.</li>
+        <li>Dispatch happens and order moves to dispatched.</li>
+        <li>Delivery completes and order moves to delivered.</li>
+        <li>If problem occurs, order may move to cancelled.</li>
+        <li>All status changes are stored in history.</li>
+      </ul>
+      <h2>17. WhatsApp API Workflow</h2>
+      <h3>Recommended Direction for MVP</h3>
+      <p>
+        Use WhatsApp primarily as an outbound notification channel to the
+        restaurant.
+      </p>
+      <h3>Flow</h3>
+      <ul>
+        <li>Customer submits order on website.</li>
+        <li>Backend validates payload and saves order.</li>
+        <li>Backend formats a clean WhatsApp message.</li>
+        <li>Backend sends the message via WhatsApp API provider.</li>
+        <li>Provider returns message ID and send status.</li>
+        <li>System stores API response in whatsapp_message_logs.</li>
+        <li>If sending fails, system flags error and allows retry.</li>
+        <li>Dashboard shows whether WhatsApp notification succeeded.</li>
+      </ul>
+      <h3>Example Message Structure</h3>
+      <ul>
+        <li>Restaurant order number</li>
+        <li>Customer name</li>
+        <li>Phone number</li>
+        <li>Address</li>
+        <li>Delivery notes</li>
+        <li>Ordered items</li>
+        <li>Quantity</li>
+        <li>Add-ons/variant details</li>
+        <li>Subtotal</li>
+        <li>Delivery fee</li>
+        <li>Grand total</li>
+        <li>Payment method</li>
+      </ul>
+      <h3>Important Product Note</h3>
+      <p>
+        For restaurant operations, WhatsApp should not be the only system of
+        record. The dashboard/database must remain the source of truth because:
+      </p>
+      <ul>
+        <li>WhatsApp delivery can fail</li>
+        <li>Staff can miss messages</li>
+        <li>Status updates need structure</li>
+        <li>Reporting requires stored order data</li>
+      </ul>
+      <h3>Phase 2 WhatsApp Enhancements</h3>
+      <ul>
+        <li>Customer confirmation message</li>
+        <li>Order status templates to customer</li>
+        <li>Inbound webhook processing</li>
+        <li>Staff quick actions from WhatsApp</li>
+        <li>Template-based multilingual messaging</li>
+      </ul>
+      <h2>18. Admin Dashboard Modules</h2>
+      <h3>Phase 1 Modules</h3>
+      <ul>
+        <li>Login</li>
+        <li>Dashboard overview</li>
+        <li>Order list</li>
+        <li>Order detail view</li>
+        <li>Order status management</li>
+        <li>Customer list</li>
+        <li>Categories</li>
+        <li>Products</li>
+        <li>Variants and add-ons</li>
+        <li>Restaurant settings</li>
+        <li>Delivery settings</li>
+        <li>WhatsApp settings</li>
+      </ul>
+      <h3>Phase 2 Modules</h3>
+      <ul>
+        <li>Promo/coupons</li>
+        <li>Branches</li>
+        <li>Riders</li>
+        <li>Reports and exports</li>
+        <li>User permissions</li>
+        <li>Content/banner management</li>
+        <li>Payment configuration</li>
+      </ul>
+      <h2>19. Security Considerations</h2>
+      <h3>Application Security</h3>
+      <ul>
+        <li>Server-side validation for all checkout inputs</li>
+        <li>Rate limiting on order submission endpoints</li>
+        <li>CSRF protection where relevant</li>
+        <li>Input sanitization</li>
+        <li>Secure auth for admin dashboard</li>
+        <li>Role-based access control</li>
+        <li>Session expiry and secure cookies</li>
+      </ul>
+      <h3>Data Security</h3>
+      <ul>
+        <li>Encrypt sensitive secrets at rest</li>
+        <li>Never expose WhatsApp API tokens to client side</li>
+        <li>Store password hashes only if using local auth</li>
+        <li>Minimize personal data retention</li>
+        <li>Audit logs for admin actions</li>
+      </ul>
+      <h3>Operational Security</h3>
+      <ul>
+        <li>Backup database regularly</li>
+        <li>Error monitoring and alerting</li>
+        <li>Environment variable management</li>
+        <li>Access separation between staging and production</li>
+      </ul>
+      <h3>Compliance Considerations</h3>
+      <ul>
+        <li>Privacy policy</li>
+        <li>Terms of service</li>
+        <li>Consent for customer data storage if required locally</li>
+        <li>Data deletion approach for client requests</li>
+      </ul>
+      <h2>20. Scalability Approach</h2>
+      <h3>Build for These Scaling Dimensions</h3>
+      <ul>
+        <li>More daily orders</li>
+        <li>More concurrent customers</li>
+        <li>More menu items</li>
+        <li>More admin users</li>
+        <li>More restaurants</li>
+      </ul>
+      <h3>Practical Measures</h3>
+      <ul>
+        <li>Tenant-aware schema from day one</li>
+        <li>Indexed database tables for orders and products</li>
+        <li>CDN-based image delivery</li>
+        <li>Queue or background job support for messaging</li>
+        <li>Cached menu reads</li>
+        <li>Separate read-heavy storefront from admin logic if needed later</li>
+        <li>Domain mapping layer for multi-client rollout</li>
+      </ul>
+      <h2>21. Feature Priorities</h2>
+      <h3>P0 - Must Have for MVP</h3>
+      <ul>
+        <li>Menu browsing</li>
+        <li>Cart and checkout</li>
+        <li>Order creation</li>
+        <li>Restaurant WhatsApp notification</li>
+        <li>Admin login</li>
+        <li>Orders dashboard</li>
+        <li>Order status updates</li>
+        <li>Menu management</li>
+        <li>Basic settings</li>
+      </ul>
+      <h3>P1 - Should Have Soon After MVP</h3>
+      <ul>
+        <li>Delivery zones and fees</li>
+        <li>Customer order-status notifications</li>
+        <li>Sales reports</li>
+        <li>Menu item availability toggles</li>
+        <li>Basic analytics</li>
+        <li>Retry/recovery tools for failed WhatsApp sends</li>
+      </ul>
+      <h3>P2 - Nice to Have</h3>
+      <ul>
+        <li>Coupons</li>
+        <li>Scheduled ordering</li>
+        <li>Customer accounts</li>
+        <li>Branches</li>
+        <li>Rider management</li>
+        <li>Loyalty</li>
+        <li>Online payment support</li>
+      </ul>
+      <h2>22. MVP Scope Recommendation</h2>
+      <p>MVP should be intentionally narrow:</p>
+      <ul>
+        <li>One restaurant live first</li>
+        <li>Guest checkout only</li>
+        <li>Cash on delivery</li>
+        <li>Delivery and optional pickup</li>
+        <li>Manual status updates from admin</li>
+        <li>Outbound WhatsApp notification to restaurant only</li>
+        <li>Basic dashboard and reporting</li>
+      </ul>
+      <p>This is enough to prove value without overbuilding.</p>
+      <h2>23. SDLC Roadmap</h2>
+      <h2>Stage 1: Planning</h2>
+      <h3>Phase 1.1 Product Discovery</h3>
+      <ul>
+        <li>Validate the restaurant pain points with 2 to 5 real operators</li>
+        <li>Confirm order-taking workflow</li>
+        <li>Confirm menu complexity needs</li>
+        <li>Confirm delivery model</li>
+        <li>Confirm reporting expectations</li>
+      </ul>
+      <h3>Phase 1.2 Business Definition</h3>
+      <ul>
+        <li>Define whether this is SaaS, white-label, or custom deployment</li>
+        <li>Define onboarding process for a new restaurant</li>
+        <li>Define pricing hypothesis</li>
+        <li>Define support responsibility</li>
+      </ul>
+      <h3>Phase 1.3 Project Setup</h3>
+      <ul>
+        <li>Create repository</li>
+        <li>Define branching strategy</li>
+        <li>Define environments: local, staging, production</li>
+        <li>Set up issue tracker and milestones</li>
+        <li>Create product documentation workspace</li>
+      </ul>
+      <h2>Stage 2: Requirement Analysis</h2>
+      <h3>Phase 2.1 Functional Requirements</h3>
+      <ul>
+        <li>Document storefront flows</li>
+        <li>Document checkout fields</li>
+        <li>Document order statuses</li>
+        <li>Document admin actions</li>
+        <li>Document WhatsApp integration requirements</li>
+        <li>Document menu management requirements</li>
+      </ul>
+      <h3>Phase 2.2 Non-Functional Requirements</h3>
+      <ul>
+        <li>Performance targets</li>
+        <li>Uptime expectations</li>
+        <li>Security expectations</li>
+        <li>Backup and recovery expectations</li>
+        <li>Multi-tenant readiness expectations</li>
+      </ul>
+      <h3>Phase 2.3 Edge Case Analysis</h3>
+      <ul>
+        <li>Out-of-stock items</li>
+        <li>Invalid or incomplete address</li>
+        <li>Duplicate submissions</li>
+        <li>WhatsApp send failure</li>
+        <li>Admin changes product price during checkout</li>
+        <li>Restaurant temporarily closed</li>
+      </ul>
+      <h2>Stage 3: System Design</h2>
+      <h3>Phase 3.1 Technical Architecture</h3>
+      <ul>
+        <li>Finalize modular monolith boundaries</li>
+        <li>Define frontend/backend responsibilities</li>
+        <li>Define external integrations</li>
+        <li>Define environment configuration strategy</li>
+      </ul>
+      <h3>Phase 3.2 Data Design</h3>
+      <ul>
+        <li>Finalize ERD</li>
+        <li>Define table constraints</li>
+        <li>Define indexes</li>
+        <li>Define status enums</li>
+        <li>Define audit strategy</li>
+      </ul>
+      <h3>Phase 3.3 UX/UI Design</h3>
+      <ul>
+        <li>Design storefront pages</li>
+        <li>Design mobile-first menu experience</li>
+        <li>Design checkout UX</li>
+        <li>Design admin dashboard</li>
+        <li>Design order-detail workflow</li>
+      </ul>
+      <h3>Phase 3.4 API Design</h3>
+      <ul>
+        <li>Define checkout API</li>
+        <li>Define admin order APIs</li>
+        <li>Define menu CRUD APIs</li>
+        <li>Define settings APIs</li>
+        <li>Define WhatsApp service contracts</li>
+      </ul>
+      <h2>Stage 4: Development</h2>
+      <h3>Phase 4.1 Foundation Setup</h3>
+      <ul>
+        <li>Initialize Next.js project</li>
+        <li>Add TypeScript, linting, formatting</li>
+        <li>Configure Tailwind and UI primitives</li>
+        <li>Configure Prisma and PostgreSQL</li>
+        <li>Configure env management</li>
+        <li>Configure auth</li>
+      </ul>
+      <h3>Phase 4.2 Database and Core Models</h3>
+      <ul>
+        <li>Create schema</li>
+        <li>Create migrations</li>
+        <li>Seed example restaurant, categories, and products</li>
+        <li>Add indexes and constraints</li>
+      </ul>
+      <h3>Phase 4.3 Storefront</h3>
+      <ul>
+        <li>Build homepage/menu page</li>
+        <li>Build category filtering</li>
+        <li>Build product detail modal/page</li>
+        <li>Build cart state</li>
+        <li>Build checkout form</li>
+        <li>Build confirmation page</li>
+      </ul>
+      <h3>Phase 4.4 Order Engine</h3>
+      <ul>
+        <li>Validate checkout payload</li>
+        <li>Calculate totals server-side</li>
+        <li>Create order records</li>
+        <li>Store snapshot fields</li>
+        <li>Prevent duplicate submissions</li>
+      </ul>
+      <h3>Phase 4.5 WhatsApp Integration</h3>
+      <ul>
+        <li>Build provider adapter layer</li>
+        <li>Build order message formatter</li>
+        <li>Send order notification</li>
+        <li>Store send logs</li>
+        <li>Add retry handling</li>
+      </ul>
+      <h3>Phase 4.6 Admin Dashboard</h3>
+      <ul>
+        <li>Build auth-protected admin area</li>
+        <li>Build dashboard summary cards</li>
+        <li>Build order list and filters</li>
+        <li>Build order detail page</li>
+        <li>Build status update actions</li>
+        <li>Build category/product management</li>
+        <li>Build settings pages</li>
+      </ul>
+      <h3>Phase 4.7 Operational Hardening</h3>
+      <ul>
+        <li>Add rate limits</li>
+        <li>Add audit logs</li>
+        <li>Add error boundaries and logging</li>
+        <li>Add monitoring hooks</li>
+      </ul>
+      <h2>Stage 5: Testing</h2>
+      <h3>Phase 5.1 Unit Testing</h3>
+      <ul>
+        <li>Pricing calculations</li>
+        <li>Cart/order validation</li>
+        <li>Delivery fee logic</li>
+        <li>Message formatter logic</li>
+        <li>Status transition logic</li>
+      </ul>
+      <h3>Phase 5.2 Integration Testing</h3>
+      <ul>
+        <li>Checkout to order creation</li>
+        <li>Order creation to WhatsApp send</li>
+        <li>Admin status updates</li>
+        <li>Product CRUD flows</li>
+      </ul>
+      <h3>Phase 5.3 Manual QA</h3>
+      <ul>
+        <li>Mobile storefront testing</li>
+        <li>Slow network testing</li>
+        <li>Invalid input testing</li>
+        <li>Restaurant closed scenario</li>
+        <li>WhatsApp failure scenario</li>
+      </ul>
+      <h3>Phase 5.4 UAT</h3>
+      <ul>
+        <li>Test with one real restaurant</li>
+        <li>Collect staff workflow feedback</li>
+        <li>Measure order handling time improvement</li>
+      </ul>
+      <h2>Stage 6: Deployment</h2>
+      <h3>Phase 6.1 Infrastructure</h3>
+      <ul>
+        <li>Create Vercel project</li>
+        <li>Provision database</li>
+        <li>Configure storage</li>
+        <li>Configure secrets</li>
+        <li>Set up staging and production</li>
+      </ul>
+      <h3>Phase 6.2 Launch Prep</h3>
+      <ul>
+        <li>Seed production menu</li>
+        <li>Set up restaurant branding</li>
+        <li>Configure WhatsApp credentials</li>
+        <li>Configure domain</li>
+        <li>Create backup policy</li>
+      </ul>
+      <h3>Phase 6.3 Go Live</h3>
+      <ul>
+        <li>Smoke test live flows</li>
+        <li>Place test orders</li>
+        <li>Verify message delivery</li>
+        <li>Monitor errors closely for first week</li>
+      </ul>
+      <h2>Stage 7: Maintenance and Scaling</h2>
+      <h3>Phase 7.1 Post-Launch Support</h3>
+      <ul>
+        <li>Fix launch bugs</li>
+        <li>Improve UX friction points</li>
+        <li>Add operational reports</li>
+        <li>Review error logs weekly</li>
+      </ul>
+      <h3>Phase 7.2 Product Expansion</h3>
+      <ul>
+        <li>Add payments</li>
+        <li>Add delivery zones</li>
+        <li>Add customer notifications</li>
+        <li>Add branches</li>
+        <li>Add riders</li>
+      </ul>
+      <h3>Phase 7.3 Platform Expansion</h3>
+      <ul>
+        <li>Add tenant onboarding tools</li>
+        <li>Add white-label theming</li>
+        <li>Add subscription billing for restaurant clients</li>
+        <li>Add central super-admin panel</li>
+      </ul>
+      <h2>24. Step-by-Step Task Sequence</h2>
+      <h3>Sprint 0: Strategy and Specification</h3>
+      <ul>
+        <li>Finalize MVP scope</li>
+        <li>Select WhatsApp provider</li>
+        <li>Confirm single-restaurant launch strategy</li>
+        <li>Write PRD</li>
+        <li>Write ERD</li>
+        <li>Write user flows</li>
+        <li>Create UI wireframes</li>
+      </ul>
+      <h3>Sprint 1: Foundation</h3>
+      <ul>
+        <li>Initialize repo</li>
+        <li>Set up app shell</li>
+        <li>Configure database and ORM</li>
+        <li>Create core schema</li>
+        <li>Add seed data</li>
+        <li>Build auth shell</li>
+      </ul>
+      <h3>Sprint 2: Storefront MVP</h3>
+      <ul>
+        <li>Menu listing</li>
+        <li>Product details</li>
+        <li>Cart</li>
+        <li>Checkout form</li>
+        <li>Validation</li>
+        <li>Confirmation page</li>
+      </ul>
+      <h3>Sprint 3: Order Pipeline</h3>
+      <ul>
+        <li>Order creation backend</li>
+        <li>Status model</li>
+        <li>Totals engine</li>
+        <li>Order persistence</li>
+        <li>WhatsApp notification</li>
+        <li>Failure handling</li>
+      </ul>
+      <h3>Sprint 4: Admin MVP</h3>
+      <ul>
+        <li>Dashboard overview</li>
+        <li>Orders table</li>
+        <li>Order detail page</li>
+        <li>Status actions</li>
+        <li>Product/category CRUD</li>
+        <li>Settings pages</li>
+      </ul>
+      <h3>Sprint 5: QA and Launch</h3>
+      <ul>
+        <li>Tests</li>
+        <li>Bug fixing</li>
+        <li>UAT with restaurant</li>
+        <li>Deployment</li>
+        <li>Launch support</li>
+      </ul>
+      <h2>25. Suggested Timeline</h2>
+      <p>For one strong developer or a small team:</p>
+      <ul>
+        <li>Discovery and specification: 1 to 2 weeks</li>
+        <li>Design and architecture: 1 week</li>
+        <li>MVP development: 4 to 6 weeks</li>
+        <li>Testing and launch prep: 1 to 2 weeks</li>
+      </ul>
+      <p>Estimated MVP total:</p>
+      <ul>
+        <li>
+          7 to 11 weeks depending on design polish, WhatsApp approval speed, and
+          feedback cycles
+        </li>
+      </ul>
+      <h2>26. Main Risks</h2>
+      <ul>
+        <li>WhatsApp API onboarding or template approvals may slow launch.</li>
+        <li>
+          Restaurants may want custom operational flows that break
+          standardization.
+        </li>
+        <li>Delivery area logic can become complex quickly.</li>
+        <li>
+          Menu modeling can get messy if variants and add-ons are not designed
+          well.
+        </li>
+        <li>
+          If WhatsApp becomes the only operational view, reporting and
+          reliability will suffer.
+        </li>
+      </ul>
+      <h2>27. Key Recommendations</h2>
+      <ul>
+        <li>
+          Build the dashboard as the true operational system, not WhatsApp
+          alone.
+        </li>
+        <li>Keep MVP limited to guest checkout and cash on delivery.</li>
+        <li>
+          Design database and routing as multi-tenant-ready, even if only one
+          restaurant launches first.
+        </li>
+        <li>Use modular monolith architecture first.</li>
+        <li>
+          Abstract the WhatsApp provider behind a service layer so you can
+          change vendors later.
+        </li>
+        <li>
+          Launch with one real restaurant, then generalize after observing real
+          behavior.
+        </li>
+      </ul>
+      <h2>28. Immediate Next Deliverables</h2>
+      <p>After this roadmap, the next best execution order is:</p>
+      <ul>
+        <li>Finalize MVP feature list and assumptions.</li>
+        <li>Choose the exact tech stack and WhatsApp provider.</li>
+        <li>Produce a PRD.</li>
+        <li>Produce the database ERD.</li>
+        <li>Produce wireframes for storefront and admin dashboard.</li>
+        <li>Set up repository and start Sprint 1.</li>
+      </ul>
+    </main>
+  </body>
+</html>

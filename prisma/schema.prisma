@@ -1,0 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Phase 0 foundation only.
+/// The full NapCart data model will be implemented from the approved ERD in Phase 1.

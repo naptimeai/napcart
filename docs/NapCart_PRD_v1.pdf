@@ -1,0 +1,693 @@
+%PDF-1.4
+%ÿÿÿÿ
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Length 3981 >>
+stream
+BT /F2 21 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 784.00 Tm (NapCart) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 746.00 Tm (Product Requirements Document \(PRD\)) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 724.50 Tm (Version: v1.0 Date: 2026-05-28 Status: Draft Author: Codex with Naptime AI) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 689.00 Tm (1. Executive Summary) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 654.00 Tm (1.1 Product Definition) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 634.00 Tm (NapCart is a reusable ordering and delivery-management platform for small and growing restaurants that) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 619.50 Tm (currently depend on WhatsApp and phone calls to handle delivery orders manually.) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 598.00 Tm (The product is not a full restaurant website/content platform. It is a structured ordering system that) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 583.50 Tm (can:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 562.00 Tm (- power a simple branded storefront when a restaurant needs a new site) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 545.50 Tm (- work as a reusable ordering backend and admin system) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 529.00 Tm (- later integrate with an existing restaurant website through APIs) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 503.50 Tm (1.2 Core Problem) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 483.50 Tm (Small restaurants often receive delivery orders through unstructured chats. Staff must manually ask) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 469.00 Tm (for:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 447.50 Tm (- items) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 431.00 Tm (- quantities) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 414.50 Tm (- address) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 398.00 Tm (- branch preference) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 381.50 Tm (- phone number) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 365.00 Tm (- delivery notes) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 348.50 Tm (This causes delays, incomplete orders, avoidable mistakes, and weak operational visibility.) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 318.00 Tm (1.3 Product Goal) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 298.00 Tm (Move order capture from manual WhatsApp chats to a structured online ordering flow, while keeping) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 283.50 Tm (restaurant staff operationally centered on WhatsApp.) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 253.00 Tm (1.4 Product Vision) Tj ET
+0.95 0.94 0.91 rg 46.00 174.80 503.00 59.20 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 230.00 Tm (Customer Website -> Structured Order -> Branch WhatsApp -> Staff Confirm/Cancel) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 217.70 Tm (| | | |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 205.40 Tm (| | | |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 193.10 Tm (+-------> Database / Admin Dashboard / Reporting <----------+) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 163.80 Tm (1.5 MVP Outcome) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 143.80 Tm (The MVP should let a customer place a correct order online, route that order to the correct) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 129.30 Tm (restaurant branch on WhatsApp, allow staff to confirm or cancel from WhatsApp, notify the customer) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 114.80 Tm (of the result, and store all operational data in the backend for management visibility.) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 79.30 Tm (2. Business Context) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 1 of 14) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 3269 >>
+stream
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 775.00 Tm (2.1 Business Goals) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 755.00 Tm (- Reduce time spent manually taking orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 738.50 Tm (- Reduce order mistakes caused by incomplete chats) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 722.00 Tm (- Improve professionalism of restaurant operations) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 705.50 Tm (- Create a reusable product for multiple restaurant clients) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 689.00 Tm (- Keep the architecture flexible for future monetization and scale) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 663.50 Tm (2.2 Launch Strategy) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 643.50 Tm (- Launch with one real restaurant first) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 627.00 Tm (- Keep architecture multi-tenant-ready from day one) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 610.50 Tm (- Use a single codebase) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 594.00 Tm (- Use a standalone storefront + admin for MVP) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 577.50 Tm (- Keep backend API-first for future website integrations) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 552.00 Tm (2.3 Success Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 532.00 Tm (The MVP will be considered successful if it achieves the following:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 510.50 Tm (- customers can place valid delivery and pickup orders without staff chat assistance) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 494.00 Tm (- orders reach the correct branch WhatsApp in a clean, structured format) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 477.50 Tm (- staff can confirm or cancel the order through WhatsApp) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 461.00 Tm (- customer receives confirmation or cancellation message) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 444.50 Tm (- management can review orders, customers, menu data, and basic analytics in the dashboard) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 414.00 Tm (3. Users and Stakeholders) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 379.00 Tm (3.1 Primary Users) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 359.00 Tm (- Restaurant owners) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 342.50 Tm (- Restaurant managers) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 326.00 Tm (- Branch staff receiving orders on WhatsApp) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 309.50 Tm (- Customers placing delivery or pickup orders) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 284.00 Tm (3.2 Secondary Users) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 264.00 Tm (- Delivery coordinators) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 247.50 Tm (- Future branch admins) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 231.00 Tm (- Future riders) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 205.50 Tm (3.3 User Roles in MVP) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 2 of 14) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1997 >>
+stream
+0.95 0.94 0.91 rg 46.00 639.70 503.00 145.30 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 781.00 Tm (Customer) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 768.70 Tm (-> browses menu) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 756.40 Tm (-> chooses branch) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 744.10 Tm (-> places order) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 731.80 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 719.50 Tm (Branch Staff \(WhatsApp-first\)) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 707.20 Tm (-> receives order on branch WhatsApp) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 694.90 Tm (-> confirms or cancels order) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 682.60 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 670.30 Tm (Restaurant Admin / Owner) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 658.00 Tm (-> uses dashboard for visibility, menu management, settings, and analytics) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 623.70 Tm (4. Product Principles) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 597.70 Tm (- WhatsApp-first restaurant operations) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 581.20 Tm (- Structured data capture before human intervention) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 564.70 Tm (- Dashboard as system of record) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 548.20 Tm (- Minimal operational behavior change for restaurant staff) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 531.70 Tm (- Multi-tenant-ready design from the start) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 515.20 Tm (- Fast MVP delivery without overbuilding) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 484.70 Tm (5. Scope Definition) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 449.70 Tm (5.1 MVP Scope Summary) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 3 of 14) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 3297 >>
+stream
+0.95 0.94 0.91 rg 46.00 356.80 503.00 428.20 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 781.00 Tm (IN MVP) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 768.70 Tm (- guest checkout) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 756.40 Tm (- English only) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 744.10 Tm (- delivery + pickup) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 731.80 Tm (- multi-branch support) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 719.50 Tm (- manual branch selection) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 707.20 Tm (- branch-level WhatsApp routing) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 694.90 Tm (- menu management in internal admin) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 682.60 Tm (- product variations and add-ons) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 670.30 Tm (- restaurant logo and product image uploads) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 658.00 Tm (- branch and restaurant availability controls) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 645.70 Tm (- delivery zones and delivery fees) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 633.40 Tm (- configurable minimum order amount) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 621.10 Tm (- WhatsApp-based Confirm / Cancel actions) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 608.80 Tm (- customer confirmation / cancellation message) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 596.50 Tm (- one main admin account per restaurant) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 584.20 Tm (- basic analytics) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 571.90 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 559.60 Tm (OUT OF MVP) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 547.30 Tm (- customer accounts/login) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 535.00 Tm (- OTP verification) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 522.70 Tm (- coupons/discount codes) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 510.40 Tm (- scheduled orders) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 498.10 Tm (- customer order history / reorder flow) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 485.80 Tm (- tax/VAT handling) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 473.50 Tm (- advanced analytics) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 461.20 Tm (- CSV/data export) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 448.90 Tm (- advanced order lifecycle tracking) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 436.60 Tm (- role-based admin permissions) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 424.30 Tm (- multilingual support) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 412.00 Tm (- rider management) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 399.70 Tm (- online payments) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 387.40 Tm (- branch auto-assignment) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 375.10 Tm (- reminder automation for unresponded orders) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 345.80 Tm (5.2 Priority Matrix) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 4 of 14) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 4346 >>
+stream
+0.95 0.94 0.91 rg 46.00 442.90 503.00 342.10 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 781.00 Tm (P0 Must Have) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 768.70 Tm (- structured storefront ordering flow) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 756.40 Tm (- branch selection) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 744.10 Tm (- cart and checkout) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 731.80 Tm (- delivery and pickup options) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 719.50 Tm (- delivery zone and fee rules) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 707.20 Tm (- internal menu management) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 694.90 Tm (- WhatsApp branch order routing) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 682.60 Tm (- WhatsApp Confirm / Cancel workflow) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 670.30 Tm (- backend order storage) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 658.00 Tm (- customer notification after branch decision) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 645.70 Tm (- admin dashboard core modules) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 633.40 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 621.10 Tm (P1 Should Have Soon After MVP) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 608.80 Tm (- richer analytics) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 596.50 Tm (- branch auto-assignment) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 584.20 Tm (- exports) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 571.90 Tm (- customer notifications for more statuses) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 559.60 Tm (- improved anti-spam/validation checks) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 547.30 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 535.00 Tm (P2 Future) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 522.70 Tm (- online payments) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 510.40 Tm (- rider management) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 498.10 Tm (- coupons) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 485.80 Tm (- scheduled orders) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 473.50 Tm (- customer accounts) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 461.20 Tm (- loyalty and CRM features) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 426.90 Tm (6. Product Visualization) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 391.90 Tm (6.1 System Scope Map) Tj ET
+0.95 0.94 0.91 rg 46.00 178.40 503.00 194.50 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 368.90 Tm (+----------------------+) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 356.60 Tm (| Restaurant Admin |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 344.30 Tm (| Dashboard |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 332.00 Tm (+----------+-----------+) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 319.70 Tm (|) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 307.40 Tm (v) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 295.10 Tm (+-------------+ +---------------+----------------+ +----------------------+) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 282.80 Tm (| Customer | ----> | Ordering / Checkout Platform | ----> | Branch WhatsApp |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 270.50 Tm (| Storefront | | Menu, Cart, Routing, Orders | | Staff Confirm/Cancel |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 258.20 Tm (+------+------+ +---------------+----------------+ +----------+-----------+) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 245.90 Tm (| | |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 233.60 Tm (| v v) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 221.30 Tm (| +----------+-----------+ +---------+----------+) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 209.00 Tm (+-----------------> | Database / Audit Log | <---------- | Customer Notification |) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 196.70 Tm (+----------------------+ +--------------------+) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 167.40 Tm (6.2 Order Lifecycle in MVP) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 5 of 14) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 3942 >>
+stream
+0.95 0.94 0.91 rg 46.00 664.30 503.00 120.70 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 781.00 Tm (Placed) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 768.70 Tm (|) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 756.40 Tm (v) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 744.10 Tm (Pending Confirmation) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 731.80 Tm (| \\) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 719.50 Tm (| \\) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 707.20 Tm (| +--> Cancelled) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 694.90 Tm (|) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 682.60 Tm (+------> Confirmed) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 653.30 Tm (6.3 Branch Routing Visualization) Tj ET
+0.95 0.94 0.91 rg 46.00 501.30 503.00 133.00 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 630.30 Tm (Customer chooses Branch A) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 618.00 Tm (|) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 605.70 Tm (v) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 593.40 Tm (Order.branch_id = Branch A) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 581.10 Tm (|) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 568.80 Tm (v) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 556.50 Tm (System loads Branch A WhatsApp destination) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 544.20 Tm (|) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 531.90 Tm (v) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 519.60 Tm (Order sent to Branch A WhatsApp) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 485.30 Tm (7. User Journeys) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 450.30 Tm (7.1 Customer Journey) Tj ET
+0.95 0.94 0.91 rg 46.00 384.40 503.00 46.90 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 427.30 Tm (Landing -> Branch Selection -> Menu Browse -> Product Selection) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 415.00 Tm (-> Cart -> Checkout -> Place Order -> Await Confirmation) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 402.70 Tm (-> Receive Confirm/Cancel Message) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 373.40 Tm (7.2 Branch Staff Journey) Tj ET
+0.95 0.94 0.91 rg 46.00 282.90 503.00 71.50 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 350.40 Tm (Receive structured order on WhatsApp) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 338.10 Tm (-> Review order) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 325.80 Tm (-> Tap Confirm or Cancel) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 313.50 Tm (-> Backend status updates) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 301.20 Tm (-> Customer notification is sent) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 271.90 Tm (7.3 Admin Journey) Tj ET
+0.95 0.94 0.91 rg 46.00 218.30 503.00 34.60 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 248.90 Tm (Login -> Review dashboard metrics -> Manage menu/settings/branches) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 236.60 Tm (-> Review order history -> Monitor pending confirmations) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 202.30 Tm (8. Functional Requirements) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 167.30 Tm (8.1 Storefront) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 147.30 Tm (The storefront must support:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 125.80 Tm (- branded restaurant presentation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 109.30 Tm (- manual branch selection) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 92.80 Tm (- branch-aware ordering) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 76.30 Tm (- menu categories) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 59.80 Tm (- product images) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 6 of 14) Tj ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 3840 >>
+stream
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 784.00 Tm (- product descriptions) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 767.50 Tm (- base pricing) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 751.00 Tm (- variations) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 734.50 Tm (- add-ons) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 718.00 Tm (- cart management) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 701.50 Tm (- delivery or pickup selection) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 685.00 Tm (- free-text address entry for delivery) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 668.50 Tm (- customer details entry) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 652.00 Tm (- order notes) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 635.50 Tm (- order confirmation screen) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 611.00 Tm (Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 592.00 Tm (- customer can complete an order without creating an account) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 575.50 Tm (- selected branch is attached to the order) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 559.00 Tm (- checkout validates required fields before order creation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 542.50 Tm (- unavailable products cannot be ordered) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 526.00 Tm (- closed restaurant or branch must block ordering clearly) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 500.50 Tm (8.2 Menu Management) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 480.50 Tm (The internal admin menu system must support:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 459.00 Tm (- categories) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 442.50 Tm (- products) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 426.00 Tm (- product descriptions) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 409.50 Tm (- base price) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 393.00 Tm (- product images) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 376.50 Tm (- product active/inactive state) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 360.00 Tm (- variations) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 343.50 Tm (- add-on groups) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 327.00 Tm (- add-ons) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 310.50 Tm (- per-product availability toggle) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 286.00 Tm (Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 267.00 Tm (- admin can create and update products without code changes) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 250.50 Tm (- menu changes affect future orders only) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 234.00 Tm (- variations and add-ons are reflected in cart and order summaries) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 208.50 Tm (8.3 Branch Management) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 188.50 Tm (The system must support:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 167.00 Tm (- one or more branches per restaurant) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 150.50 Tm (- manual branch selection by the customer) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 134.00 Tm (- branch-specific WhatsApp routing) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 117.50 Tm (- branch-aware order storage) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 101.00 Tm (- branch-level operational settings later) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 76.50 Tm (Acceptance Criteria) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 7 of 14) Tj ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 4263 >>
+stream
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 784.00 Tm (- each order is attached to one branch) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 767.50 Tm (- the system routes WhatsApp message to the correct branch destination) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 751.00 Tm (- restaurants with one shared WhatsApp number can still use branch labels in the order message) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 725.50 Tm (8.4 Delivery and Pickup Rules) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 705.50 Tm (The system must support:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 684.00 Tm (- delivery + pickup fulfillment types) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 667.50 Tm (- configurable delivery zones) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 651.00 Tm (- configurable delivery charges) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 634.50 Tm (- configurable minimum order amount) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 618.00 Tm (- restaurant-defined delivery coverage rules) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 593.50 Tm (Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 574.50 Tm (- delivery fee is calculated according to restaurant settings) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 558.00 Tm (- delivery can be blocked when the area is outside supported rules) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 541.50 Tm (- pickup orders do not require delivery fee) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 516.00 Tm (8.5 Order Capture) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 496.00 Tm (When a customer places an order, the system must:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 474.50 Tm (- validate the payload) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 458.00 Tm (- save order header and line items) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 441.50 Tm (- save snapshot data for product names, prices, selected options, and add-ons) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 425.00 Tm (- save customer details) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 408.50 Tm (- set order status to Pending Confirmation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 392.00 Tm (- send a WhatsApp order message to the selected branch) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 367.50 Tm (Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 348.50 Tm (- order exists in database before outbound WhatsApp action) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 332.00 Tm (- system retains accurate order details even if menu changes later) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 315.50 Tm (- order reference is unique and easy for staff to identify) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 290.00 Tm (8.6 WhatsApp Operations Workflow) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 270.00 Tm (The WhatsApp workflow must support:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 248.50 Tm (- sending new order details to the branch) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 232.00 Tm (- showing two clear actions: Confirm and Cancel) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 215.50 Tm (- receiving the staff response) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 199.00 Tm (- updating backend status) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 182.50 Tm (- sending resulting customer message) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 158.00 Tm (MVP Rule) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 139.00 Tm (- no advanced branch-side status flow beyond Confirm / Cancel) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 122.50 Tm (- if staff does not respond, order remains Pending Confirmation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 106.00 Tm (- no automatic reminder or re-send behavior in MVP) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 81.50 Tm (Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 62.50 Tm (- branch staff can act without opening the admin dashboard) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 8 of 14) Tj ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Length 3743 >>
+stream
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 784.00 Tm (- customer gets the correct result message after staff action) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 767.50 Tm (- status change is logged in backend) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 742.00 Tm (8.7 Customer Records) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 722.00 Tm (The backend must maintain internal customer records even though the customer experience is guest) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 707.50 Tm (checkout only.) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 686.00 Tm (Required customer tracking:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 664.50 Tm (- internal customer ID) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 648.00 Tm (- normalized phone number) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 631.50 Tm (- name) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 615.00 Tm (- order count) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 598.50 Tm (- first order date) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 582.00 Tm (- last order date) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 565.50 Tm (- future-ready address history) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 541.00 Tm (Matching Rule) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 522.00 Tm (- internal customer ID is the primary key) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 505.50 Tm (- normalized phone number per restaurant is the main matching key) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 489.00 Tm (- customer name is display data only) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 463.50 Tm (8.8 Admin Dashboard) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 443.50 Tm (The dashboard must support:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 422.00 Tm (- one main admin login per restaurant) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 405.50 Tm (- order list) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 389.00 Tm (- order detail view) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 372.50 Tm (- pending confirmation visibility) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 356.00 Tm (- customer list) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 339.50 Tm (- menu management) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 323.00 Tm (- branch configuration) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 306.50 Tm (- delivery settings) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 290.00 Tm (- restaurant settings) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 273.50 Tm (- availability controls) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 257.00 Tm (- WhatsApp configuration) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 240.50 Tm (- basic analytics) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 216.00 Tm (Basic Analytics in MVP) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 197.00 Tm (- total orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 180.50 Tm (- confirmed orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 164.00 Tm (- cancelled orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 147.50 Tm (- pending confirmation orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 131.00 Tm (- total sales) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 114.50 Tm (- customer count) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 89.00 Tm (8.9 Availability and Operational Controls) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 69.00 Tm (The system must let restaurants:) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 9 of 14) Tj ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 20 0 R >>
+endobj
+22 0 obj
+<< /Length 3930 >>
+stream
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 784.00 Tm (- mark restaurant closed now) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 767.50 Tm (- define opening hours) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 751.00 Tm (- temporarily stop accepting orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 734.50 Tm (- mark individual products unavailable) Tj ET
+BT /F2 11 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 710.00 Tm (Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 691.00 Tm (- storefront must clearly communicate when ordering is unavailable) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 674.50 Tm (- unavailable products must not be orderable) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 649.00 Tm (8.10 Branding) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 629.00 Tm (Each restaurant must be able to manage:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 607.50 Tm (- restaurant name) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 591.00 Tm (- logo) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 574.50 Tm (- contact details) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 558.00 Tm (- basic branding presentation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 541.50 Tm (The architecture must also remain ready for future custom domains.) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 506.00 Tm (9. Non-Functional Requirements) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 471.00 Tm (9.1 Performance) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 451.00 Tm (- storefront pages should feel fast on mobile-first usage) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 434.50 Tm (- checkout should remain lightweight and direct) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 418.00 Tm (- core order creation API should be responsive under normal restaurant traffic) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 392.50 Tm (9.2 Reliability) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 372.50 Tm (- order must be saved before outbound messaging) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 356.00 Tm (- WhatsApp message attempts must be logged) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 339.50 Tm (- failed messaging attempts must be visible for later retry tooling) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 314.00 Tm (9.3 Security) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 294.00 Tm (- admin access must require authentication) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 277.50 Tm (- WhatsApp credentials must never be exposed client-side) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 261.00 Tm (- sensitive secrets must be environment-based) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 244.50 Tm (- checkout endpoints should be rate-limited) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 228.00 Tm (- inputs must be validated server-side) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 202.50 Tm (9.4 Scalability) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 182.50 Tm (- schema must be restaurant-aware from day one) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 166.00 Tm (- branch routing must be configurable) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 149.50 Tm (- backend must stay API-first for future integration with existing websites) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 124.00 Tm (9.5 Maintainability) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 104.00 Tm (- menu management must not require developer edits) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 87.50 Tm (- branch onboarding should be mostly configuration-driven) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 71.00 Tm (- WhatsApp provider logic must sit behind an adapter/service layer) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 10 of 14) Tj ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 22 0 R >>
+endobj
+24 0 obj
+<< /Length 3753 >>
+stream
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 770.00 Tm (10. Data Requirements) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 735.00 Tm (10.1 Core Entities) Tj ET
+0.95 0.94 0.91 rg 46.00 472.30 503.00 243.70 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 712.00 Tm (Restaurant) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 699.70 Tm (-> Branch) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 687.40 Tm (-> Admin User) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 675.10 Tm (-> Branding / Settings) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 662.80 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 650.50 Tm (Restaurant) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 638.20 Tm (-> Category) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 625.90 Tm (-> Product) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 613.60 Tm (-> Product Variant) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 601.30 Tm (-> Add-on Group) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 589.00 Tm (-> Add-on) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 576.70 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 564.40 Tm (Restaurant) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 552.10 Tm (-> Customer) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 539.80 Tm (-> Customer Address) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 527.50 Tm (-> Order) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 515.20 Tm (-> Order Item) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 502.90 Tm (-> Order Item Add-on) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 490.60 Tm (-> WhatsApp Message Log) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 461.30 Tm (10.2 Important Data Rules) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 441.30 Tm (- all operational records must reference restaurant_id) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 424.80 Tm (- all orders must reference branch_id) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 408.30 Tm (- order items must store snapshot values) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 391.80 Tm (- customer matching must rely on normalized phone number, not name) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 375.30 Tm (- address must be stored as free text with optional future lat/lng fields) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 344.80 Tm (11. Status Model) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 309.80 Tm (11.1 Order Statuses in MVP) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 289.80 Tm (- Pending Confirmation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 273.30 Tm (- Confirmed) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 256.80 Tm (- Cancelled) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 231.30 Tm (11.2 Deferred Statuses) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 211.30 Tm (The following are intentionally not part of the operational MVP workflow:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 189.80 Tm (- Preparing) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 173.30 Tm (- Dispatched) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 156.80 Tm (- Delivered) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 140.30 Tm (Reason:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 118.80 Tm (- staff remains WhatsApp-first) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 102.30 Tm (- no reliable real-time signal exists for later statuses in MVP) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 85.80 Tm (- forcing these states would create false precision and operational friction) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 11 of 14) Tj ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 24 0 R >>
+endobj
+26 0 obj
+<< /Length 3163 >>
+stream
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 770.00 Tm (12. WhatsApp Integration Requirements) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 735.00 Tm (12.1 Provider Strategy) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 715.00 Tm (- standard provider: Meta WhatsApp Cloud API) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 698.50 Tm (- development mode: mock/testing mode supported) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 682.00 Tm (- architecture: provider adapter/service layer) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 656.50 Tm (12.2 Branch Routing Model) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 636.50 Tm (- each branch can map to its own WhatsApp destination) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 620.00 Tm (- branches with different receiving numbers require separate branch mappings) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 603.50 Tm (- restaurants with one shared number can still receive branch-labeled orders) Tj ET
+BT /F2 11.8 Tf 0.1 0.1 0.1 rg 1 0 0 1 48.00 578.00 Tm (12.3 Customer Notification Scope) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 558.00 Tm (Customer notifications in MVP are limited to:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 536.50 Tm (- order confirmed) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 520.00 Tm (- order cancelled) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 503.50 Tm (No other customer-facing status notifications are required in MVP.) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 468.00 Tm (13. Out of Scope for MVP) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 442.00 Tm (- online payments) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 425.50 Tm (- customer accounts) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 409.00 Tm (- OTP phone verification) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 392.50 Tm (- customer order history and reorder experience) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 376.00 Tm (- multilingual support) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 359.50 Tm (- scheduled orders) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 343.00 Tm (- coupons and discount codes) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 326.50 Tm (- tax/VAT configuration) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 310.00 Tm (- preparing/dispatched/delivered operational tracking) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 293.50 Tm (- rider management) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 277.00 Tm (- role-based staff permissions) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 260.50 Tm (- export tools) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 244.00 Tm (- reminder automation) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 227.50 Tm (- branch auto-assignment) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 211.00 Tm (- large content/SEO website management system) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 180.50 Tm (14. Risks and Mitigations) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 12 of 14) Tj ET
+endstream
+endobj
+27 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 26 0 R >>
+endobj
+28 0 obj
+<< /Length 3728 >>
+stream
+0.95 0.94 0.91 rg 46.00 602.80 503.00 182.20 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 781.00 Tm (Risk 1: WhatsApp onboarding/configuration complexity) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 768.70 Tm (Mitigation: provider adapter design + mock mode + per-branch config model) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 756.40 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 744.10 Tm (Risk 2: Branch staff ignores backend completely) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 731.80 Tm (Mitigation: make Confirm/Cancel workflow operational through WhatsApp) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 719.50 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 707.20 Tm (Risk 3: Delivery-zone logic varies across restaurants) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 694.90 Tm (Mitigation: keep delivery rules configurable in restaurant settings) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 682.60 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 670.30 Tm (Risk 4: Menu modeling becomes inconsistent) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 658.00 Tm (Mitigation: build internal menu CMS with product, variant, and add-on structure) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 645.70 Tm () Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 633.40 Tm (Risk 5: Existing restaurant websites need integration later) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 621.10 Tm (Mitigation: keep backend API-first and avoid hard-coupling frontend assumptions) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 586.80 Tm (15. Acceptance Criteria) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 48.00 560.80 Tm (The MVP is acceptable when all of the following are true:) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 539.30 Tm (- a restaurant can configure branches, menu, branding, availability, and delivery rules) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 522.80 Tm (- a customer can select a branch and place an order through guest checkout) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 506.30 Tm (- the system stores the order and customer data correctly) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 489.80 Tm (- the order is routed to the correct branch WhatsApp) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 473.30 Tm (- branch staff can confirm or cancel via WhatsApp) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 456.80 Tm (- customer receives confirmation or cancellation message) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 440.30 Tm (- admin dashboard shows core order and customer visibility) Tj ET
+BT /F1 10.4 Tf 0.12 0.16 0.22 rg 1 0 0 1 64.00 423.80 Tm (- basic analytics are available) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 393.30 Tm (16. Delivery Phases After PRD) Tj ET
+0.95 0.94 0.91 rg 46.00 284.50 503.00 83.80 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 364.30 Tm (Phase A: ERD and data design) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 352.00 Tm (Phase B: architecture and API specification) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 339.70 Tm (Phase C: storefront and checkout implementation) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 327.40 Tm (Phase D: menu and settings dashboard) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 315.10 Tm (Phase E: WhatsApp confirm/cancel workflow) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 302.80 Tm (Phase F: testing, pilot launch, iteration) Tj ET
+BT /F2 15 Tf 0.55 0.23 0.09 rg 1 0 0 1 48.00 268.50 Tm (17. Appendix: Finalized MVP Decisions) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 13 of 14) Tj ET
+endstream
+endobj
+29 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 28 0 R >>
+endobj
+30 0 obj
+<< /Length 2596 >>
+stream
+0.95 0.94 0.91 rg 46.00 479.80 503.00 305.20 re f
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 781.00 Tm (Launch model: one real restaurant first, multi-tenant-ready architecture) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 768.70 Tm (Frontend model: standalone storefront + admin, API-first backend) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 756.40 Tm (Checkout: guest only) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 744.10 Tm (Language: English only) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 731.80 Tm (Payments: cash on delivery / cash on pickup only) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 719.50 Tm (Fulfillment: delivery + pickup) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 707.20 Tm (Branches: supported) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 694.90 Tm (Branch selection: manual) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 682.60 Tm (Delivery rules: configurable zones, fees, minimum order amount) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 670.30 Tm (Menu model: internal admin-driven menu system) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 658.00 Tm (Variations/add-ons: included) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 645.70 Tm (Image uploads: product images + restaurant logo) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 633.40 Tm (Availability controls: included) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 621.10 Tm (Customer history UI: excluded) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 608.80 Tm (Internal customer records: included) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 596.50 Tm (Address model: free text now, future-ready coordinates) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 584.20 Tm (Tax: deferred) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 571.90 Tm (Coupons: deferred) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 559.60 Tm (Scheduled orders: deferred) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 547.30 Tm (Analytics: basic only) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 535.00 Tm (Notifications: restaurant WhatsApp first, customer confirm/cancel only) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 522.70 Tm (Order workflow: Pending Confirmation -> Confirmed / Cancelled) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 510.40 Tm (Reminder automation: excluded) Tj ET
+BT /F3 9.2 Tf 0.14 0.15 0.16 rg 1 0 0 1 56.00 498.10 Tm (Admin users: one main admin per restaurant) Tj ET
+BT /F1 8.8 Tf 0.45 0.45 0.45 rg 1 0 0 1 479.00 22.00 Tm (Page 14 of 14) Tj ET
+endstream
+endobj
+31 0 obj
+<< /Type /Page /Parent 32 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 30 0 R >>
+endobj
+32 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R 29 0 R 31 0 R] /Count 14 >>
+endobj
+33 0 obj
+<< /Type /Catalog /Pages 32 0 R >>
+endobj
+34 0 obj
+<< /Title (NapCart) /Producer (Codex PDF Renderer) >>
+endobj
+xref
+0 35
+0000000000 65535 f 
+0000000019 00000 n 
+0000000089 00000 n 
+0000000164 00000 n 
+0000000232 00000 n 
+0000004265 00000 n 
+0000004412 00000 n 
+0000007733 00000 n 
+0000007880 00000 n 
+0000009929 00000 n 
+0000010076 00000 n 
+0000013426 00000 n 
+0000013575 00000 n 
+0000017974 00000 n 
+0000018123 00000 n 
+0000022118 00000 n 
+0000022267 00000 n 
+0000026160 00000 n 
+0000026309 00000 n 
+0000030625 00000 n 
+0000030774 00000 n 
+0000034570 00000 n 
+0000034719 00000 n 
+0000038702 00000 n 
+0000038851 00000 n 
+0000042657 00000 n 
+0000042806 00000 n 
+0000046022 00000 n 
+0000046171 00000 n 
+0000049952 00000 n 
+0000050101 00000 n 
+0000052750 00000 n 
+0000052899 00000 n 
+0000053047 00000 n 
+0000053098 00000 n 
+trailer
+<< /Size 35 /Root 33 0 R /Info 34 0 R >>
+startxref
+53168
+%%EOF
