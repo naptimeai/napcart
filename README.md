@@ -2,7 +2,20 @@
 
 NapCart is a reusable restaurant ordering and delivery automation platform by Naptime AI.
 
-This repository is the main application codebase for the MVP described in:
+## Repository Layout
+
+This workspace is intentionally split so product artifacts and application code stay separate:
+
+- `docs/`
+  - official readable PDF deliverables only
+- `codex_files/`
+  - working markdown, HTML exports, and internal source artifacts
+- `apps/web/`
+  - the actual Next.js application for NapCart
+
+## Product Documents
+
+The approved planning and design artifacts for the MVP are stored as PDFs in `docs/`:
 
 - `docs/NapCart_Project_Roadmap.pdf`
 - `docs/NapCart_PRD_v1.pdf`
@@ -24,26 +37,16 @@ The project is currently in `Phase 0: Project Setup and Delivery Foundations`.
 - Pakistan-first defaults for initial launch
 - WhatsApp-first restaurant operations
 
-## Local Setup Status
+## Working With The App
 
-This repository currently includes:
+All application commands should be run from `apps/web/`.
 
-- Next.js application foundation
-- Tailwind CSS setup
-- Prisma foundation
-- base environment template
-- shared product constants for NapCart launch defaults
+```bash
+cd apps/web
+npm run dev
+```
 
-## Planned Next Steps
-
-1. Create and connect the remote project foundations:
-   - GitHub
-   - Supabase
-   - Vercel
-2. Translate the approved ERD into the real Prisma schema.
-3. Implement admin auth and tenant/restaurant scoping.
-
-## Scripts
+Available scripts inside `apps/web/`:
 
 - `npm run dev`
 - `npm run build`
@@ -62,4 +65,5 @@ This repository currently includes:
 
 - Keep `docs/` reserved for official PDFs only.
 - Keep working/source artifacts in `codex_files/`.
+- Keep product/application code inside `apps/`.
 - Do not introduce scope outside the approved MVP without updating the planning artifacts first.
