@@ -3,6 +3,7 @@ import {
   PLATFORM_NAME,
   PLATFORM_OWNER,
 } from "@/lib/constants/platform";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -29,6 +30,20 @@ export default function Home() {
                   with {DEFAULT_MARKET.currency} defaults, WhatsApp-first staff
                   operations, and a clean multi-tenant-ready backend.
                 </p>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Link
+                    className="inline-flex items-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    href="/login"
+                  >
+                    Open admin login
+                  </Link>
+                  <Link
+                    className="inline-flex items-center rounded-full border border-slate-950/10 bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-50"
+                    href="/admin"
+                  >
+                    View protected dashboard
+                  </Link>
+                </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <StatCard
@@ -51,7 +66,6 @@ export default function Home() {
                 <PhaseItem
                   title="Project foundation"
                   description="Next.js app, shared config, Prisma base, and environment template."
-                  active
                 />
                 <PhaseItem
                   title="Remote setup"
@@ -60,6 +74,7 @@ export default function Home() {
                 <PhaseItem
                   title="Schema + auth"
                   description="Translate the approved ERD and establish restaurant-scoped admin access."
+                  active
                 />
               </div>
             </div>
@@ -97,14 +112,14 @@ export default function Home() {
             </p>
             <ol className="mt-6 space-y-4 text-base leading-7 text-slate-700">
               <li>
-                Finish remote project setup under the Naptime AI accounts.
+                Apply the full Phase 1 Prisma migration to the real database.
               </li>
               <li>
-                Lock environment wiring for Supabase, Vercel, and WhatsApp mock
-                defaults.
+                Seed the demo restaurant, branches, catalog, and admin account.
               </li>
               <li>
-                Start translating the approved ERD into the real Prisma schema.
+                Verify secure admin login and restaurant-scoped dashboard
+                resolution.
               </li>
             </ol>
           </div>
