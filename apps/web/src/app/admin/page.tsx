@@ -1,173 +1,330 @@
-import { logout } from "@/app/login/actions";
+import Link from "next/link";
+import {
+  MetricCard,
+  SectionHeader,
+  StatusPill,
+  Surface,
+} from "@/components/admin/primitives";
 import { requireAdminSession } from "@/lib/auth/admin-session";
-import { getAdminDashboardSummary } from "@/server/repositories/admin-users";
+import { DAY_LABELS } from "@/lib/constants/admin";
+import { getAdminDashboardData } from "@/server/repositories/restaurant-admin";
 
-export default async function AdminPage() {
+function formatCurrency(amount?: number | null) {
+  if (amount == null) {
+    return "Not set";
+  }
+
+  return new Intl.NumberFormat("en-PK", {
+    style: "currency",
+    currency: "PKR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+export default async function AdminDashboardPage() {
   const session = await requireAdminSession();
-  const summary = await getAdminDashboardSummary(session.restaurantId);
+  const data = await getAdminDashboardData(session.restaurantId);
+  const { restaurant, branches, connections, metrics } = data;
+  const settings = restaurant.settings;
+
+  const readinessItems = [
+    {
+      label: "Restaurant identity",
+      done: Boolean(restaurant.name && restaurant.supportPhone),
+      href: "/admin/settings",
+    },
+    {
+      label: "Branch operations",
+      done: branches.length > 0,
+      href: "/admin/branches",
+    },
+    {
+      label: "WhatsApp routing",
+      done: connections.length > 0,
+      href: "/admin/whatsapp",
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fef6ec_0%,#f7ebde_42%,#f0e2d2_100%)] px-6 py-10 text-slate-950">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <section className="overflow-hidden rounded-[2rem] border border-black/5 bg-white/80 shadow-[0_24px_80px_rgba(110,67,22,0.08)] backdrop-blur">
-          <div className="grid gap-10 px-8 py-10 lg:grid-cols-[1.25fr_0.85fr] lg:px-12 lg:py-12">
-            <div className="space-y-5">
-              <div className="inline-flex items-center rounded-full border border-emerald-900/10 bg-emerald-100 px-4 py-1 text-sm font-semibold tracking-wide text-emerald-900">
-                Phase 1 Admin Access Ready
-              </div>
-              <div className="space-y-3">
-                <p className="text-sm font-semibold tracking-[0.25em] text-amber-900/70 uppercase">
-                  Restaurant Scope
-                </p>
-                <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                  {session.restaurantName}
-                </h1>
-                <p className="max-w-2xl text-lg leading-8 text-slate-700">
-                  You’re signed in as {session.adminName}. This dashboard is
-                  currently focused on Phase 1 validation: restaurant-scoped
-                  access, data readiness, and admin authentication foundations.
-                </p>
-              </div>
-            </div>
+    <div className="space-y-4">
+      <Surface className="overflow-hidden p-6 sm:p-7 lg:p-8">
+        <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="space-y-6">
+            <SectionHeader
+              eyebrow="Phase 2 Dashboard"
+              title={`Operate ${session.restaurantName} from one calm control room`}
+              description="This is the first real NapCart management shell. Owners can monitor readiness, configure settings, and direct branch-level operations while order handling remains WhatsApp-first for staff."
+              action={
+                <div className="flex gap-3">
+                  <Link
+                    className="inline-flex rounded-full bg-[#0f1720] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#17262f]"
+                    href="/admin/settings"
+                  >
+                    Configure restaurant
+                  </Link>
+                  <Link
+                    className="inline-flex rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-50"
+                    href="/admin/branches"
+                  >
+                    Manage branches
+                  </Link>
+                </div>
+              }
+            />
 
-            <div className="rounded-[1.5rem] border border-slate-950/8 bg-slate-950 p-6 text-white shadow-inner">
-              <p className="text-sm font-semibold tracking-[0.25em] text-amber-200/80 uppercase">
-                Auth Context
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <MetricCard
+                accent="lime"
+                label="Branches"
+                note={`${metrics.acceptingBranchesCount} currently accepting orders`}
+                value={metrics.branchesCount}
+              />
+              <MetricCard
+                label="Pending review"
+                note="Orders waiting for WhatsApp confirmation"
+                value={metrics.pendingConfirmationOrdersCount}
+              />
+              <MetricCard
+                accent="copper"
+                label="Confirmed orders"
+                note="Orders already accepted by staff"
+                value={metrics.confirmedOrdersCount}
+              />
+              <MetricCard
+                label="WhatsApp routes"
+                note={`${metrics.activeConnectionsCount} active connection${
+                  metrics.activeConnectionsCount === 1 ? "" : "s"
+                }`}
+                value={connections.length}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+            <div className="rounded-[2rem] bg-[linear-gradient(135deg,#101a20_0%,#172b1b_58%,#244027_100%)] p-6 text-white shadow-[0_24px_80px_rgba(16,26,32,0.22)]">
+              <p className="text-xs font-semibold tracking-[0.24em] text-[#d7ff9b]/72 uppercase">
+                Fulfillment control
               </p>
-              <dl className="mt-6 space-y-4 text-sm">
-                <InfoRow label="Admin email" value={session.adminEmail} />
-                <InfoRow label="Restaurant slug" value={session.restaurantSlug} />
-                <InfoRow label="Restaurant ID" value={session.restaurantId} />
-                <InfoRow label="Admin user ID" value={session.adminUserId} />
-              </dl>
+              <div className="mt-4 grid gap-3">
+                <MiniState
+                  label="Delivery"
+                  value={settings?.deliveryEnabled ? "Enabled" : "Disabled"}
+                />
+                <MiniState
+                  label="Pickup"
+                  value={settings?.pickupEnabled ? "Enabled" : "Disabled"}
+                />
+                <MiniState
+                  label="Minimum order"
+                  value={formatCurrency(settings?.minimumOrderAmount?.toNumber())}
+                />
+                <MiniState
+                  label="Global state"
+                  value={settings?.isGloballyClosed ? "Closed" : "Open"}
+                />
+              </div>
+            </div>
 
-              <form className="mt-8">
-                <button
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-50"
-                  formAction={logout}
+            <div className="rounded-[2rem] border border-black/5 bg-[#faf6ef] p-6">
+              <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+                Build readiness
+              </p>
+              <div className="mt-4 space-y-3">
+                {readinessItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    className="flex items-center justify-between rounded-[1.25rem] border border-slate-200 bg-white px-4 py-3 transition hover:border-slate-300"
+                    href={item.href}
+                  >
+                    <span className="text-sm font-semibold text-slate-900">
+                      {item.label}
+                    </span>
+                    <StatusPill tone={item.done ? "good" : "warning"}>
+                      {item.done ? "Ready" : "Needs setup"}
+                    </StatusPill>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Surface>
+
+      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <Surface className="p-6 sm:p-7">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+                Branch readiness
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                Delivery and pickup operations by location
+              </h2>
+            </div>
+            <Link
+              className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-50"
+              href="/admin/branches"
+            >
+              Open branch manager
+            </Link>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {branches.map((branch) => {
+              const mondayHours = branch.operatingHours.find(
+                (item) => item.dayOfWeek === "MONDAY",
+              );
+
+              return (
+                <div
+                  key={branch.id}
+                  className="grid gap-4 rounded-[1.7rem] border border-slate-200 bg-[#fcfbf8] p-5 lg:grid-cols-[1fr_260px]"
                 >
-                  Sign out
-                </button>
-              </form>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-lg font-semibold text-slate-950">
+                        {branch.name}
+                      </h3>
+                      <StatusPill tone={branch.isActive ? "good" : "warning"}>
+                        {branch.isActive ? "Active" : "Archived"}
+                      </StatusPill>
+                      <StatusPill
+                        tone={branch.isAcceptingOrders ? "good" : "warning"}
+                      >
+                        {branch.isAcceptingOrders
+                          ? "Accepting orders"
+                          : "Paused"}
+                      </StatusPill>
+                    </div>
+                    <p className="text-sm leading-6 text-slate-600">
+                      {branch.addressText}
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500">
+                      <span className="rounded-full bg-slate-100 px-3 py-1">
+                        {branch.phone ?? "No branch phone"}
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1">
+                        {branch.deliveryZones.length} delivery zone
+                        {branch.deliveryZones.length === 1 ? "" : "s"}
+                      </span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1">
+                        {branch.whatsappConnections.length} WhatsApp route
+                        {branch.whatsappConnections.length === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.5rem] bg-white p-4 ring-1 ring-black/5">
+                    <p className="text-xs font-semibold tracking-[0.22em] text-slate-500 uppercase">
+                      Weekly anchor
+                    </p>
+                    <p className="mt-3 text-sm font-semibold text-slate-900">
+                      {DAY_LABELS.MONDAY}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {mondayHours?.isClosed
+                        ? "Closed"
+                        : `${mondayHours?.openTime ?? "11:00"} - ${
+                            mondayHours?.closeTime ?? "23:00"
+                          }`}
+                    </p>
+                    <div className="mt-5 h-2 rounded-full bg-slate-100">
+                      <div
+                        className="h-2 rounded-full bg-[linear-gradient(90deg,#93e636_0%,#2d693b_100%)]"
+                        style={{
+                          width: `${Math.max(
+                            18,
+                            Math.min(
+                              100,
+                              (branch.operatingHours.filter((item) => !item.isClosed)
+                                .length /
+                                branch.operatingHours.length) *
+                                100,
+                            ),
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs text-slate-400">
+                      Operating on{" "}
+                      {branch.operatingHours.filter((item) => !item.isClosed).length} /{" "}
+                      {branch.operatingHours.length} configured days
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Surface>
+
+        <Surface className="p-6 sm:p-7">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+                WhatsApp routing
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                Current message destinations
+              </h2>
             </div>
-          </div>
-        </section>
-
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Branches"
-            value={summary.branchesCount}
-            note="Active restaurant branches"
-          />
-          <MetricCard
-            label="Categories"
-            value={summary.categoriesCount}
-            note="Catalog categories seeded"
-          />
-          <MetricCard
-            label="Products"
-            value={summary.productsCount}
-            note="Sellable active items"
-          />
-          <MetricCard
-            label="Customers"
-            value={summary.customersCount}
-            note="Known customer records"
-          />
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="rounded-[1.75rem] border border-black/5 bg-white/82 p-8 shadow-[0_20px_60px_rgba(110,67,22,0.06)]">
-            <p className="text-sm font-semibold tracking-[0.25em] text-slate-500 uppercase">
-              Order Status Snapshot
-            </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              <StatusCard
-                label="Pending Confirmation"
-                value={summary.pendingConfirmationOrdersCount}
-                tone="amber"
-              />
-              <StatusCard
-                label="Confirmed"
-                value={summary.confirmedOrdersCount}
-                tone="emerald"
-              />
-              <StatusCard
-                label="Cancelled"
-                value={summary.cancelledOrdersCount}
-                tone="rose"
-              />
-            </div>
+            <Link
+              className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-50"
+              href="/admin/whatsapp"
+            >
+              Edit routing
+            </Link>
           </div>
 
-          <div className="rounded-[1.75rem] border border-black/5 bg-[#fff8f1] p-8 shadow-[0_20px_60px_rgba(110,67,22,0.06)]">
-            <p className="text-sm font-semibold tracking-[0.25em] text-amber-900/70 uppercase">
-              Phase 1 Outcome
-            </p>
-            <ul className="mt-6 space-y-3 text-base leading-7 text-slate-700">
-              <li>Prisma schema translated from the approved ERD.</li>
-              <li>Supabase Auth linked to `admin_users`.</li>
-              <li>Admin access resolves the correct restaurant scope.</li>
-              <li>Seeded demo data supports local development and review.</li>
-            </ul>
+          <div className="mt-6 space-y-4">
+            {connections.length ? (
+              connections.map((connection) => (
+                <div
+                  key={connection.id}
+                  className="rounded-[1.6rem] border border-slate-200 bg-[#fbfaf7] p-5"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-semibold text-slate-950">
+                      {connection.businessName}
+                    </h3>
+                    {connection.isDefaultForRestaurant ? (
+                      <StatusPill tone="good">Default route</StatusPill>
+                    ) : null}
+                    <StatusPill tone={connection.isActive ? "good" : "warning"}>
+                      {connection.isActive ? "Active" : "Paused"}
+                    </StatusPill>
+                  </div>
+                  <p className="mt-3 text-sm text-slate-600">
+                    {connection.displayPhoneNumber}
+                  </p>
+                  <p className="mt-1 text-xs font-medium tracking-[0.18em] text-slate-400 uppercase">
+                    Provider · {connection.provider.replace("_", " ")}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[1.7rem] border border-dashed border-slate-200 bg-[#fbfaf7] p-6 text-sm leading-7 text-slate-500">
+                No WhatsApp routes are configured yet. Add a default restaurant
+                route first, then branch-specific numbers where needed.
+              </div>
+            )}
           </div>
-        </section>
+        </Surface>
       </div>
-    </main>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: number;
-  note: string;
-}) {
-  return (
-    <div className="rounded-[1.5rem] border border-black/5 bg-white/80 p-6 shadow-[0_20px_60px_rgba(110,67,22,0.06)]">
-      <p className="text-sm font-semibold tracking-[0.18em] text-slate-500 uppercase">
-        {label}
-      </p>
-      <p className="mt-4 text-4xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{note}</p>
     </div>
   );
 }
 
-function StatusCard({
+function MiniState({
   label,
   value,
-  tone,
 }: {
   label: string;
-  value: number;
-  tone: "amber" | "emerald" | "rose";
+  value: string;
 }) {
-  const toneClassName =
-    tone === "emerald"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-      : tone === "rose"
-        ? "border-rose-200 bg-rose-50 text-rose-950"
-        : "border-amber-200 bg-amber-50 text-amber-950";
-
   return (
-    <div className={`rounded-[1.4rem] border p-5 ${toneClassName}`}>
-      <p className="text-sm font-semibold tracking-[0.18em] uppercase">
-        {label}
-      </p>
-      <p className="mt-3 text-3xl font-semibold">{value}</p>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-white/55">{label}</dt>
-      <dd className="mt-1 break-all font-medium text-white">{value}</dd>
+    <div className="flex items-center justify-between rounded-[1.3rem] border border-white/8 bg-white/6 px-4 py-3">
+      <span className="text-sm font-medium text-white/68">{label}</span>
+      <span className="text-sm font-semibold text-white">{value}</span>
     </div>
   );
 }

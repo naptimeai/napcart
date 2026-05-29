@@ -24,11 +24,12 @@ export default function Home() {
                   build.
                 </h1>
                 <p className="max-w-2xl text-lg leading-8 text-slate-700">
-                  This workspace has moved past planning artifacts and into
-                  execution. The approved MVP is being prepared as a reusable
-                  restaurant ordering system for {DEFAULT_MARKET.countryName},
-                  with {DEFAULT_MARKET.currency} defaults, WhatsApp-first staff
-                  operations, and a clean multi-tenant-ready backend.
+                  NapCart is now inside Phase 2, where the internal management
+                  experience is becoming a real product surface. The platform is
+                  being shaped as a reusable restaurant ordering system for{" "}
+                  {DEFAULT_MARKET.countryName}, with {DEFAULT_MARKET.currency}{" "}
+                  defaults, WhatsApp-first staff operations, and a polished
+                  owner-facing control panel.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                   <Link
@@ -72,8 +73,8 @@ export default function Home() {
                   description="GitHub repository, Vercel project, and Supabase project linkage."
                 />
                 <PhaseItem
-                  title="Schema + auth"
-                  description="Translate the approved ERD and establish restaurant-scoped admin access."
+                  title="Admin core"
+                  description="Build the real dashboard shell, settings surfaces, branch operations, and WhatsApp configuration."
                   active
                 />
               </div>
@@ -112,14 +113,14 @@ export default function Home() {
             </p>
             <ol className="mt-6 space-y-4 text-base leading-7 text-slate-700">
               <li>
-                Apply the full Phase 1 Prisma migration to the real database.
+                Complete the Phase 2 admin shell and operational settings flow.
               </li>
               <li>
-                Seed the demo restaurant, branches, catalog, and admin account.
+                Give owners control over branding, branches, and availability.
               </li>
               <li>
-                Verify secure admin login and restaurant-scoped dashboard
-                resolution.
+                Save WhatsApp routing records and finalize the management UI
+                baseline for the rest of the product.
               </li>
             </ol>
           </div>

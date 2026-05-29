@@ -11,6 +11,7 @@ export type AdminSession = {
   restaurantId: string;
   restaurantName: string;
   restaurantSlug: string;
+  restaurantLogoUrl: string | null;
 };
 
 export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
@@ -43,6 +44,7 @@ export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
     restaurantId: adminUser.restaurant.id,
     restaurantName: adminUser.restaurant.name,
     restaurantSlug: adminUser.restaurant.slug,
+    restaurantLogoUrl: adminUser.restaurant.logoUrl,
   };
 });
 
