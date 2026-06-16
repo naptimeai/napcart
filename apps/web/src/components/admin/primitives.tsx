@@ -6,6 +6,9 @@ import type {
 } from "react";
 import { cx } from "@/lib/utils/cx";
 
+export const buttonBaseClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
+
 export function Surface({
   children,
   className,
@@ -16,7 +19,7 @@ export function Surface({
   return (
     <section
       className={cx(
-        "rounded-[2rem] border border-black/5 bg-white/84 shadow-[0_28px_100px_rgba(15,23,32,0.06)] backdrop-blur",
+        "rounded-[22px] border border-border/80 bg-card text-card-foreground shadow-[0_18px_60px_rgba(16,18,16,0.04)]",
         className,
       )}
     >
@@ -38,22 +41,22 @@ export function MetricCard({
 }) {
   const accentClassName =
     accent === "lime"
-      ? "bg-[linear-gradient(135deg,#19301f_0%,#244d2c_55%,#315f36_100%)] text-white"
+      ? "border-primary bg-[linear-gradient(135deg,#0c4b2d_0%,#0e6f43_100%)] text-primary-foreground"
       : accent === "copper"
-        ? "bg-[linear-gradient(135deg,#f4ecdf_0%,#fff8ef_100%)]"
-        : "bg-white";
+        ? "bg-[#f6f3ee] text-foreground"
+        : "bg-card";
 
   return (
     <div
       className={cx(
-        "rounded-[1.7rem] border border-black/5 p-5 shadow-[0_18px_40px_rgba(15,23,32,0.04)]",
+        "rounded-[18px] border border-border p-5 shadow-sm",
         accentClassName,
       )}
     >
       <p
         className={cx(
-          "text-xs font-semibold tracking-[0.22em] uppercase",
-          accent === "lime" ? "text-white/60" : "text-slate-500",
+          "text-xs font-medium text-muted-foreground",
+          accent === "lime" ? "text-white/70" : "text-muted-foreground",
         )}
       >
         {label}
@@ -61,8 +64,8 @@ export function MetricCard({
       <p className="mt-4 text-4xl font-semibold tracking-tight">{value}</p>
       <p
         className={cx(
-          "mt-3 text-sm leading-6",
-          accent === "lime" ? "text-white/72" : "text-slate-600",
+          "mt-2 text-sm leading-6",
+          accent === "lime" ? "text-white/75" : "text-muted-foreground",
         )}
       >
         {note}
@@ -85,13 +88,13 @@ export function SectionHeader({
   return (
     <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
       <div className="space-y-2">
-        <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+        <p className="text-xs font-medium text-muted-foreground">
           {eyebrow}
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {title}
         </h1>
-        <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
           {description}
         </p>
       </div>
@@ -113,9 +116,9 @@ export function Field({
 }) {
   return (
     <label className="block space-y-2" htmlFor={id}>
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-foreground">{label}</span>
       {children}
-      {hint ? <span className="block text-xs text-slate-400">{hint}</span> : null}
+      {hint ? <span className="block text-xs text-muted-foreground">{hint}</span> : null}
     </label>
   );
 }
@@ -125,7 +128,7 @@ export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={cx(
-        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#1f3f2a]",
+        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         props.className,
       )}
     />
@@ -137,7 +140,7 @@ export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
     <textarea
       {...props}
       className={cx(
-        "min-h-[112px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#1f3f2a]",
+        "min-h-[112px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         props.className,
       )}
     />
@@ -149,7 +152,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
     <select
       {...props}
       className={cx(
-        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-[#1f3f2a]",
+        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         props.className,
       )}
     />
@@ -168,16 +171,16 @@ export function CheckboxRow({
   defaultChecked?: boolean;
 }) {
   return (
-    <label className="flex items-start gap-3 rounded-[1.3rem] border border-slate-200 bg-white px-4 py-3">
+    <label className="flex items-start gap-3 rounded-lg border border-border bg-background px-4 py-3">
       <input
-        className="mt-1 h-4 w-4 rounded border-slate-300 text-[#1f4d2f]"
+        className="mt-1 h-4 w-4 rounded border-input accent-primary"
         defaultChecked={defaultChecked}
         name={name}
         type="checkbox"
       />
       <span className="space-y-1">
-        <span className="block text-sm font-semibold text-slate-900">{label}</span>
-        <span className="block text-xs leading-5 text-slate-500">
+        <span className="block text-sm font-medium text-foreground">{label}</span>
+        <span className="block text-xs leading-5 text-muted-foreground">
           {description}
         </span>
       </span>
@@ -195,10 +198,10 @@ export function SubmitButton({
   return (
     <button
       className={cx(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition",
+        buttonBaseClassName,
         tone === "dark"
-          ? "bg-[#101a20] text-white hover:bg-[#17262f]"
-          : "border border-slate-200 bg-white text-slate-950 hover:bg-slate-50",
+          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+          : "border border-border bg-background text-foreground hover:bg-muted",
       )}
       type="submit"
     >
@@ -216,19 +219,40 @@ export function StatusPill({
 }) {
   const toneClassName =
     tone === "good"
-      ? "bg-emerald-100 text-emerald-900"
+      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
       : tone === "warning"
-        ? "bg-amber-100 text-amber-900"
-        : "bg-slate-100 text-slate-600";
+        ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+        : "bg-muted text-muted-foreground ring-1 ring-border";
 
   return (
     <span
       className={cx(
-        "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase",
+        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium",
         toneClassName,
       )}
     >
       {children}
     </span>
+  );
+}
+
+export function PageNotice({
+  message,
+  tone = "success",
+}: {
+  message: string;
+  tone?: "success" | "error";
+}) {
+  return (
+    <div
+      className={cx(
+        "rounded-[18px] border px-4 py-3 text-sm font-medium",
+        tone === "success"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-rose-200 bg-rose-50 text-rose-700",
+      )}
+    >
+      {message}
+    </div>
   );
 }

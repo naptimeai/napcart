@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
@@ -10,12 +11,11 @@ import {
   PaymentStatus,
   Prisma,
   PrismaClient,
-  WhatsappMessageDirection,
-  WhatsappMessageStatus,
   WhatsappProvider,
 } from "@prisma/client";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { config as loadEnv } from "dotenv";
+import { flattenSmogyiceCatalog } from "./smogyice-catalog.mjs";
 
 if (existsSync(".env.local")) {
   loadEnv({ path: ".env.local", override: true });
@@ -32,9 +32,93 @@ const prisma = new PrismaClient({ adapter });
 const adminEmail = process.env.DEMO_ADMIN_EMAIL ?? "owner@demo.napcart.local";
 const adminPassword = process.env.DEMO_ADMIN_PASSWORD ?? "ChangeMe123!";
 const adminName = process.env.DEMO_ADMIN_NAME ?? "Demo Restaurant Owner";
+const smogyiceAdminEmail =
+  process.env.SMOGYICE_ADMIN_EMAIL ?? "owner@smogyice.napcart.local";
+const smogyiceAdminPassword =
+  process.env.SMOGYICE_ADMIN_PASSWORD ?? "SmogyIce123!";
+const smogyiceAdminName = process.env.SMOGYICE_ADMIN_NAME ?? "Smogy Ice Owner";
+const DASHBOARD_CUSTOMER_TARGET = 1000;
 
-async function ensureAuthAdmin() {
-  const supabase = createSupabaseClient(
+const FIRST_NAMES = [
+  "Ayesha",
+  "Ali",
+  "Sara",
+  "Hamza",
+  "Zainab",
+  "Usman",
+  "Noor",
+  "Hassan",
+  "Fatima",
+  "Bilal",
+  "Mariam",
+  "Talha",
+  "Hira",
+  "Ahmed",
+  "Iqra",
+  "Daniyal",
+];
+
+const LAST_NAMES = [
+  "Khan",
+  "Ahmed",
+  "Malik",
+  "Siddiqui",
+  "Farooq",
+  "Sheikh",
+  "Raza",
+  "Ali",
+  "Javed",
+  "Ansari",
+  "Qureshi",
+  "Aslam",
+  "Butt",
+  "Nawaz",
+];
+
+const PHONE_PREFIXES = [
+  "300",
+  "301",
+  "302",
+  "303",
+  "304",
+  "305",
+  "306",
+  "307",
+  "308",
+  "309",
+  "310",
+  "311",
+  "312",
+  "313",
+  "314",
+  "315",
+];
+
+function createSeededRandom(seed = 20260530) {
+  let value = seed >>> 0;
+
+  return () => {
+    value = (1664525 * value + 1013904223) % 4294967296;
+    return value / 4294967296;
+  };
+}
+
+function randomInt(rand, min, max) {
+  return Math.floor(rand() * (max - min + 1)) + min;
+}
+
+function pick(rand, values) {
+  return values[randomInt(rand, 0, values.length - 1)];
+}
+
+async function createManyInChunks(createMany, rows, chunkSize = 250) {
+  for (let index = 0; index < rows.length; index += chunkSize) {
+    await createMany(rows.slice(index, index + chunkSize));
+  }
+}
+
+function createSupabaseAdminClient() {
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     {
@@ -44,27 +128,50 @@ async function ensureAuthAdmin() {
       },
     },
   );
+}
 
-  const { data: usersPage, error: listError } = await supabase.auth.admin.listUsers({
-    page: 1,
-    perPage: 200,
-  });
+async function ensureAuthAdmin({ email, password, name }) {
+  const supabase = createSupabaseAdminClient();
+
+  const { data: usersPage, error: listError } =
+    await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 200,
+    });
 
   if (listError) {
     throw listError;
   }
 
-  const existingUser = usersPage.users.find((user) => user.email === adminEmail);
+  const existingUser = usersPage.users.find((user) => user.email === email);
   if (existingUser) {
-    return existingUser;
+    const { data, error } = await supabase.auth.admin.updateUserById(
+      existingUser.id,
+      {
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: name,
+        },
+        app_metadata: {
+          role: "restaurant_admin",
+        },
+      },
+    );
+
+    if (error || !data.user) {
+      throw error ?? new Error(`Unable to update auth user ${email}.`);
+    }
+
+    return data.user;
   }
 
   const { data, error } = await supabase.auth.admin.createUser({
-    email: adminEmail,
-    password: adminPassword,
+    email,
+    password,
     email_confirm: true,
     user_metadata: {
-      full_name: adminName,
+      full_name: name,
     },
     app_metadata: {
       role: "restaurant_admin",
@@ -72,7 +179,7 @@ async function ensureAuthAdmin() {
   });
 
   if (error || !data.user) {
-    throw error ?? new Error("Unable to create demo admin auth user.");
+    throw error ?? new Error(`Unable to create auth user ${email}.`);
   }
 
   return data.user;
@@ -88,8 +195,705 @@ function operatingHoursInput(branchId) {
   }));
 }
 
+function createDateDaysAgo(daysAgo, hour = 12, minute = 0) {
+  const date = new Date();
+  date.setSeconds(0, 0);
+  date.setHours(hour, minute, 0, 0);
+  date.setDate(date.getDate() - daysAgo);
+  return date;
+}
+
+function buildDashboardMockDataset({
+  branches,
+  products,
+  restaurant,
+  whatsappConnections,
+}) {
+  const rand = createSeededRandom();
+  const now = new Date();
+  const customers = [];
+  const addresses = [];
+  const orders = [];
+  const orderItems = [];
+  const statusHistory = [];
+  let orderSequence = 1;
+
+  const branchConfigs = [
+    {
+      branch: branches.dha,
+      connectionId: whatsappConnections.dha.id,
+      deliveryFee: 150,
+      areaName: "DHA Karachi",
+    },
+    {
+      branch: branches.gulshan,
+      connectionId: whatsappConnections.gulshan.id,
+      deliveryFee: 180,
+      areaName: "Gulshan-e-Iqbal Karachi",
+    },
+  ];
+
+  const menuCatalog = [
+    {
+      productId: products.smashBurger.id,
+      productNameSnapshot: products.smashBurger.name,
+      variantNameSnapshot: "Single",
+      unitPrice: 1250,
+    },
+    {
+      productId: products.smashBurger.id,
+      productNameSnapshot: products.smashBurger.name,
+      variantNameSnapshot: "Double",
+      unitPrice: 1450,
+    },
+    {
+      productId: products.grilledPlatter.id,
+      productNameSnapshot: products.grilledPlatter.name,
+      variantNameSnapshot: "Regular",
+      unitPrice: 2490,
+    },
+  ];
+
+  for (let index = 0; index < DASHBOARD_CUSTOMER_TARGET; index += 1) {
+    const bucket =
+      index < 250
+        ? [0, 29]
+        : index < 500
+          ? [30, 89]
+          : index < 750
+            ? [90, 179]
+            : [180, 364];
+    const daysAgo = randomInt(rand, bucket[0], bucket[1]);
+    const createdAt = createDateDaysAgo(
+      daysAgo,
+      randomInt(rand, 10, 22),
+      randomInt(rand, 0, 59),
+    );
+    const customerId = randomUUID();
+    const prefix = pick(rand, PHONE_PREFIXES);
+    const subscriber = String(1000000 + index).padStart(7, "0");
+    const rawPhone = `0${prefix}${subscriber}`;
+    const normalizedPhone = `+92${prefix}${subscriber}`;
+    const name = `${pick(rand, FIRST_NAMES)} ${pick(rand, LAST_NAMES)}`;
+    const email = rand() < 0.22 ? `guest${index + 1}@napcart.demo` : null;
+    const homeBranch = pick(rand, branchConfigs);
+
+    let orderCount;
+    const orderRoll = rand();
+    if (orderRoll < 0.38) {
+      orderCount = 1;
+    } else if (orderRoll < 0.68) {
+      orderCount = 2;
+    } else if (orderRoll < 0.86) {
+      orderCount = 3;
+    } else if (orderRoll < 0.96) {
+      orderCount = 4;
+    } else {
+      orderCount = randomInt(rand, 5, 6);
+    }
+
+    const orderDates = [new Date(createdAt)];
+    const availableMs = Math.max(
+      now.getTime() - createdAt.getTime(),
+      1000 * 60 * 60 * 6,
+    );
+
+    for (let orderIndex = 1; orderIndex < orderCount; orderIndex += 1) {
+      const fraction =
+        orderIndex === orderCount - 1
+          ? 0.62 + rand() * 0.38
+          : 0.1 + rand() * 0.75;
+      const orderDate = new Date(createdAt.getTime() + availableMs * fraction);
+      orderDate.setMinutes(orderDate.getMinutes() + orderIndex * 7);
+      orderDates.push(orderDate);
+    }
+
+    orderDates.sort((left, right) => left.getTime() - right.getTime());
+
+    customers.push({
+      id: customerId,
+      restaurantId: restaurant.id,
+      name,
+      normalizedPhone,
+      rawPhoneInput: rawPhone,
+      email,
+      totalOrdersCount: orderCount,
+      firstOrderAt: orderDates[0],
+      lastOrderAt: orderDates[orderDates.length - 1],
+      createdAt,
+      updatedAt: orderDates[orderDates.length - 1],
+    });
+
+    addresses.push({
+      id: randomUUID(),
+      customerId,
+      label: "Home",
+      addressText: `House ${100 + index}, ${homeBranch.areaName}`,
+      deliveryNotes:
+        rand() < 0.35
+          ? "Call on arrival."
+          : rand() < 0.18
+            ? "Leave at gate."
+            : null,
+      isDefault: true,
+      createdAt,
+      updatedAt: orderDates[orderDates.length - 1],
+    });
+
+    for (let orderIndex = 0; orderIndex < orderDates.length; orderIndex += 1) {
+      const placedAt = orderDates[orderIndex];
+      const isLatestOrder = orderIndex === orderDates.length - 1;
+      const orderAgeHours =
+        (now.getTime() - placedAt.getTime()) / (1000 * 60 * 60);
+      const statusRoll = rand();
+      let status = OrderStatus.CONFIRMED;
+
+      if (isLatestOrder && orderAgeHours <= 48) {
+        if (statusRoll < 0.28) {
+          status = OrderStatus.PENDING_CONFIRMATION;
+        } else if (statusRoll < 0.84) {
+          status = OrderStatus.CONFIRMED;
+        } else {
+          status = OrderStatus.CANCELLED;
+        }
+      } else {
+        status =
+          statusRoll < 0.82 ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+      }
+
+      const branchConfig = rand() < 0.58 ? branchConfigs[0] : branchConfigs[1];
+      const menuItem = pick(rand, menuCatalog);
+      const quantity =
+        menuItem.productNameSnapshot === products.grilledPlatter.name
+          ? randomInt(rand, 1, 2)
+          : randomInt(rand, 1, 3);
+      const extras =
+        menuItem.productNameSnapshot === products.smashBurger.name &&
+        rand() < 0.45
+          ? rand() < 0.55
+            ? 150
+            : 230
+          : 0;
+      const subtotal = menuItem.unitPrice * quantity + extras;
+      const fulfillmentType =
+        rand() < 0.72 ? FulfillmentType.DELIVERY : FulfillmentType.PICKUP;
+      const deliveryFee =
+        fulfillmentType === FulfillmentType.DELIVERY
+          ? branchConfig.deliveryFee
+          : 0;
+      const grandTotal = subtotal + deliveryFee;
+      const orderId = randomUUID();
+      const orderNumber = `NC-${String(orderSequence).padStart(6, "0")}`;
+      orderSequence += 1;
+      const processedAt = new Date(
+        placedAt.getTime() + randomInt(rand, 8, 95) * 60 * 1000,
+      );
+
+      orders.push({
+        id: orderId,
+        restaurantId: restaurant.id,
+        branchId: branchConfig.branch.id,
+        customerId,
+        whatsappConnectionId: branchConfig.connectionId,
+        orderNumber,
+        status,
+        fulfillmentType,
+        paymentMethod:
+          fulfillmentType === FulfillmentType.DELIVERY
+            ? PaymentMethod.CASH_ON_DELIVERY
+            : PaymentMethod.CASH_ON_PICKUP,
+        paymentStatus: PaymentStatus.UNPAID,
+        customerNameSnapshot: name,
+        customerPhoneSnapshot: normalizedPhone,
+        addressTextSnapshot:
+          fulfillmentType === FulfillmentType.DELIVERY
+            ? `House ${100 + index}, ${branchConfig.areaName}`
+            : null,
+        deliveryNotes:
+          fulfillmentType === FulfillmentType.DELIVERY && rand() < 0.25
+            ? "Please hand over at reception."
+            : null,
+        branchNameSnapshot: branchConfig.branch.name,
+        subtotal: new Prisma.Decimal(String(subtotal)),
+        deliveryFee: new Prisma.Decimal(String(deliveryFee)),
+        discountTotal: new Prisma.Decimal("0"),
+        taxTotal: new Prisma.Decimal("0"),
+        grandTotal: new Prisma.Decimal(String(grandTotal)),
+        currency: "PKR",
+        placedAt,
+        confirmedAt: status === OrderStatus.CONFIRMED ? processedAt : null,
+        cancelledAt: status === OrderStatus.CANCELLED ? processedAt : null,
+        createdAt: placedAt,
+        updatedAt:
+          status === OrderStatus.PENDING_CONFIRMATION ? placedAt : processedAt,
+      });
+
+      orderItems.push({
+        id: randomUUID(),
+        orderId,
+        productId: menuItem.productId,
+        productNameSnapshot: menuItem.productNameSnapshot,
+        variantNameSnapshot: menuItem.variantNameSnapshot,
+        unitPrice: new Prisma.Decimal(String(menuItem.unitPrice + extras)),
+        quantity,
+        lineTotal: new Prisma.Decimal(String(subtotal)),
+        itemNotes: extras ? "Includes extras." : null,
+        createdAt: placedAt,
+        updatedAt: placedAt,
+      });
+
+      statusHistory.push({
+        id: randomUUID(),
+        orderId,
+        oldStatus: null,
+        newStatus: OrderStatus.PENDING_CONFIRMATION,
+        changeSource: OrderStatusChangeSource.SYSTEM,
+        changedAt: placedAt,
+        notes: "Order placed from seeded guest checkout flow.",
+      });
+
+      if (status !== OrderStatus.PENDING_CONFIRMATION) {
+        statusHistory.push({
+          id: randomUUID(),
+          orderId,
+          oldStatus: OrderStatus.PENDING_CONFIRMATION,
+          newStatus: status,
+          changeSource: OrderStatusChangeSource.WHATSAPP_STAFF_ACTION,
+          changedAt: processedAt,
+          notes:
+            status === OrderStatus.CONFIRMED
+              ? "Confirmed by seeded restaurant staff action."
+              : "Cancelled by seeded restaurant staff action.",
+        });
+      }
+    }
+  }
+
+  return {
+    addresses,
+    customers,
+    orderItems,
+    orders,
+    statusHistory,
+  };
+}
+
+async function upsertSmogyiceDemo() {
+  const restaurant = await prisma.restaurant.upsert({
+    where: { slug: "smogyice-demo" },
+    update: {
+      name: "Smogy Ice",
+      logoUrl: "/storefront/smogyice/smogyice-logo.png",
+      supportPhone: "+92 301 1417221",
+      contactEmail: "orders@smogyice.demo",
+      isActive: true,
+    },
+    create: {
+      name: "Smogy Ice",
+      slug: "smogyice-demo",
+      logoUrl: "/storefront/smogyice/smogyice-logo.png",
+      supportPhone: "+92 301 1417221",
+      contactEmail: "orders@smogyice.demo",
+      defaultCurrency: "PKR",
+      defaultLanguage: "English",
+      timezone: "Asia/Karachi",
+    },
+  });
+
+  await prisma.restaurantSettings.upsert({
+    where: { restaurantId: restaurant.id },
+    update: {
+      isAcceptingOrders: true,
+      isGloballyClosed: false,
+      minimumOrderAmount: new Prisma.Decimal("500"),
+      pickupEnabled: true,
+      deliveryEnabled: true,
+      showBranchSelection: true,
+      customerNotificationsEnabled: false,
+      taxEnabled: false,
+    },
+    create: {
+      restaurantId: restaurant.id,
+      isAcceptingOrders: true,
+      isGloballyClosed: false,
+      minimumOrderAmount: new Prisma.Decimal("500"),
+      pickupEnabled: true,
+      deliveryEnabled: true,
+      showBranchSelection: true,
+      customerNotificationsEnabled: false,
+      taxEnabled: false,
+    },
+  });
+
+  const branchInputs = [
+    {
+      name: "Wapda Town",
+      slug: "wapda-town",
+      phone: "+92 301 1417221",
+      addressText: "Rehmat Chowk, Wapda Town, Lahore",
+      latitude: "31.4392400",
+      longitude: "74.2729800",
+      displayOrder: 1,
+      fee: "150",
+      maxDistanceKm: "5",
+    },
+    {
+      name: "DHA Phase 8",
+      slug: "dha-phase-8",
+      phone: "+92 301 1417221",
+      addressText: "Eden City Neon Square, DHA Phase 8, Lahore",
+      latitude: "31.4742200",
+      longitude: "74.4672400",
+      displayOrder: 2,
+      fee: "180",
+      maxDistanceKm: "8",
+    },
+    {
+      name: "Walton Road",
+      slug: "walton-road",
+      phone: "+92 301 1417221",
+      addressText: "Walton Road, Lahore",
+      latitude: "31.4938000",
+      longitude: "74.3689300",
+      displayOrder: 3,
+      fee: "160",
+      maxDistanceKm: "6",
+    },
+    {
+      name: "Sheikhupura",
+      slug: "sheikhupura",
+      phone: "+92 301 1417221",
+      addressText: "Sheikhupura Branch, Lahore Road",
+      latitude: "31.7166600",
+      longitude: "73.9850200",
+      displayOrder: 4,
+      fee: "200",
+      maxDistanceKm: "8",
+    },
+  ];
+
+  const branches = [];
+  for (const branchInput of branchInputs) {
+    const branch = await prisma.branch.upsert({
+      where: {
+        restaurantId_slug: {
+          restaurantId: restaurant.id,
+          slug: branchInput.slug,
+        },
+      },
+      update: {
+        name: branchInput.name,
+        phone: branchInput.phone,
+        addressText: branchInput.addressText,
+        latitude: new Prisma.Decimal(branchInput.latitude),
+        longitude: new Prisma.Decimal(branchInput.longitude),
+        isActive: true,
+        isAcceptingOrders: true,
+        isTemporarilyClosed: false,
+        displayOrder: branchInput.displayOrder,
+      },
+      create: {
+        restaurantId: restaurant.id,
+        name: branchInput.name,
+        slug: branchInput.slug,
+        phone: branchInput.phone,
+        addressText: branchInput.addressText,
+        latitude: new Prisma.Decimal(branchInput.latitude),
+        longitude: new Prisma.Decimal(branchInput.longitude),
+        displayOrder: branchInput.displayOrder,
+      },
+    });
+    branches.push(branch);
+
+    await prisma.deliveryZone.upsert({
+      where: {
+        branchId_name: {
+          branchId: branch.id,
+          name: `${branchInput.name} delivery radius`,
+        },
+      },
+      update: {
+        maxDistanceKm: new Prisma.Decimal(branchInput.maxDistanceKm),
+        fee: new Prisma.Decimal(branchInput.fee),
+        minimumOrderAmount: new Prisma.Decimal("500"),
+        isActive: true,
+        sortOrder: 1,
+      },
+      create: {
+        branchId: branch.id,
+        name: `${branchInput.name} delivery radius`,
+        maxDistanceKm: new Prisma.Decimal(branchInput.maxDistanceKm),
+        fee: new Prisma.Decimal(branchInput.fee),
+        minimumOrderAmount: new Prisma.Decimal("500"),
+        sortOrder: 1,
+      },
+    });
+  }
+
+  await prisma.branchOperatingHour.deleteMany({
+    where: {
+      branchId: { in: branches.map((branch) => branch.id) },
+    },
+  });
+  await prisma.branchOperatingHour.createMany({
+    data: branches.flatMap((branch) => operatingHoursInput(branch.id)),
+  });
+
+  const defaultWhatsapp = await prisma.whatsappConnection.upsert({
+    where: { id: `30000000-0000-4000-8000-${restaurant.id.slice(-12)}` },
+    update: {
+      businessName: "Smogy Ice Main Ops",
+      displayPhoneNumber: "+92 301 1417221",
+      isActive: true,
+      isDefaultForRestaurant: true,
+    },
+    create: {
+      id: `30000000-0000-4000-8000-${restaurant.id.slice(-12)}`,
+      restaurantId: restaurant.id,
+      provider: WhatsappProvider.MOCK,
+      businessName: "Smogy Ice Main Ops",
+      displayPhoneNumber: "+92 301 1417221",
+      isDefaultForRestaurant: true,
+    },
+  });
+
+  for (let index = 0; index < branches.length; index += 1) {
+    const branch = branches[index];
+    await prisma.whatsappConnection.upsert({
+      where: {
+        id: `3${index + 1}000000-0000-4000-8000-${branch.id.slice(-12)}`,
+      },
+      update: {
+        businessName: `Smogy Ice ${branch.name} Ops`,
+        displayPhoneNumber: branch.phone ?? defaultWhatsapp.displayPhoneNumber,
+        isActive: true,
+        branchId: branch.id,
+      },
+      create: {
+        id: `3${index + 1}000000-0000-4000-8000-${branch.id.slice(-12)}`,
+        restaurantId: restaurant.id,
+        branchId: branch.id,
+        provider: WhatsappProvider.MOCK,
+        businessName: `Smogy Ice ${branch.name} Ops`,
+        displayPhoneNumber: branch.phone ?? defaultWhatsapp.displayPhoneNumber,
+      },
+    });
+  }
+
+  const catalog = flattenSmogyiceCatalog();
+  const seededProducts = [];
+
+  for (const categoryInput of catalog) {
+    const category = await prisma.category.upsert({
+      where: {
+        restaurantId_slug: {
+          restaurantId: restaurant.id,
+          slug: categoryInput.slug,
+        },
+      },
+      update: {
+        name: categoryInput.name,
+        description: `Smogy Ice ${categoryInput.name} menu.`,
+        sortOrder: categoryInput.sortOrder,
+        isActive: true,
+      },
+      create: {
+        restaurantId: restaurant.id,
+        name: categoryInput.name,
+        slug: categoryInput.slug,
+        description: `Smogy Ice ${categoryInput.name} menu.`,
+        sortOrder: categoryInput.sortOrder,
+      },
+    });
+
+    for (const productInput of categoryInput.products) {
+      const product = await prisma.product.upsert({
+        where: {
+          restaurantId_slug: {
+            restaurantId: restaurant.id,
+            slug: productInput.slug,
+          },
+        },
+        update: {
+          categoryId: category.id,
+          name: productInput.name,
+          description: productInput.description,
+          imageUrl: productInput.imageUrl,
+          basePrice: new Prisma.Decimal(String(productInput.basePrice)),
+          isActive: true,
+          isAvailable: true,
+          deliveryAvailable: true,
+          pickupAvailable: true,
+          displayOrder: productInput.displayOrder,
+        },
+        create: {
+          restaurantId: restaurant.id,
+          categoryId: category.id,
+          name: productInput.name,
+          slug: productInput.slug,
+          description: productInput.description,
+          imageUrl: productInput.imageUrl,
+          basePrice: new Prisma.Decimal(String(productInput.basePrice)),
+          displayOrder: productInput.displayOrder,
+        },
+      });
+      seededProducts.push({ product, categorySlug: categoryInput.slug });
+
+      for (const variantInput of productInput.variants) {
+        await prisma.productVariant.upsert({
+          where: {
+            productId_name: {
+              productId: product.id,
+              name: variantInput.name,
+            },
+          },
+          update: {
+            fixedPrice: new Prisma.Decimal(String(variantInput.fixedPrice)),
+            priceDelta: null,
+            isDefault: variantInput.isDefault,
+            isActive: true,
+            sortOrder: variantInput.sortOrder,
+          },
+          create: {
+            productId: product.id,
+            name: variantInput.name,
+            fixedPrice: new Prisma.Decimal(String(variantInput.fixedPrice)),
+            isDefault: variantInput.isDefault,
+            sortOrder: variantInput.sortOrder,
+          },
+        });
+      }
+
+      for (const branch of branches) {
+        await prisma.productBranchAvailability.upsert({
+          where: {
+            productId_branchId: {
+              productId: product.id,
+              branchId: branch.id,
+            },
+          },
+          update: {
+            isAvailable: true,
+            deliveryAvailable: true,
+            pickupAvailable: true,
+          },
+          create: {
+            productId: product.id,
+            branchId: branch.id,
+            isAvailable: true,
+            deliveryAvailable: true,
+            pickupAvailable: true,
+          },
+        });
+      }
+
+      if (["live-ice-cream", "signature-live"].includes(categoryInput.slug)) {
+        const addonGroup = await prisma.addonGroup.upsert({
+          where: {
+            productId_name: {
+              productId: product.id,
+              name: "Extra Toppings",
+            },
+          },
+          update: {
+            minSelect: 0,
+            maxSelect: 3,
+            isRequired: false,
+            isActive: true,
+            sortOrder: 1,
+          },
+          create: {
+            productId: product.id,
+            name: "Extra Toppings",
+            minSelect: 0,
+            maxSelect: 3,
+            sortOrder: 1,
+          },
+        });
+
+        const addons = [
+          ["Extra Oreo Crumbs", "80"],
+          ["Chocolate Drizzle", "100"],
+          ["Brownie Chunks", "150"],
+        ];
+        for (let addonIndex = 0; addonIndex < addons.length; addonIndex += 1) {
+          const [name, price] = addons[addonIndex];
+          await prisma.addon.upsert({
+            where: {
+              addonGroupId_name: {
+                addonGroupId: addonGroup.id,
+                name,
+              },
+            },
+            update: {
+              price: new Prisma.Decimal(price),
+              isActive: true,
+              sortOrder: addonIndex + 1,
+            },
+            create: {
+              addonGroupId: addonGroup.id,
+              name,
+              price: new Prisma.Decimal(price),
+              sortOrder: addonIndex + 1,
+            },
+          });
+        }
+      }
+    }
+  }
+
+  await prisma.whatsappMessageLog.deleteMany({
+    where: {
+      restaurantId: restaurant.id,
+    },
+  });
+  await prisma.order.deleteMany({
+    where: {
+      restaurantId: restaurant.id,
+    },
+  });
+  await prisma.customer.deleteMany({
+    where: {
+      restaurantId: restaurant.id,
+    },
+  });
+
+  return {
+    restaurant,
+    branches,
+    productsCount: seededProducts.length,
+  };
+}
+
 async function main() {
-  const authAdmin = await ensureAuthAdmin();
+  const authAdmin = await ensureAuthAdmin({
+    email: adminEmail,
+    password: adminPassword,
+    name: adminName,
+  });
+  const smogyiceAuthAdmin = await ensureAuthAdmin({
+    email: smogyiceAdminEmail,
+    password: smogyiceAdminPassword,
+    name: smogyiceAdminName,
+  });
+  const smogyiceDemo = await upsertSmogyiceDemo();
+
+  await prisma.adminUser.upsert({
+    where: { authUserId: smogyiceAuthAdmin.id },
+    update: {
+      restaurantId: smogyiceDemo.restaurant.id,
+      name: smogyiceAdminName,
+      email: smogyiceAdminEmail,
+      isActive: true,
+    },
+    create: {
+      restaurantId: smogyiceDemo.restaurant.id,
+      authUserId: smogyiceAuthAdmin.id,
+      name: smogyiceAdminName,
+      email: smogyiceAdminEmail,
+      isActive: true,
+    },
+  });
 
   const restaurant = await prisma.restaurant.upsert({
     where: { slug: "demo-napcart-kitchen" },
@@ -223,44 +1027,44 @@ async function main() {
     },
   });
 
-  const restaurantWhatsapp = await prisma.whatsappConnection.upsert({
-    where: { id: `00000000-0000-4000-8000-${restaurant.id.slice(-12)}` },
-    update: {},
-    create: {
-      id: `00000000-0000-4000-8000-${restaurant.id.slice(-12)}`,
-      restaurantId: restaurant.id,
-      provider: WhatsappProvider.MOCK,
-      businessName: "NapCart Demo Ops",
-      displayPhoneNumber: "+92 300 1111111",
-      isDefaultForRestaurant: true,
-    },
-  });
-
-  await prisma.whatsappConnection.upsert({
-    where: { id: `10000000-0000-4000-8000-${dhaBranch.id.slice(-12)}` },
-    update: {},
-    create: {
-      id: `10000000-0000-4000-8000-${dhaBranch.id.slice(-12)}`,
-      restaurantId: restaurant.id,
-      branchId: dhaBranch.id,
-      provider: WhatsappProvider.MOCK,
-      businessName: "NapCart DHA Ops",
-      displayPhoneNumber: "+92 300 2222222",
-    },
-  });
-
-  await prisma.whatsappConnection.upsert({
-    where: { id: `20000000-0000-4000-8000-${gulshanBranch.id.slice(-12)}` },
-    update: {},
-    create: {
-      id: `20000000-0000-4000-8000-${gulshanBranch.id.slice(-12)}`,
-      restaurantId: restaurant.id,
-      branchId: gulshanBranch.id,
-      provider: WhatsappProvider.MOCK,
-      businessName: "NapCart Gulshan Ops",
-      displayPhoneNumber: "+92 300 3333333",
-    },
-  });
+  const [restaurantWhatsapp, dhaWhatsapp, gulshanWhatsapp] = await Promise.all([
+    prisma.whatsappConnection.upsert({
+      where: { id: `00000000-0000-4000-8000-${restaurant.id.slice(-12)}` },
+      update: {},
+      create: {
+        id: `00000000-0000-4000-8000-${restaurant.id.slice(-12)}`,
+        restaurantId: restaurant.id,
+        provider: WhatsappProvider.MOCK,
+        businessName: "NapCart Demo Ops",
+        displayPhoneNumber: "+92 300 1111111",
+        isDefaultForRestaurant: true,
+      },
+    }),
+    prisma.whatsappConnection.upsert({
+      where: { id: `10000000-0000-4000-8000-${dhaBranch.id.slice(-12)}` },
+      update: {},
+      create: {
+        id: `10000000-0000-4000-8000-${dhaBranch.id.slice(-12)}`,
+        restaurantId: restaurant.id,
+        branchId: dhaBranch.id,
+        provider: WhatsappProvider.MOCK,
+        businessName: "NapCart DHA Ops",
+        displayPhoneNumber: "+92 300 2222222",
+      },
+    }),
+    prisma.whatsappConnection.upsert({
+      where: { id: `20000000-0000-4000-8000-${gulshanBranch.id.slice(-12)}` },
+      update: {},
+      create: {
+        id: `20000000-0000-4000-8000-${gulshanBranch.id.slice(-12)}`,
+        restaurantId: restaurant.id,
+        branchId: gulshanBranch.id,
+        provider: WhatsappProvider.MOCK,
+        businessName: "NapCart Gulshan Ops",
+        displayPhoneNumber: "+92 300 3333333",
+      },
+    }),
+  ]);
 
   await prisma.adminUser.upsert({
     where: { authUserId: authAdmin.id },
@@ -324,7 +1128,8 @@ async function main() {
       categoryId: burgersCategory.id,
       name: "Double Smash Burger",
       slug: "double-smash-burger",
-      description: "Two smashed beef patties with lettuce, onions, and house sauce.",
+      description:
+        "Two smashed beef patties with lettuce, onions, and house sauce.",
       basePrice: new Prisma.Decimal("1450"),
       displayOrder: 1,
     },
@@ -348,6 +1153,31 @@ async function main() {
       displayOrder: 1,
     },
   });
+
+  for (const product of [smashBurger, grilledPlatter]) {
+    for (const branch of [dhaBranch, gulshanBranch]) {
+      await prisma.productBranchAvailability.upsert({
+        where: {
+          productId_branchId: {
+            productId: product.id,
+            branchId: branch.id,
+          },
+        },
+        update: {
+          isAvailable: true,
+          deliveryAvailable: true,
+          pickupAvailable: true,
+        },
+        create: {
+          productId: product.id,
+          branchId: branch.id,
+          isAvailable: true,
+          deliveryAvailable: true,
+          pickupAvailable: true,
+        },
+      });
+    }
+  }
 
   await prisma.productVariant.upsert({
     where: {
@@ -481,160 +1311,66 @@ async function main() {
     },
   });
 
-  const customer = await prisma.customer.upsert({
+  await prisma.whatsappMessageLog.deleteMany({
     where: {
-      restaurantId_normalizedPhone: {
-        restaurantId: restaurant.id,
-        normalizedPhone: "+923001112233",
-      },
-    },
-    update: {
-      name: "Ayesha Khan",
-      rawPhoneInput: "0300 1112233",
-      totalOrdersCount: 1,
-      firstOrderAt: new Date(),
-      lastOrderAt: new Date(),
-    },
-    create: {
       restaurantId: restaurant.id,
-      name: "Ayesha Khan",
-      normalizedPhone: "+923001112233",
-      rawPhoneInput: "0300 1112233",
-      totalOrdersCount: 1,
-      firstOrderAt: new Date(),
-      lastOrderAt: new Date(),
     },
   });
 
-  const existingHomeAddress = await prisma.customerAddress.findFirst({
+  await prisma.order.deleteMany({
     where: {
-      customerId: customer.id,
-      label: "Home",
-    },
-  });
-
-  if (existingHomeAddress) {
-    await prisma.customerAddress.update({
-      where: { id: existingHomeAddress.id },
-      data: {
-        addressText: "Street 12, DHA Karachi",
-        deliveryNotes: "Ring the bell once.",
-        isDefault: true,
-      },
-    });
-  } else {
-    await prisma.customerAddress.create({
-      data: {
-        customerId: customer.id,
-        label: "Home",
-        addressText: "Street 12, DHA Karachi",
-        deliveryNotes: "Ring the bell once.",
-        isDefault: true,
-      },
-    });
-  }
-
-  const order = await prisma.order.upsert({
-    where: {
-      restaurantId_orderNumber: {
-        restaurantId: restaurant.id,
-        orderNumber: "NC-0001",
-      },
-    },
-    update: {},
-    create: {
       restaurantId: restaurant.id,
-      branchId: dhaBranch.id,
-      customerId: customer.id,
-      whatsappConnectionId: restaurantWhatsapp.id,
-      orderNumber: "NC-0001",
-      status: OrderStatus.CONFIRMED,
-      fulfillmentType: FulfillmentType.DELIVERY,
-      paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
-      paymentStatus: PaymentStatus.UNPAID,
-      customerNameSnapshot: "Ayesha Khan",
-      customerPhoneSnapshot: "+923001112233",
-      addressTextSnapshot: "Street 12, DHA Karachi",
-      deliveryNotes: "Ring the bell once.",
-      branchNameSnapshot: dhaBranch.name,
-      subtotal: new Prisma.Decimal("1600"),
-      deliveryFee: new Prisma.Decimal("150"),
-      discountTotal: new Prisma.Decimal("0"),
-      taxTotal: new Prisma.Decimal("0"),
-      grandTotal: new Prisma.Decimal("1750"),
-      currency: "PKR",
-      confirmedAt: new Date(),
-      items: {
-        create: {
-          productId: smashBurger.id,
-          productNameSnapshot: smashBurger.name,
-          variantNameSnapshot: "Double",
-          unitPrice: new Prisma.Decimal("1450"),
-          quantity: 1,
-          lineTotal: new Prisma.Decimal("1450"),
-          addons: {
-            create: {
-              addonNameSnapshot: "Extra Cheese",
-              addonPriceSnapshot: new Prisma.Decimal("150"),
-              quantity: 1,
-              lineTotal: new Prisma.Decimal("150"),
-            },
-          },
-        },
-      },
-      statusHistory: {
-        createMany: {
-          data: [
-            {
-              oldStatus: null,
-              newStatus: OrderStatus.PENDING_CONFIRMATION,
-              changeSource: OrderStatusChangeSource.SYSTEM,
-              notes: "Order placed from storefront.",
-            },
-            {
-              oldStatus: OrderStatus.PENDING_CONFIRMATION,
-              newStatus: OrderStatus.CONFIRMED,
-              changeSource: OrderStatusChangeSource.WHATSAPP_STAFF_ACTION,
-              notes: "Confirmed by restaurant staff.",
-            },
-          ],
-        },
-      },
-      whatsappMessageLogs: {
-        createMany: {
-          data: [
-            {
-              restaurantId: restaurant.id,
-              branchId: dhaBranch.id,
-              whatsappConnectionId: restaurantWhatsapp.id,
-              direction: WhatsappMessageDirection.OUTBOUND,
-              messageType: "order_notification",
-              payloadJson: {
-                orderNumber: "NC-0001",
-                branch: dhaBranch.name,
-              },
-              status: WhatsappMessageStatus.SENT,
-              sentAt: new Date(),
-            },
-            {
-              restaurantId: restaurant.id,
-              branchId: dhaBranch.id,
-              whatsappConnectionId: restaurantWhatsapp.id,
-              direction: WhatsappMessageDirection.INBOUND,
-              messageType: "staff_action",
-              payloadJson: {
-                action: "confirm",
-                orderNumber: "NC-0001",
-              },
-              status: WhatsappMessageStatus.PROCESSED,
-              receivedAt: new Date(),
-              processedAt: new Date(),
-            },
-          ],
-        },
-      },
     },
   });
+
+  await prisma.customer.deleteMany({
+    where: {
+      restaurantId: restaurant.id,
+    },
+  });
+
+  const dataset = buildDashboardMockDataset({
+    restaurant,
+    branches: {
+      dha: dhaBranch,
+      gulshan: gulshanBranch,
+    },
+    whatsappConnections: {
+      restaurant: restaurantWhatsapp,
+      dha: dhaWhatsapp,
+      gulshan: gulshanWhatsapp,
+    },
+    products: {
+      smashBurger,
+      grilledPlatter,
+    },
+  });
+
+  await createManyInChunks(
+    (rows) => prisma.customer.createMany({ data: rows }),
+    dataset.customers,
+    250,
+  );
+  await createManyInChunks(
+    (rows) => prisma.customerAddress.createMany({ data: rows }),
+    dataset.addresses,
+    250,
+  );
+  await createManyInChunks(
+    (rows) => prisma.order.createMany({ data: rows }),
+    dataset.orders,
+    150,
+  );
+  await createManyInChunks(
+    (rows) => prisma.orderItem.createMany({ data: rows }),
+    dataset.orderItems,
+    250,
+  );
+  await createManyInChunks(
+    (rows) => prisma.orderStatusHistory.createMany({ data: rows }),
+    dataset.statusHistory,
+    250,
+  );
 
   console.log("Seed complete.");
   console.log(
@@ -644,8 +1380,27 @@ async function main() {
         branches: [dhaBranch.slug, gulshanBranch.slug],
         adminEmail,
         adminPassword,
-        sampleOrder: order.orderNumber,
+        customerCount: dataset.customers.length,
+        orderCount: dataset.orders.length,
+        confirmedOrders: dataset.orders.filter(
+          (item) => item.status === OrderStatus.CONFIRMED,
+        ).length,
+        pendingOrders: dataset.orders.filter(
+          (item) => item.status === OrderStatus.PENDING_CONFIRMATION,
+        ).length,
+        cancelledOrders: dataset.orders.filter(
+          (item) => item.status === OrderStatus.CANCELLED,
+        ).length,
+        sampleOrder: dataset.orders[0]?.orderNumber,
         addonGroupId: burgerAddons.id,
+        storefrontDemo: {
+          restaurant: smogyiceDemo.restaurant.slug,
+          branches: smogyiceDemo.branches.map((branch) => branch.slug),
+          products: smogyiceDemo.productsCount,
+          url: `/storefront/${smogyiceDemo.restaurant.slug}`,
+          adminEmail: smogyiceAdminEmail,
+          adminPassword: smogyiceAdminPassword,
+        },
       },
       null,
       2,

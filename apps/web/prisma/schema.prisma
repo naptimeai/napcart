@@ -63,52 +63,53 @@ enum OrderStatusChangeSource {
 }
 
 model Restaurant {
-  id                 String                @id @default(uuid()) @db.Uuid
-  name               String
-  slug               String                @unique
-  logoUrl            String?               @map("logo_url")
-  supportPhone       String                @map("support_phone")
-  defaultCurrency    String                @default("PKR") @map("default_currency")
-  defaultLanguage    String                @default("English") @map("default_language")
-  timezone           String                @default("Asia/Karachi")
-  contactEmail       String?               @map("contact_email")
-  isActive           Boolean               @default(true) @map("is_active")
-  createdAt          DateTime              @default(now()) @map("created_at")
-  updatedAt          DateTime              @updatedAt @map("updated_at")
-  branches           Branch[]
-  settings           RestaurantSettings?
-  adminUsers         AdminUser[]
+  id                  String               @id @default(uuid()) @db.Uuid
+  name                String
+  slug                String               @unique
+  logoUrl             String?              @map("logo_url")
+  supportPhone        String               @map("support_phone")
+  defaultCurrency     String               @default("PKR") @map("default_currency")
+  defaultLanguage     String               @default("English") @map("default_language")
+  timezone            String               @default("Asia/Karachi")
+  contactEmail        String?              @map("contact_email")
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  branches            Branch[]
+  settings            RestaurantSettings?
+  adminUsers          AdminUser[]
   whatsappConnections WhatsappConnection[]
-  categories         Category[]
-  products           Product[]
-  customers          Customer[]
-  orders             Order[]
+  categories          Category[]
+  products            Product[]
+  customers           Customer[]
+  orders              Order[]
   whatsappMessageLogs WhatsappMessageLog[]
 
   @@map("restaurants")
 }
 
 model Branch {
-  id                   String                @id @default(uuid()) @db.Uuid
-  restaurantId         String                @db.Uuid @map("restaurant_id")
-  name                 String
-  slug                 String
-  phone                String?
-  addressText          String                @map("address_text")
-  latitude             Decimal?              @db.Decimal(10, 7)
-  longitude            Decimal?              @db.Decimal(10, 7)
-  isActive             Boolean               @default(true) @map("is_active")
-  isAcceptingOrders    Boolean               @default(true) @map("is_accepting_orders")
-  isTemporarilyClosed  Boolean               @default(false) @map("is_temporarily_closed")
-  displayOrder         Int                   @default(0) @map("display_order")
-  createdAt            DateTime              @default(now()) @map("created_at")
-  updatedAt            DateTime              @updatedAt @map("updated_at")
-  restaurant           Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  operatingHours       BranchOperatingHour[]
-  deliveryZones        DeliveryZone[]
-  orders               Order[]
-  whatsappConnections  WhatsappConnection[]
-  whatsappMessageLogs  WhatsappMessageLog[]
+  id                  String                      @id @default(uuid()) @db.Uuid
+  restaurantId        String                      @map("restaurant_id") @db.Uuid
+  name                String
+  slug                String
+  phone               String?
+  addressText         String                      @map("address_text")
+  latitude            Decimal?                    @db.Decimal(10, 7)
+  longitude           Decimal?                    @db.Decimal(10, 7)
+  isActive            Boolean                     @default(true) @map("is_active")
+  isAcceptingOrders   Boolean                     @default(true) @map("is_accepting_orders")
+  isTemporarilyClosed Boolean                     @default(false) @map("is_temporarily_closed")
+  displayOrder        Int                         @default(0) @map("display_order")
+  createdAt           DateTime                    @default(now()) @map("created_at")
+  updatedAt           DateTime                    @updatedAt @map("updated_at")
+  restaurant          Restaurant                  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  operatingHours      BranchOperatingHour[]
+  deliveryZones       DeliveryZone[]
+  productAvailability ProductBranchAvailability[]
+  orders              Order[]
+  whatsappConnections WhatsappConnection[]
+  whatsappMessageLogs WhatsappMessageLog[]
 
   @@unique([restaurantId, slug])
   @@index([restaurantId])
@@ -116,15 +117,15 @@ model Branch {
 }
 
 model BranchOperatingHour {
-  id         String    @id @default(uuid()) @db.Uuid
-  branchId   String    @db.Uuid @map("branch_id")
-  dayOfWeek  DayOfWeek @map("day_of_week")
-  openTime   String?   @map("open_time")
-  closeTime  String?   @map("close_time")
-  isClosed   Boolean   @default(false) @map("is_closed")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  branch     Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid()) @db.Uuid
+  branchId  String    @map("branch_id") @db.Uuid
+  dayOfWeek DayOfWeek @map("day_of_week")
+  openTime  String?   @map("open_time")
+  closeTime String?   @map("close_time")
+  isClosed  Boolean   @default(false) @map("is_closed")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  branch    Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
   @@unique([branchId, dayOfWeek])
   @@index([branchId])
@@ -133,10 +134,10 @@ model BranchOperatingHour {
 
 model RestaurantSettings {
   id                           String     @id @default(uuid()) @db.Uuid
-  restaurantId                 String     @unique @db.Uuid @map("restaurant_id")
+  restaurantId                 String     @unique @map("restaurant_id") @db.Uuid
   isAcceptingOrders            Boolean    @default(true) @map("is_accepting_orders")
   isGloballyClosed             Boolean    @default(false) @map("is_globally_closed")
-  minimumOrderAmount           Decimal?   @db.Decimal(10, 2) @map("minimum_order_amount")
+  minimumOrderAmount           Decimal?   @map("minimum_order_amount") @db.Decimal(10, 2)
   pickupEnabled                Boolean    @default(true) @map("pickup_enabled")
   deliveryEnabled              Boolean    @default(true) @map("delivery_enabled")
   showBranchSelection          Boolean    @default(true) @map("show_branch_selection")
@@ -150,16 +151,16 @@ model RestaurantSettings {
 }
 
 model AdminUser {
-  id                      String              @id @default(uuid()) @db.Uuid
-  restaurantId            String              @db.Uuid @map("restaurant_id")
-  authUserId              String?             @unique @db.Uuid @map("auth_user_id")
-  name                    String
-  email                   String
-  isActive                Boolean             @default(true) @map("is_active")
-  createdAt               DateTime            @default(now()) @map("created_at")
-  updatedAt               DateTime            @updatedAt @map("updated_at")
-  restaurant              Restaurant          @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderStatusChanges      OrderStatusHistory[]
+  id                 String               @id @default(uuid()) @db.Uuid
+  restaurantId       String               @map("restaurant_id") @db.Uuid
+  authUserId         String?              @unique @map("auth_user_id") @db.Uuid
+  name               String
+  email              String
+  isActive           Boolean              @default(true) @map("is_active")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  restaurant         Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderStatusChanges OrderStatusHistory[]
 
   @@unique([restaurantId, email])
   @@index([restaurantId])
@@ -167,25 +168,25 @@ model AdminUser {
 }
 
 model WhatsappConnection {
-  id                           String                   @id @default(uuid()) @db.Uuid
-  restaurantId                 String                   @db.Uuid @map("restaurant_id")
-  branchId                     String?                  @db.Uuid @map("branch_id")
-  provider                     WhatsappProvider
-  businessName                 String                   @map("business_name")
-  whatsappBusinessAccountId    String?                  @map("whatsapp_business_account_id")
-  phoneNumberId                String?                  @map("phone_number_id")
-  displayPhoneNumber           String                   @map("display_phone_number")
-  apiBaseUrl                   String?                  @map("api_base_url")
-  accessTokenEncrypted         String?                  @map("access_token_encrypted")
-  webhookVerifyTokenEncrypted  String?                  @map("webhook_verify_token_encrypted")
-  isActive                     Boolean                  @default(true) @map("is_active")
-  isDefaultForRestaurant       Boolean                  @default(false) @map("is_default_for_restaurant")
-  createdAt                    DateTime                 @default(now()) @map("created_at")
-  updatedAt                    DateTime                 @updatedAt @map("updated_at")
-  restaurant                   Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  branch                       Branch?                  @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  orders                       Order[]
-  whatsappMessageLogs          WhatsappMessageLog[]
+  id                          String               @id @default(uuid()) @db.Uuid
+  restaurantId                String               @map("restaurant_id") @db.Uuid
+  branchId                    String?              @map("branch_id") @db.Uuid
+  provider                    WhatsappProvider
+  businessName                String               @map("business_name")
+  whatsappBusinessAccountId   String?              @map("whatsapp_business_account_id")
+  phoneNumberId               String?              @map("phone_number_id")
+  displayPhoneNumber          String               @map("display_phone_number")
+  apiBaseUrl                  String?              @map("api_base_url")
+  accessTokenEncrypted        String?              @map("access_token_encrypted")
+  webhookVerifyTokenEncrypted String?              @map("webhook_verify_token_encrypted")
+  isActive                    Boolean              @default(true) @map("is_active")
+  isDefaultForRestaurant      Boolean              @default(false) @map("is_default_for_restaurant")
+  createdAt                   DateTime             @default(now()) @map("created_at")
+  updatedAt                   DateTime             @updatedAt @map("updated_at")
+  restaurant                  Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch                      Branch?              @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  orders                      Order[]
+  whatsappMessageLogs         WhatsappMessageLog[]
 
   @@index([restaurantId])
   @@index([branchId])
@@ -193,17 +194,17 @@ model WhatsappConnection {
 }
 
 model Category {
-  id          String     @id @default(uuid()) @db.Uuid
-  restaurantId String    @db.Uuid @map("restaurant_id")
-  name        String
-  slug        String
-  description String?
-  sortOrder   Int        @default(0) @map("sort_order")
-  isActive    Boolean    @default(true) @map("is_active")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-  restaurant  Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  products    Product[]
+  id           String     @id @default(uuid()) @db.Uuid
+  restaurantId String     @map("restaurant_id") @db.Uuid
+  name         String
+  slug         String
+  description  String?
+  sortOrder    Int        @default(0) @map("sort_order")
+  isActive     Boolean    @default(true) @map("is_active")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
 
   @@unique([restaurantId, slug])
   @@index([restaurantId])
@@ -211,26 +212,27 @@ model Category {
 }
 
 model Product {
-  id                String           @id @default(uuid()) @db.Uuid
-  restaurantId      String           @db.Uuid @map("restaurant_id")
-  categoryId        String           @db.Uuid @map("category_id")
-  name              String
-  slug              String
-  description       String?
-  imageUrl          String?          @map("image_url")
-  basePrice         Decimal          @db.Decimal(10, 2) @map("base_price")
-  isActive          Boolean          @default(true) @map("is_active")
-  isAvailable       Boolean          @default(true) @map("is_available")
-  deliveryAvailable Boolean          @default(true) @map("delivery_available")
-  pickupAvailable   Boolean          @default(true) @map("pickup_available")
-  displayOrder      Int              @default(0) @map("display_order")
-  createdAt         DateTime         @default(now()) @map("created_at")
-  updatedAt         DateTime         @updatedAt @map("updated_at")
-  restaurant        Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  variants          ProductVariant[]
-  addonGroups       AddonGroup[]
-  orderItems        OrderItem[]
+  id                 String                      @id @default(uuid()) @db.Uuid
+  restaurantId       String                      @map("restaurant_id") @db.Uuid
+  categoryId         String                      @map("category_id") @db.Uuid
+  name               String
+  slug               String
+  description        String?
+  imageUrl           String?                     @map("image_url")
+  basePrice          Decimal                     @map("base_price") @db.Decimal(10, 2)
+  isActive           Boolean                     @default(true) @map("is_active")
+  isAvailable        Boolean                     @default(true) @map("is_available")
+  deliveryAvailable  Boolean                     @default(true) @map("delivery_available")
+  pickupAvailable    Boolean                     @default(true) @map("pickup_available")
+  displayOrder       Int                         @default(0) @map("display_order")
+  createdAt          DateTime                    @default(now()) @map("created_at")
+  updatedAt          DateTime                    @updatedAt @map("updated_at")
+  restaurant         Restaurant                  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category           Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants           ProductVariant[]
+  addonGroups        AddonGroup[]
+  branchAvailability ProductBranchAvailability[]
+  orderItems         OrderItem[]
 
   @@unique([restaurantId, slug])
   @@index([restaurantId])
@@ -238,19 +240,37 @@ model Product {
   @@map("products")
 }
 
+model ProductBranchAvailability {
+  id                String   @id @default(uuid()) @db.Uuid
+  productId         String   @map("product_id") @db.Uuid
+  branchId          String   @map("branch_id") @db.Uuid
+  isAvailable       Boolean  @default(true) @map("is_available")
+  deliveryAvailable Boolean  @default(true) @map("delivery_available")
+  pickupAvailable   Boolean  @default(true) @map("pickup_available")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  branch            Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, branchId])
+  @@index([branchId])
+  @@index([productId])
+  @@map("product_branch_availability")
+}
+
 model ProductVariant {
-  id          String   @id @default(uuid()) @db.Uuid
-  productId   String   @db.Uuid @map("product_id")
-  name        String
-  sku         String?
-  priceDelta  Decimal? @db.Decimal(10, 2) @map("price_delta")
-  fixedPrice  Decimal? @db.Decimal(10, 2) @map("fixed_price")
-  isDefault   Boolean  @default(false) @map("is_default")
-  isActive    Boolean  @default(true) @map("is_active")
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  name       String
+  sku        String?
+  priceDelta Decimal? @map("price_delta") @db.Decimal(10, 2)
+  fixedPrice Decimal? @map("fixed_price") @db.Decimal(10, 2)
+  isDefault  Boolean  @default(false) @map("is_default")
+  isActive   Boolean  @default(true) @map("is_active")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, name])
   @@index([productId])
@@ -259,7 +279,7 @@ model ProductVariant {
 
 model AddonGroup {
   id         String   @id @default(uuid()) @db.Uuid
-  productId  String   @db.Uuid @map("product_id")
+  productId  String   @map("product_id") @db.Uuid
   name       String
   minSelect  Int      @default(0) @map("min_select")
   maxSelect  Int      @default(1) @map("max_select")
@@ -278,7 +298,7 @@ model AddonGroup {
 
 model Addon {
   id           String     @id @default(uuid()) @db.Uuid
-  addonGroupId String     @db.Uuid @map("addon_group_id")
+  addonGroupId String     @map("addon_group_id") @db.Uuid
   name         String
   price        Decimal    @db.Decimal(10, 2)
   isActive     Boolean    @default(true) @map("is_active")
@@ -294,12 +314,12 @@ model Addon {
 
 model DeliveryZone {
   id                 String   @id @default(uuid()) @db.Uuid
-  branchId           String   @db.Uuid @map("branch_id")
+  branchId           String   @map("branch_id") @db.Uuid
   name               String
-  maxDistanceKm      Decimal? @db.Decimal(5, 2) @map("max_distance_km")
+  maxDistanceKm      Decimal? @map("max_distance_km") @db.Decimal(5, 2)
   areaLabel          String?  @map("area_label")
   fee                Decimal  @db.Decimal(10, 2)
-  minimumOrderAmount Decimal? @db.Decimal(10, 2) @map("minimum_order_amount")
+  minimumOrderAmount Decimal? @map("minimum_order_amount") @db.Decimal(10, 2)
   isActive           Boolean  @default(true) @map("is_active")
   sortOrder          Int      @default(0) @map("sort_order")
   createdAt          DateTime @default(now()) @map("created_at")
@@ -313,7 +333,7 @@ model DeliveryZone {
 
 model Customer {
   id               String            @id @default(uuid()) @db.Uuid
-  restaurantId     String            @db.Uuid @map("restaurant_id")
+  restaurantId     String            @map("restaurant_id") @db.Uuid
   name             String
   normalizedPhone  String            @map("normalized_phone")
   rawPhoneInput    String            @map("raw_phone_input")
@@ -334,55 +354,55 @@ model Customer {
 }
 
 model CustomerAddress {
-  id            String    @id @default(uuid()) @db.Uuid
-  customerId    String    @db.Uuid @map("customer_id")
+  id            String   @id @default(uuid()) @db.Uuid
+  customerId    String   @map("customer_id") @db.Uuid
   label         String?
-  addressText   String    @map("address_text")
-  latitude      Decimal?  @db.Decimal(10, 7)
-  longitude     Decimal?  @db.Decimal(10, 7)
-  deliveryNotes String?   @map("delivery_notes")
-  isDefault     Boolean   @default(false) @map("is_default")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  addressText   String   @map("address_text")
+  latitude      Decimal? @db.Decimal(10, 7)
+  longitude     Decimal? @db.Decimal(10, 7)
+  deliveryNotes String?  @map("delivery_notes")
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
   @@map("customer_addresses")
 }
 
 model Order {
-  id                    String                @id @default(uuid()) @db.Uuid
-  restaurantId          String                @db.Uuid @map("restaurant_id")
-  branchId              String                @db.Uuid @map("branch_id")
-  customerId            String?               @db.Uuid @map("customer_id")
-  whatsappConnectionId  String?               @db.Uuid @map("whatsapp_connection_id")
-  orderNumber           String                @map("order_number")
+  id                    String               @id @default(uuid()) @db.Uuid
+  restaurantId          String               @map("restaurant_id") @db.Uuid
+  branchId              String               @map("branch_id") @db.Uuid
+  customerId            String?              @map("customer_id") @db.Uuid
+  whatsappConnectionId  String?              @map("whatsapp_connection_id") @db.Uuid
+  orderNumber           String               @map("order_number")
   status                OrderStatus
-  fulfillmentType       FulfillmentType       @map("fulfillment_type")
-  paymentMethod         PaymentMethod         @map("payment_method")
-  paymentStatus         PaymentStatus         @default(UNPAID) @map("payment_status")
-  customerNameSnapshot  String                @map("customer_name_snapshot")
-  customerPhoneSnapshot String                @map("customer_phone_snapshot")
-  addressTextSnapshot   String?               @map("address_text_snapshot")
-  latitudeSnapshot      Decimal?              @db.Decimal(10, 7) @map("latitude_snapshot")
-  longitudeSnapshot     Decimal?              @db.Decimal(10, 7) @map("longitude_snapshot")
-  deliveryNotes         String?               @map("delivery_notes")
-  branchNameSnapshot    String                @map("branch_name_snapshot")
-  subtotal              Decimal               @db.Decimal(10, 2)
-  deliveryFee           Decimal               @db.Decimal(10, 2) @map("delivery_fee")
-  discountTotal         Decimal               @default(0) @db.Decimal(10, 2) @map("discount_total")
-  taxTotal              Decimal               @default(0) @db.Decimal(10, 2) @map("tax_total")
-  grandTotal            Decimal               @db.Decimal(10, 2) @map("grand_total")
-  currency              String                @default("PKR")
-  placedAt              DateTime              @default(now()) @map("placed_at")
-  confirmedAt           DateTime?             @map("confirmed_at")
-  cancelledAt           DateTime?             @map("cancelled_at")
-  createdAt             DateTime              @default(now()) @map("created_at")
-  updatedAt             DateTime              @updatedAt @map("updated_at")
-  restaurant            Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  branch                Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  customer              Customer?             @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  whatsappConnection    WhatsappConnection?   @relation(fields: [whatsappConnectionId], references: [id], onDelete: SetNull)
+  fulfillmentType       FulfillmentType      @map("fulfillment_type")
+  paymentMethod         PaymentMethod        @map("payment_method")
+  paymentStatus         PaymentStatus        @default(UNPAID) @map("payment_status")
+  customerNameSnapshot  String               @map("customer_name_snapshot")
+  customerPhoneSnapshot String               @map("customer_phone_snapshot")
+  addressTextSnapshot   String?              @map("address_text_snapshot")
+  latitudeSnapshot      Decimal?             @map("latitude_snapshot") @db.Decimal(10, 7)
+  longitudeSnapshot     Decimal?             @map("longitude_snapshot") @db.Decimal(10, 7)
+  deliveryNotes         String?              @map("delivery_notes")
+  branchNameSnapshot    String               @map("branch_name_snapshot")
+  subtotal              Decimal              @db.Decimal(10, 2)
+  deliveryFee           Decimal              @map("delivery_fee") @db.Decimal(10, 2)
+  discountTotal         Decimal              @default(0) @map("discount_total") @db.Decimal(10, 2)
+  taxTotal              Decimal              @default(0) @map("tax_total") @db.Decimal(10, 2)
+  grandTotal            Decimal              @map("grand_total") @db.Decimal(10, 2)
+  currency              String               @default("PKR")
+  placedAt              DateTime             @default(now()) @map("placed_at")
+  confirmedAt           DateTime?            @map("confirmed_at")
+  cancelledAt           DateTime?            @map("cancelled_at")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  restaurant            Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch                Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  customer              Customer?            @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  whatsappConnection    WhatsappConnection?  @relation(fields: [whatsappConnectionId], references: [id], onDelete: SetNull)
   items                 OrderItem[]
   statusHistory         OrderStatusHistory[]
   whatsappMessageLogs   WhatsappMessageLog[]
@@ -398,13 +418,13 @@ model Order {
 
 model OrderItem {
   id                  String           @id @default(uuid()) @db.Uuid
-  orderId             String           @db.Uuid @map("order_id")
-  productId           String?          @db.Uuid @map("product_id")
+  orderId             String           @map("order_id") @db.Uuid
+  productId           String?          @map("product_id") @db.Uuid
   productNameSnapshot String           @map("product_name_snapshot")
   variantNameSnapshot String?          @map("variant_name_snapshot")
-  unitPrice           Decimal          @db.Decimal(10, 2) @map("unit_price")
+  unitPrice           Decimal          @map("unit_price") @db.Decimal(10, 2)
   quantity            Int
-  lineTotal           Decimal          @db.Decimal(10, 2) @map("line_total")
+  lineTotal           Decimal          @map("line_total") @db.Decimal(10, 2)
   itemNotes           String?          @map("item_notes")
   createdAt           DateTime         @default(now()) @map("created_at")
   updatedAt           DateTime         @updatedAt @map("updated_at")
@@ -418,11 +438,11 @@ model OrderItem {
 
 model OrderItemAddon {
   id                 String    @id @default(uuid()) @db.Uuid
-  orderItemId        String    @db.Uuid @map("order_item_id")
+  orderItemId        String    @map("order_item_id") @db.Uuid
   addonNameSnapshot  String    @map("addon_name_snapshot")
-  addonPriceSnapshot Decimal   @db.Decimal(10, 2) @map("addon_price_snapshot")
+  addonPriceSnapshot Decimal   @map("addon_price_snapshot") @db.Decimal(10, 2)
   quantity           Int
-  lineTotal          Decimal   @db.Decimal(10, 2) @map("line_total")
+  lineTotal          Decimal   @map("line_total") @db.Decimal(10, 2)
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
   orderItem          OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
@@ -432,16 +452,16 @@ model OrderItemAddon {
 }
 
 model OrderStatusHistory {
-  id                   String                   @id @default(uuid()) @db.Uuid
-  orderId              String                   @db.Uuid @map("order_id")
-  oldStatus            OrderStatus?             @map("old_status")
-  newStatus            OrderStatus              @map("new_status")
-  changeSource         OrderStatusChangeSource  @map("change_source")
-  changedByAdminUserId String?                  @db.Uuid @map("changed_by_admin_user_id")
-  changedAt            DateTime                 @default(now()) @map("changed_at")
+  id                   String                  @id @default(uuid()) @db.Uuid
+  orderId              String                  @map("order_id") @db.Uuid
+  oldStatus            OrderStatus?            @map("old_status")
+  newStatus            OrderStatus             @map("new_status")
+  changeSource         OrderStatusChangeSource @map("change_source")
+  changedByAdminUserId String?                 @map("changed_by_admin_user_id") @db.Uuid
+  changedAt            DateTime                @default(now()) @map("changed_at")
   notes                String?
-  order                Order                    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  changedByAdminUser   AdminUser?               @relation(fields: [changedByAdminUserId], references: [id], onDelete: SetNull)
+  order                Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changedByAdminUser   AdminUser?              @relation(fields: [changedByAdminUserId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([changedByAdminUserId])
@@ -449,28 +469,28 @@ model OrderStatusHistory {
 }
 
 model WhatsappMessageLog {
-  id                    String                    @id @default(uuid()) @db.Uuid
-  restaurantId          String                    @db.Uuid @map("restaurant_id")
-  branchId              String?                   @db.Uuid @map("branch_id")
-  orderId               String?                   @db.Uuid @map("order_id")
-  whatsappConnectionId  String?                   @db.Uuid @map("whatsapp_connection_id")
-  direction             WhatsappMessageDirection
-  messageType           String                    @map("message_type")
-  providerMessageId     String?                   @map("provider_message_id")
-  templateName          String?                   @map("template_name")
-  payloadJson           Json                      @map("payload_json")
-  responseJson          Json?                     @map("response_json")
-  status                WhatsappMessageStatus
-  errorMessage          String?                   @map("error_message")
-  sentAt                DateTime?                 @map("sent_at")
-  receivedAt            DateTime?                 @map("received_at")
-  processedAt           DateTime?                 @map("processed_at")
-  createdAt             DateTime                  @default(now()) @map("created_at")
-  updatedAt             DateTime                  @updatedAt @map("updated_at")
-  restaurant            Restaurant                @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  branch                Branch?                   @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  order                 Order?                    @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  whatsappConnection    WhatsappConnection?       @relation(fields: [whatsappConnectionId], references: [id], onDelete: SetNull)
+  id                   String                   @id @default(uuid()) @db.Uuid
+  restaurantId         String                   @map("restaurant_id") @db.Uuid
+  branchId             String?                  @map("branch_id") @db.Uuid
+  orderId              String?                  @map("order_id") @db.Uuid
+  whatsappConnectionId String?                  @map("whatsapp_connection_id") @db.Uuid
+  direction            WhatsappMessageDirection
+  messageType          String                   @map("message_type")
+  providerMessageId    String?                  @map("provider_message_id")
+  templateName         String?                  @map("template_name")
+  payloadJson          Json                     @map("payload_json")
+  responseJson         Json?                    @map("response_json")
+  status               WhatsappMessageStatus
+  errorMessage         String?                  @map("error_message")
+  sentAt               DateTime?                @map("sent_at")
+  receivedAt           DateTime?                @map("received_at")
+  processedAt          DateTime?                @map("processed_at")
+  createdAt            DateTime                 @default(now()) @map("created_at")
+  updatedAt            DateTime                 @updatedAt @map("updated_at")
+  restaurant           Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  branch               Branch?                  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  order                Order?                   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  whatsappConnection   WhatsappConnection?      @relation(fields: [whatsappConnectionId], references: [id], onDelete: SetNull)
 
   @@index([restaurantId])
   @@index([branchId])

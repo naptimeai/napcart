@@ -1,7 +1,18 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
 import Image from "next/image";
+import {
+  ArrowRight,
+  Building2,
+  MapPinned,
+  MessageCircleMore,
+  ShoppingBasket,
+  Truck,
+} from "lucide-react";
 import {
   CheckboxRow,
   Field,
+  PageNotice,
   SectionHeader,
   StatusPill,
   SubmitButton,
@@ -15,28 +26,76 @@ import {
 import { requireAdminSession } from "@/lib/auth/admin-session";
 import { getRestaurantSettingsData } from "@/server/repositories/restaurant-admin";
 
-export default async function RestaurantSettingsPage() {
+export default async function RestaurantSettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    notice?: string;
+    error?: string;
+  }>;
+}) {
   const session = await requireAdminSession();
   const restaurant = await getRestaurantSettingsData(session.restaurantId);
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
   return (
     <div className="space-y-4">
+      {resolvedSearchParams?.notice ? (
+        <PageNotice message={resolvedSearchParams.notice} />
+      ) : null}
+      {resolvedSearchParams?.error ? (
+        <PageNotice message={resolvedSearchParams.error} tone="error" />
+      ) : null}
       <Surface className="p-6 sm:p-7 lg:p-8">
         <SectionHeader
-          eyebrow="Restaurant configuration"
-          title="Shape the operating identity your clients will actually experience"
-          description="Phase 2 turns your restaurant record into a controllable brand surface. Update core identity, storefront-facing contact points, and the operating controls that determine whether NapCart should accept orders."
+          eyebrow="Settings workspace"
+          title="Restaurant, branch, and WhatsApp settings"
+          description="Manage the core operational setup from one place, then jump into the exact area you want to update."
         />
       </Surface>
+
+      <div className="grid gap-4 xl:grid-cols-5">
+        <SettingsNavCard
+          description="Edit identity, contact details, fulfillment controls, and restaurant-wide launch settings."
+          href="/admin/settings"
+          icon={<Building2 className="size-5" />}
+          isCurrent
+          title="Restaurant profile"
+        />
+        <SettingsNavCard
+          description="Maintain branches, addresses, opening hours, temporary closure, and accepting-order status."
+          href="/admin/branches"
+          icon={<MapPinned className="size-5" />}
+          title="Branches"
+        />
+        <SettingsNavCard
+          description="Configure default and branch-specific WhatsApp routes for order delivery to staff."
+          href="/admin/whatsapp"
+          icon={<MessageCircleMore className="size-5" />}
+          title="WhatsApp routing"
+        />
+        <SettingsNavCard
+          description="Manage categories, products, product images, variations, add-ons, and branch availability."
+          href="/admin/catalog"
+          icon={<ShoppingBasket className="size-5" />}
+          title="Catalog"
+        />
+        <SettingsNavCard
+          description="Set branch-wise delivery radius zones, fees, and minimum order rules."
+          href="/admin/delivery"
+          icon={<Truck className="size-5" />}
+          title="Delivery"
+        />
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.06fr_0.94fr]">
         <Surface className="p-6 sm:p-7">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+              <p className="text-xs font-medium text-muted-foreground">
                 Identity and branding
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
                 Restaurant profile
               </h2>
             </div>
@@ -92,35 +151,33 @@ export default async function RestaurantSettingsPage() {
             </div>
 
             <div className="grid gap-5 md:grid-cols-[220px_1fr]">
-              <div className="rounded-[1.7rem] border border-slate-200 bg-[#fbfaf7] p-4">
-                <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
+              <div className="rounded-lg border border-border bg-background p-4">
+                <p className="text-xs font-medium text-muted-foreground">
                   Current mark
                 </p>
-                <div className="mt-4 flex h-[170px] items-center justify-center rounded-[1.4rem] bg-white ring-1 ring-black/5">
+                <div className="mt-4 flex h-[170px] items-center justify-center rounded-lg bg-card ring-1 ring-border">
                   {restaurant.logoUrl ? (
                     <Image
                       alt={restaurant.name}
-                      className="h-24 w-24 rounded-[1.4rem] object-cover"
+                      className="h-24 w-24 rounded-lg object-cover"
                       height={96}
                       src={restaurant.logoUrl}
                       width={96}
                     />
                   ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-[1.4rem] bg-[#101a20] text-2xl font-semibold text-[#c4ff5f]">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-primary text-2xl font-semibold text-primary-foreground">
                       {restaurant.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-[1.7rem] border border-dashed border-slate-200 bg-[#fbfaf7] p-5">
-                <p className="text-sm font-semibold text-slate-950">
-                  Logo upload pipeline
+              <div className="rounded-lg border border-dashed border-border bg-background p-5">
+                <p className="text-sm font-semibold text-foreground">
+                  Logo upload
                 </p>
-                <p className="mt-2 text-sm leading-7 text-slate-500">
-                  This upload uses the live Supabase project and stores images in
-                  a reusable asset bucket so the same pipeline can serve future
-                  product images as well.
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Upload the restaurant logo used by the admin and future storefront.
                 </p>
                 <Field
                   hint="PNG, JPG, WEBP up to 5MB."
@@ -140,12 +197,17 @@ export default async function RestaurantSettingsPage() {
         <div className="space-y-4">
           <Surface className="p-6 sm:p-7">
             <div>
-              <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
-                Fulfillment controls
+              <p className="text-xs font-medium text-muted-foreground">
+                Restaurant-wide fulfillment defaults
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                Operational settings
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+                Global operational settings
               </h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Use these as restaurant-level controls. Individual branch pause,
+                closure, and availability controls live inside the branch settings
+                page.
+              </p>
             </div>
 
             <form
@@ -181,8 +243,8 @@ export default async function RestaurantSettingsPage() {
               />
               <CheckboxRow
                 defaultChecked={restaurant.settings?.isAcceptingOrders ?? true}
-                description="Master switch for whether the restaurant is currently taking orders."
-                label="Accepting orders"
+                description="Master switch for whether the whole restaurant should accept orders at all."
+                label="Restaurant accepting orders"
                 name="isAcceptingOrders"
               />
               <CheckboxRow
@@ -199,31 +261,43 @@ export default async function RestaurantSettingsPage() {
           </Surface>
 
           <Surface className="p-6 sm:p-7">
-            <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+            <p className="text-xs font-medium text-muted-foreground">
               Asset system
             </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-              Image plumbing status
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+              Launch notes
             </h2>
             <div className="mt-5 space-y-3">
-              <div className="rounded-[1.5rem] border border-slate-200 bg-[#fbfaf7] p-4">
-                <p className="text-sm font-semibold text-slate-900">
+              <div className="rounded-lg border border-border bg-background p-4">
+                <p className="text-sm font-semibold text-foreground">
                   Branding assets
                 </p>
-                <p className="mt-2 text-sm leading-7 text-slate-500">
-                  Restaurant logo uploads are live and stored in the shared
-                  NapCart asset bucket.
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Restaurant logo uploads are stored in the shared NapCart asset bucket.
                 </p>
               </div>
-              <div className="rounded-[1.5rem] border border-slate-200 bg-[#fbfaf7] p-4">
-                <p className="text-sm font-semibold text-slate-900">
+              <div className="rounded-lg border border-border bg-background p-4">
+                <p className="text-sm font-semibold text-foreground">
+                  Branch-level overrides
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Each branch can pause orders or mark itself temporarily closed
+                  without affecting the other branches.
+                </p>
+                <Link
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                  href="/admin/branches"
+                >
+                  Open branch settings
+                  <ArrowRight className="size-4" />
+                </Link>
+              </div>
+              <div className="rounded-lg border border-border bg-background p-4">
+                <p className="text-sm font-semibold text-foreground">
                   Product image readiness
                 </p>
-                <p className="mt-2 text-sm leading-7 text-slate-500">
-                  The same upload helper is already structured for
-                  `restaurants/&lt;slug&gt;/products/...` paths, so catalog
-                  image uploads can attach directly in Phase 3 without redoing
-                  storage architecture.
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  The same storage pattern will support product images in catalog management.
                 </p>
               </div>
             </div>
@@ -231,5 +305,45 @@ export default async function RestaurantSettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SettingsNavCard({
+  href,
+  title,
+  description,
+  icon,
+  isCurrent = false,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  icon: ReactNode;
+  isCurrent?: boolean;
+}) {
+  return (
+    <Link
+      className="group rounded-[22px] border border-border/80 bg-card p-6 text-card-foreground shadow-[0_18px_60px_rgba(16,18,16,0.04)] transition hover:border-primary/30 hover:bg-muted/30"
+      href={href}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <span className="flex size-11 items-center justify-center rounded-2xl border bg-muted text-muted-foreground">
+          {icon}
+        </span>
+        <span className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          {isCurrent ? "Current" : "Open"}
+        </span>
+      </div>
+      <h2 className="mt-5 text-xl font-semibold tracking-tight text-foreground">
+        {title}
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
+      <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground">
+        Open settings
+        <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+      </div>
+    </Link>
   );
 }

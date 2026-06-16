@@ -1,6 +1,9 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import {
   CheckboxRow,
   Field,
+  PageNotice,
   SectionHeader,
   StatusPill,
   SubmitButton,
@@ -15,17 +18,40 @@ import {
 import { requireAdminSession } from "@/lib/auth/admin-session";
 import { getWhatsappSettingsData } from "@/server/repositories/restaurant-admin";
 
-export default async function WhatsappSettingsPage() {
+export default async function WhatsappSettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    notice?: string;
+    error?: string;
+  }>;
+}) {
   const session = await requireAdminSession();
   const data = await getWhatsappSettingsData(session.restaurantId);
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
   return (
     <div className="space-y-4">
+      {resolvedSearchParams?.notice ? (
+        <PageNotice message={resolvedSearchParams.notice} />
+      ) : null}
+      {resolvedSearchParams?.error ? (
+        <PageNotice message={resolvedSearchParams.error} tone="error" />
+      ) : null}
       <Surface className="p-6 sm:p-7 lg:p-8">
         <SectionHeader
+          action={
+            <Link
+              className="inline-flex min-h-10 items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+              href="/admin/settings"
+            >
+              <ArrowLeft className="mr-2 size-4" />
+              Back to settings
+            </Link>
+          }
           eyebrow="WhatsApp routing"
-          title="Configure how confirmed orders reach the right restaurant destination"
-          description="NapCart keeps WhatsApp as the staff-facing operations channel. Use this screen to store default restaurant routing and branch-specific message destinations without changing how the staff already works."
+          title="Route order messages to the right WhatsApp number"
+          description="Store the default restaurant route and branch-specific destinations for incoming order notifications."
         />
       </Surface>
 
@@ -33,10 +59,10 @@ export default async function WhatsappSettingsPage() {
         <Surface className="p-6 sm:p-7">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
+              <p className="text-xs font-medium text-muted-foreground">
                 Add route
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
                 New WhatsApp connection
               </h2>
             </div>
@@ -128,7 +154,7 @@ export default async function WhatsappSettingsPage() {
           {data.connections.map((connection) => (
             <Surface key={connection.id} className="p-6 sm:p-7">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                   {connection.businessName}
                 </h2>
                 {connection.isDefaultForRestaurant ? (
@@ -138,7 +164,7 @@ export default async function WhatsappSettingsPage() {
                   {connection.isActive ? "Active" : "Paused"}
                 </StatusPill>
               </div>
-              <p className="mt-2 text-sm leading-7 text-slate-500">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Connected as{" "}
                 {connection.branchId
                   ? data.branches.find((branch) => branch.id === connection.branchId)
@@ -237,7 +263,7 @@ export default async function WhatsappSettingsPage() {
 
                 <div className="flex flex-wrap justify-between gap-3 pt-2">
                   <button
-                    className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                    className="inline-flex min-h-10 items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
                     formAction={deleteWhatsappConnection}
                     type="submit"
                   >
@@ -251,7 +277,7 @@ export default async function WhatsappSettingsPage() {
 
           {!data.connections.length ? (
             <Surface className="p-6 sm:p-7">
-              <p className="text-sm leading-7 text-slate-500">
+              <p className="text-sm leading-6 text-muted-foreground">
                 No WhatsApp routes have been saved yet. Create the default route
                 first so incoming orders always have a fallback destination.
               </p>

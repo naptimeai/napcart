@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Fraunces, Sora } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PLATFORM_NAME } from "@/lib/constants/platform";
 
-const sansFont = Sora({
-  variable: "--font-sans-ui",
+const geistSans = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
-const displayFont = Fraunces({
-  variable: "--font-display",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -27,10 +27,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sansFont.variable} ${displayFont.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
     >
-      <body className="bg-background text-foreground min-h-full">
+      <body className="min-h-full bg-background text-foreground">
         {children}
       </body>
     </html>

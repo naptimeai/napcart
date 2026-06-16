@@ -1,229 +1,441 @@
+import Link from "next/link";
+import { Eye, MapPin, Package, Pencil, Plus, Truck, X } from "lucide-react";
 import {
-  CheckboxRow,
-  Field,
-  SectionHeader,
-  StatusPill,
-  SubmitButton,
-  Surface,
-  TextInput,
-} from "@/components/admin/primitives";
-import {
-  archiveBranch,
   createOrUpdateBranch,
   updateBranchOperatingHours,
 } from "@/app/admin/actions";
+import {
+  AdminWorkspace,
+  BranchIcon,
+  FormInput,
+  PageTitle,
+  Panel,
+  PrimaryButton,
+  SearchBox,
+  SettingToggleRow,
+  StatusBadge,
+  ToggleVisual,
+} from "@/components/admin/phase45-ui";
+import { PageNotice } from "@/components/admin/primitives";
 import { DAY_LABELS } from "@/lib/constants/admin";
 import { requireAdminSession } from "@/lib/auth/admin-session";
-import { getBranchManagementData } from "@/server/repositories/restaurant-admin";
+import {
+  getBranchManagementData,
+  getCatalogManagementData,
+} from "@/server/repositories/restaurant-admin";
 
-export default async function BranchManagementPage() {
+type BranchPageProps = {
+  searchParams?: Promise<{
+    branch?: string;
+    tab?: string;
+    q?: string;
+    notice?: string;
+    error?: string;
+  }>;
+};
+
+export default async function BranchManagementPage({
+  searchParams,
+}: BranchPageProps) {
   const session = await requireAdminSession();
-  const branches = await getBranchManagementData(session.restaurantId);
+  const params = searchParams ? await searchParams : undefined;
+  const [branches, catalog] = await Promise.all([
+    getBranchManagementData(session.restaurantId),
+    getCatalogManagementData(session.restaurantId),
+  ]);
+  const query = params?.q?.toLowerCase() ?? "";
+  const filteredBranches = branches.filter(
+    (branch) =>
+      branch.name.toLowerCase().includes(query) ||
+      branch.addressText.toLowerCase().includes(query) ||
+      branch.slug.toLowerCase().includes(query),
+  );
+  const selectedBranch =
+    branches.find((branch) => branch.id === params?.branch) ??
+    filteredBranches[0] ??
+    branches[0];
+  const activeTab = params?.tab === "hours" || params?.tab === "catalog"
+    ? params.tab
+    : "details";
+  const selectedProducts = selectedBranch
+    ? catalog.products.filter((product) => {
+        const availability = product.branchAvailability.find(
+          (item) => item.branchId === selectedBranch.id,
+        );
+        return availability?.isAvailable ?? product.isAvailable;
+      })
+    : [];
 
   return (
-    <div className="space-y-4">
-      <Surface className="p-6 sm:p-7 lg:p-8">
-        <SectionHeader
-          eyebrow="Branch operations"
-          title="Manage locations, hours, and order availability"
-          description="Each branch can carry its own address, phone, operating schedule, and accepting-orders state. This keeps NapCart flexible for restaurants with one branch today and more tomorrow."
-        />
-      </Surface>
+    <AdminWorkspace className="p-0">
+      <div className="grid min-h-[calc(100svh-32px)] xl:grid-cols-[1fr_390px]">
+        <section className="p-6 md:p-8">
+          <div className="space-y-7">
+            {typeof params?.notice === "string" ? (
+              <PageNotice message={params.notice} />
+            ) : null}
+            {typeof params?.error === "string" ? (
+              <PageNotice message={params.error} tone="error" />
+            ) : null}
 
-      <Surface className="p-6 sm:p-7">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
-              Create branch
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-              Add a new operational branch
-            </h2>
-          </div>
-          <StatusPill tone="neutral">{branches.length} configured</StatusPill>
-        </div>
+            <PageTitle
+              action={
+                <PrimaryButton className="min-w-[150px]" href="/admin/branches/settings">
+                  <Plus className="size-5" />
+                  Add branch
+                </PrimaryButton>
+              }
+              description="Manage your branches, hours, and catalog availability."
+              title="Branches"
+            />
 
-        <form action={createOrUpdateBranch} className="mt-6 grid gap-4 lg:grid-cols-4">
-          <Field id="new-name" label="Branch name">
-            <TextInput id="new-name" name="name" placeholder="Clifton Branch" required />
-          </Field>
-          <Field
-            hint="Optional. Leave blank to generate from the branch name."
-            id="new-slug"
-            label="Branch slug"
-          >
-            <TextInput id="new-slug" name="slug" placeholder="clifton-branch" />
-          </Field>
-          <Field id="new-phone" label="Branch phone">
-            <TextInput id="new-phone" name="phone" placeholder="+92 300 1234567" />
-          </Field>
-          <Field id="new-order" label="Display order">
-            <TextInput id="new-order" name="displayOrder" placeholder="3" />
-          </Field>
-          <div className="lg:col-span-3">
-            <Field id="new-address" label="Address">
-              <TextInput
-                id="new-address"
-                name="addressText"
-                placeholder="Plot 18, Main Boulevard, Lahore"
-                required
+            <form>
+              <SearchBox
+                className="max-w-[320px]"
+                defaultValue={params?.q}
+                placeholder="Search branches..."
               />
-            </Field>
-          </div>
-          <div className="flex items-end justify-end">
-            <SubmitButton>Create branch</SubmitButton>
-          </div>
-        </form>
-      </Surface>
+            </form>
 
-      <div className="space-y-4">
-        {branches.map((branch) => (
-          <Surface key={branch.id} className="p-6 sm:p-7">
-            <div className="grid gap-6 2xl:grid-cols-[1.02fr_0.98fr]">
-              <div className="space-y-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                    {branch.name}
-                  </h2>
-                  <StatusPill tone={branch.isActive ? "good" : "warning"}>
-                    {branch.isActive ? "Active" : "Archived"}
-                  </StatusPill>
-                  <StatusPill tone={branch.isAcceptingOrders ? "good" : "warning"}>
-                    {branch.isAcceptingOrders ? "Accepting orders" : "Paused"}
-                  </StatusPill>
-                  {branch.isTemporarilyClosed ? (
-                    <StatusPill tone="warning">Temporarily closed</StatusPill>
-                  ) : null}
-                </div>
-
-                <form action={createOrUpdateBranch} className="space-y-4">
-                  <input name="branchId" type="hidden" value={branch.id} />
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Branch name">
-                      <TextInput defaultValue={branch.name} name="name" required />
-                    </Field>
-                    <Field label="Branch slug">
-                      <TextInput defaultValue={branch.slug} name="slug" />
-                    </Field>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Branch phone">
-                      <TextInput defaultValue={branch.phone ?? ""} name="phone" />
-                    </Field>
-                    <Field label="Display order">
-                      <TextInput
-                        defaultValue={String(branch.displayOrder)}
-                        name="displayOrder"
-                      />
-                    </Field>
-                  </div>
-
-                  <Field label="Address">
-                    <TextInput defaultValue={branch.addressText} name="addressText" required />
-                  </Field>
-
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <CheckboxRow
-                      defaultChecked={branch.isActive}
-                      description="Inactive branches stay in records but disappear from active ops."
-                      label="Branch active"
-                      name="isActive"
-                    />
-                    <CheckboxRow
-                      defaultChecked={branch.isAcceptingOrders}
-                      description="Use this to pause orders without removing the branch."
-                      label="Accepting orders"
-                      name="isAcceptingOrders"
-                    />
-                    <CheckboxRow
-                      defaultChecked={branch.isTemporarilyClosed}
-                      description="Useful for break periods or short-term closures."
-                      label="Temporarily closed"
-                      name="isTemporarilyClosed"
-                    />
-                  </div>
-
-                  <div className="flex flex-wrap justify-between gap-3 pt-2">
-                    <button
-                      className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                      formAction={archiveBranch}
-                      type="submit"
-                    >
-                      Archive branch
-                    </button>
-                    <SubmitButton>Save branch profile</SubmitButton>
-                  </div>
-                </form>
-              </div>
-
-              <div className="rounded-[1.9rem] border border-slate-200 bg-[#fbfaf7] p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.24em] text-slate-500 uppercase">
-                      Operating hours
-                    </p>
-                    <h3 className="mt-2 text-xl font-semibold text-slate-950">
-                      Weekly schedule
-                    </h3>
-                  </div>
-                  <StatusPill tone="neutral">
-                    {branch.whatsappConnections.length} route
-                    {branch.whatsappConnections.length === 1 ? "" : "s"}
-                  </StatusPill>
-                </div>
-
-                <form action={updateBranchOperatingHours} className="mt-5 space-y-3">
-                  <input name="branchId" type="hidden" value={branch.id} />
-
-                  {branch.operatingHours.map((hour) => (
-                    <div
-                      key={hour.dayOfWeek}
-                      className="grid gap-3 rounded-[1.35rem] border border-white bg-white p-4 md:grid-cols-[120px_1fr_1fr_150px]"
-                    >
-                      <div className="flex items-center text-sm font-semibold text-slate-900">
-                        {DAY_LABELS[hour.dayOfWeek]}
-                      </div>
-                      <Field label="Open">
-                        <TextInput
-                          defaultValue={hour.openTime ?? "11:00"}
-                          disabled={hour.isClosed}
-                          name={`${hour.dayOfWeek}_openTime`}
-                          type="time"
-                        />
-                      </Field>
-                      <Field label="Close">
-                        <TextInput
-                          defaultValue={hour.closeTime ?? "23:00"}
-                          disabled={hour.isClosed}
-                          name={`${hour.dayOfWeek}_closeTime`}
-                          type="time"
-                        />
-                      </Field>
-                      <div className="flex items-end">
-                        <label className="flex h-[50px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-[#fbfaf7] text-sm font-semibold text-slate-700">
-                          <input
-                            className="mr-2 h-4 w-4"
-                            defaultChecked={hour.isClosed}
-                            name={`${hour.dayOfWeek}_isClosed`}
-                            type="checkbox"
-                          />
-                          Closed
-                        </label>
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="flex justify-end pt-2">
-                    <SubmitButton>Save operating hours</SubmitButton>
-                  </div>
-                </form>
-              </div>
+            <div className="grid grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] px-4 text-sm font-medium text-[#666]">
+              <span>Branch</span>
+              <span>Status</span>
+              <span>Hours</span>
+              <span>Available products</span>
+              <span />
             </div>
-          </Surface>
+
+            <div className="space-y-3">
+              {filteredBranches.map((branch) => {
+                const isSelected = branch.id === selectedBranch?.id;
+                const availableProducts = catalog.products.filter((product) => {
+                  const availability = product.branchAvailability.find(
+                    (item) => item.branchId === branch.id,
+                  );
+                  return availability?.isAvailable ?? product.isAvailable;
+                }).length;
+                const firstOpenDay = branch.operatingHours.find(
+                  (hour) => !hour.isClosed,
+                );
+
+                return (
+                  <Link
+                    className={
+                      isSelected
+                        ? "grid min-h-[86px] grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] items-center rounded-[12px] border-2 border-[#111] px-4"
+                        : "grid min-h-[86px] grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] items-center rounded-[12px] border border-[#e2e2dd] px-4 transition hover:border-[#111]"
+                    }
+                    href={`/admin/branches?branch=${branch.id}`}
+                    key={branch.id}
+                  >
+                    <span className="flex items-center gap-4">
+                      <BranchIcon className="size-11" />
+                      <span>
+                        <span className="block font-semibold text-[#111]">
+                          {branch.name}
+                        </span>
+                        <span className="mt-1 block text-sm text-[#777]">
+                          {branch.addressText}
+                        </span>
+                      </span>
+                    </span>
+                    <span>
+                      <StatusBadge
+                        dot
+                        tone={branch.isActive ? "green" : "gray"}
+                      >
+                        {branch.isActive ? "Active" : "Inactive"}
+                      </StatusBadge>
+                    </span>
+                    <span>
+                      <span className="block text-sm text-[#111]">
+                        {firstOpenDay
+                          ? `${firstOpenDay.openTime} - ${firstOpenDay.closeTime}`
+                          : "-"}
+                      </span>
+                      <span className="mt-1 block text-xs text-[#777]">
+                        {firstOpenDay ? "Every day" : "Closed"}
+                      </span>
+                    </span>
+                    <span className="font-medium text-[#111]">
+                      {availableProducts}
+                    </span>
+                    <span className="flex size-10 items-center justify-center rounded-[10px] border border-[#deded8] bg-white text-[#111]">
+                      <Pencil className="size-4 text-[#111]" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <p className="text-sm text-[#777]">
+              Showing {filteredBranches.length} of {branches.length} branches
+            </p>
+          </div>
+        </section>
+
+        <BranchInspector
+          activeTab={activeTab}
+          availableProducts={selectedProducts.length}
+          branch={selectedBranch}
+          totalProducts={catalog.products.length}
+        />
+      </div>
+    </AdminWorkspace>
+  );
+}
+
+function BranchInspector({
+  branch,
+  activeTab,
+  availableProducts,
+  totalProducts,
+}: {
+  branch: Awaited<ReturnType<typeof getBranchManagementData>>[number] | undefined;
+  activeTab: "details" | "hours" | "catalog";
+  availableProducts: number;
+  totalProducts: number;
+}) {
+  if (!branch) {
+    return (
+      <aside className="border-l border-[#e5e5e1] p-8">
+        <p className="font-semibold text-[#111]">No branch selected</p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="border-l border-[#e5e5e1] bg-white p-6 text-[#111] md:p-8">
+      <div className="flex justify-end">
+        <X className="size-5" />
+      </div>
+      <div className="mt-2 flex gap-4">
+        <BranchIcon className="size-16" />
+        <div>
+          <h2 className="text-xl font-semibold text-[#111]">{branch.name}</h2>
+          <p className="mt-1 text-sm text-[#777]">{branch.slug}</p>
+          <div className="mt-3">
+            <StatusBadge dot tone={branch.isActive ? "green" : "gray"}>
+              {branch.isActive ? "Active" : "Inactive"}
+            </StatusBadge>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 flex gap-8 border-b border-[#e7e7e3]">
+        {[
+          ["details", "Details"],
+          ["hours", "Hours"],
+          ["catalog", "Catalog"],
+        ].map(([key, label]) => (
+          <Link
+            className={
+              activeTab === key
+                ? "border-b-2 border-[#111] pb-3 text-sm font-semibold !text-[#111]"
+                : "pb-3 text-sm font-semibold !text-[#666]"
+            }
+            href={`/admin/branches?branch=${branch.id}&tab=${key}`}
+            key={key}
+          >
+            {label}
+          </Link>
         ))}
       </div>
+
+      {activeTab === "details" ? (
+        <BranchDetailsTab
+          availableProducts={availableProducts}
+          branch={branch}
+          totalProducts={totalProducts}
+        />
+      ) : null}
+      {activeTab === "hours" ? <BranchHoursTab branch={branch} /> : null}
+      {activeTab === "catalog" ? (
+        <BranchCatalogTab
+          availableProducts={availableProducts}
+          totalProducts={totalProducts}
+        />
+      ) : null}
+    </aside>
+  );
+}
+
+function BranchDetailsTab({
+  branch,
+  availableProducts,
+  totalProducts,
+}: {
+  branch: Awaited<ReturnType<typeof getBranchManagementData>>[number];
+  availableProducts: number;
+  totalProducts: number;
+}) {
+  return (
+    <form action={createOrUpdateBranch} className="mt-7 space-y-7">
+      <input name="branchId" type="hidden" value={branch.id} />
+      <input name="redirectTo" type="hidden" value={`/admin/branches?branch=${branch.id}`} />
+      <input name="name" type="hidden" value={branch.name} />
+      <input name="slug" type="hidden" value={branch.slug} />
+      <input name="displayOrder" type="hidden" value={branch.displayOrder} />
+      <input name="phone" type="hidden" value={branch.phone ?? ""} />
+      {branch.isTemporarilyClosed ? (
+        <input name="isTemporarilyClosed" type="hidden" value="on" />
+      ) : null}
+      <section>
+        <h3 className="font-semibold text-[#111]">Address</h3>
+        <div className="mt-4 flex gap-4">
+          <MapPin className="mt-1 size-5 text-[#777]" />
+          <FormInput name="addressText" defaultValue={branch.addressText} required />
+        </div>
+      </section>
+      <section className="border-t border-[#e7e7e3] pt-7">
+        <h3 className="font-semibold text-[#111]">Services</h3>
+        <p className="mt-1 text-sm text-[#777]">
+          Choose how this branch fulfills orders.
+        </p>
+        <div className="mt-4 space-y-3">
+          <SettingToggleRow
+            defaultChecked={branch.isAcceptingOrders}
+            description="Customers can order for delivery."
+            icon={Truck}
+            name="isAcceptingOrders"
+            title="Delivery"
+          />
+          <div className="flex items-center gap-4 rounded-[12px] border border-[#e5e5e1] bg-white p-4">
+            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[#f1f1ef]">
+              <Package className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-[#111]">Pickup</p>
+              <p className="mt-1 text-xs leading-5 text-[#777]">
+                Pickup follows this branch&apos;s open or closed state.
+              </p>
+            </div>
+            <ToggleVisual checked={!branch.isTemporarilyClosed} />
+          </div>
+        </div>
+      </section>
+      <section className="border-t border-[#e7e7e3] pt-7">
+        <h3 className="font-semibold text-[#111]">Catalog visibility</h3>
+        <p className="mt-1 text-sm text-[#777]">
+          Show or hide this branch in the customer app.
+        </p>
+        <div className="mt-4">
+          <SettingToggleRow
+            defaultChecked={branch.isActive}
+            description="This branch is visible to customers."
+            icon={Eye}
+            name="isActive"
+            title="Visible"
+          />
+        </div>
+      </section>
+      <section>
+        <h3 className="font-semibold text-[#111]">Available products</h3>
+        <p className="mt-1 text-sm text-[#777]">
+          Number of products currently available.
+        </p>
+        <div className="mt-4 rounded-[12px] border border-[#deded8] p-4">
+          <p className="text-2xl font-semibold text-[#111]">{availableProducts}</p>
+          <p className="text-sm text-[#777]">of {totalProducts} total products</p>
+        </div>
+      </section>
+      <PrimaryButton className="w-full" type="submit">
+        Save changes
+      </PrimaryButton>
+    </form>
+  );
+}
+
+function BranchHoursTab({
+  branch,
+}: {
+  branch: Awaited<ReturnType<typeof getBranchManagementData>>[number];
+}) {
+  return (
+    <form action={updateBranchOperatingHours} className="mt-7 space-y-4">
+      <input name="branchId" type="hidden" value={branch.id} />
+      <input
+        name="redirectTo"
+        type="hidden"
+        value={`/admin/branches?branch=${branch.id}&tab=hours`}
+      />
+      <div>
+        <h3 className="font-semibold text-[#111]">Opening hours</h3>
+        <p className="mt-1 text-sm text-[#777]">
+          Set this branch&apos;s weekly operating schedule.
+        </p>
+      </div>
+      {branch.operatingHours.map((hour) => (
+        <div
+          className="rounded-[12px] border border-[#deded8] p-3"
+          key={hour.dayOfWeek}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-[#111]">
+              {DAY_LABELS[hour.dayOfWeek]}
+            </div>
+            <label className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[#deded8] px-3 text-xs font-semibold text-[#111]">
+              <input
+                defaultChecked={hour.isClosed}
+                name={`${hour.dayOfWeek}_isClosed`}
+                type="checkbox"
+              />
+              Closed
+            </label>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <FormInput
+              defaultValue={hour.openTime ?? "11:00"}
+              name={`${hour.dayOfWeek}_openTime`}
+              type="time"
+            />
+            <FormInput
+              defaultValue={hour.closeTime ?? "23:00"}
+              name={`${hour.dayOfWeek}_closeTime`}
+              type="time"
+            />
+          </div>
+        </div>
+      ))}
+      <PrimaryButton className="w-full" type="submit">
+        Save hours
+      </PrimaryButton>
+    </form>
+  );
+}
+
+function BranchCatalogTab({
+  availableProducts,
+  totalProducts,
+}: {
+  availableProducts: number;
+  totalProducts: number;
+}) {
+  return (
+    <div className="mt-7 space-y-5">
+      <div>
+        <h3 className="font-semibold text-[#111]">Branch catalog</h3>
+        <p className="mt-1 text-sm leading-6 text-[#777]">
+          This tab summarizes how many catalog items are available for this
+          branch. Product-level controls remain inside Catalog &gt; Products.
+        </p>
+      </div>
+      <Panel className="p-5">
+        <div className="flex items-center gap-4">
+          <Package className="size-12 rounded-full bg-[#ddf5e7] p-3 text-[#239b53]" />
+          <div>
+            <p className="text-3xl font-semibold text-[#111]">
+              {availableProducts}
+            </p>
+            <p className="text-sm text-[#777]">
+              of {totalProducts} products available
+            </p>
+          </div>
+        </div>
+      </Panel>
+      <PrimaryButton className="w-full" href="/admin/catalog/products">
+        Manage product availability
+      </PrimaryButton>
     </div>
   );
 }

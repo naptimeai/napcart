@@ -1,130 +1,105 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { buttonBaseClassName, Surface } from "@/components/admin/primitives";
 import {
   DEFAULT_MARKET,
   PLATFORM_NAME,
   PLATFORM_OWNER,
 } from "@/lib/constants/platform";
-import Link from "next/link";
+import { cx } from "@/lib/utils/cx";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff4e8_0%,#f7ecdf_42%,#f2e4d2_100%)] px-6 py-10 text-slate-950">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <section className="overflow-hidden rounded-[2rem] border border-black/5 bg-white/80 shadow-[0_24px_80px_rgba(110,67,22,0.08)] backdrop-blur">
-          <div className="grid gap-10 px-8 py-10 lg:grid-cols-[1.4fr_0.9fr] lg:px-12 lg:py-14">
-            <div className="space-y-6">
-              <div className="inline-flex items-center rounded-full border border-amber-900/10 bg-amber-100 px-4 py-1 text-sm font-medium tracking-wide text-amber-900">
-                Phase 0 Foundation in Progress
-              </div>
-              <div className="space-y-4">
-                <p className="text-sm font-semibold tracking-[0.25em] text-amber-900/70 uppercase">
-                  {PLATFORM_OWNER}
-                </p>
-                <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                  {PLATFORM_NAME} is now scaffolded and ready for the real
-                  build.
-                </h1>
-                <p className="max-w-2xl text-lg leading-8 text-slate-700">
-                  NapCart is now inside Phase 2, where the internal management
-                  experience is becoming a real product surface. The platform is
-                  being shaped as a reusable restaurant ordering system for{" "}
-                  {DEFAULT_MARKET.countryName}, with {DEFAULT_MARKET.currency}{" "}
-                  defaults, WhatsApp-first staff operations, and a polished
-                  owner-facing control panel.
-                </p>
-                <div className="flex flex-wrap gap-3 pt-2">
-                  <Link
-                    className="inline-flex items-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                    href="/login"
-                  >
-                    Open admin login
-                  </Link>
-                  <Link
-                    className="inline-flex items-center rounded-full border border-slate-950/10 bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-50"
-                    href="/admin"
-                  >
-                    View protected dashboard
-                  </Link>
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <StatCard
-                  label="Launch Market"
-                  value={DEFAULT_MARKET.countryName}
-                />
-                <StatCard
-                  label="Default Currency"
-                  value={DEFAULT_MARKET.currency}
-                />
-                <StatCard label="Timezone" value={DEFAULT_MARKET.timezone} />
+    <main className="bg-background text-foreground min-h-screen px-4 py-6 lg:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+        <Surface className="p-8 lg:p-10">
+          <div className="grid gap-10 lg:grid-cols-[1.25fr_0.75fr]">
+            <div>
+              <p className="text-muted-foreground text-sm font-medium">
+                {PLATFORM_OWNER}
+              </p>
+              <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
+                {PLATFORM_NAME} management foundation
+              </h1>
+              <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-6">
+                NapCart is a reusable restaurant ordering system for Pakistan,
+                with PKR defaults, WhatsApp-first staff operations, and an
+                owner-facing admin control layer.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Link
+                  className={cx(
+                    buttonBaseClassName,
+                    "bg-primary !text-white hover:bg-primary/90",
+                  )}
+                  href="/login"
+                >
+                  Open admin login
+                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  className={cx(
+                    buttonBaseClassName,
+                    "border-border bg-background text-foreground hover:bg-muted border",
+                  )}
+                  href="/admin"
+                >
+                  View dashboard
+                </Link>
+                <Link
+                  className={cx(
+                    buttonBaseClassName,
+                    "border-border bg-background text-foreground hover:bg-muted border",
+                  )}
+                  href="/storefront/smogyice-demo"
+                >
+                  View Smogy storefront
+                </Link>
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-amber-900/10 bg-slate-950 p-6 text-white shadow-inner">
-              <p className="text-sm font-semibold tracking-[0.25em] text-amber-200/80 uppercase">
-                Current Build Track
-              </p>
-              <div className="mt-6 space-y-4">
-                <PhaseItem
-                  title="Project foundation"
-                  description="Next.js app, shared config, Prisma base, and environment template."
-                />
-                <PhaseItem
-                  title="Remote setup"
-                  description="GitHub repository, Vercel project, and Supabase project linkage."
-                />
-                <PhaseItem
-                  title="Admin core"
-                  description="Build the real dashboard shell, settings surfaces, branch operations, and WhatsApp configuration."
-                  active
-                />
-              </div>
+            <div className="grid gap-3">
+              <StatCard
+                label="Launch market"
+                value={DEFAULT_MARKET.countryName}
+              />
+              <StatCard label="Currency" value={DEFAULT_MARKET.currency} />
+              <StatCard label="Timezone" value={DEFAULT_MARKET.timezone} />
             </div>
           </div>
-        </section>
+        </Surface>
 
-        <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[1.75rem] border border-black/5 bg-white/80 p-8 shadow-[0_20px_60px_rgba(110,67,22,0.06)]">
-            <p className="text-sm font-semibold tracking-[0.25em] text-slate-500 uppercase">
-              Approved Direction
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Surface className="p-6">
+            <p className="text-muted-foreground text-sm font-medium">
+              Approved direction
             </p>
-            <ul className="mt-6 space-y-3 text-base leading-7 text-slate-700">
+            <ul className="text-muted-foreground mt-4 space-y-3 text-sm leading-6">
+              <li>Standalone storefront plus admin for MVP.</li>
               <li>
-                Standalone storefront + admin for MVP, with API-first backend
-                design.
+                Meta WhatsApp Cloud API later, mock provider during build.
               </li>
               <li>
-                Meta WhatsApp Cloud API as the real provider, with mock mode for
-                development.
+                Guest checkout, delivery plus pickup, manual branch selection.
               </li>
               <li>
-                Guest checkout, delivery + pickup, manual branch selection, and
-                PKR defaults.
-              </li>
-              <li>
-                Dashboard for management visibility while restaurant staff
-                continue operating from WhatsApp.
+                Dashboard for management; WhatsApp remains staff operations.
               </li>
             </ul>
-          </div>
+          </Surface>
 
-          <div className="rounded-[1.75rem] border border-black/5 bg-[#fff7ef] p-8 shadow-[0_20px_60px_rgba(110,67,22,0.06)]">
-            <p className="text-sm font-semibold tracking-[0.25em] text-amber-900/70 uppercase">
-              Immediate Next Actions
+          <Surface className="p-6">
+            <p className="text-muted-foreground text-sm font-medium">
+              Current build track
             </p>
-            <ol className="mt-6 space-y-4 text-base leading-7 text-slate-700">
-              <li>
-                Complete the Phase 2 admin shell and operational settings flow.
-              </li>
-              <li>
-                Give owners control over branding, branches, and availability.
-              </li>
-              <li>
-                Save WhatsApp routing records and finalize the management UI
-                baseline for the rest of the product.
-              </li>
-            </ol>
-          </div>
-        </section>
+            <div className="mt-4 space-y-3">
+              <PhaseItem title="Project foundation" status="Done" />
+              <PhaseItem title="Remote setup" status="Done" />
+              <PhaseItem title="Admin UI baseline" status="Done" />
+              <PhaseItem title="Storefront checkout" status="Active" />
+            </div>
+          </Surface>
+        </div>
       </div>
     </main>
   );
@@ -132,37 +107,20 @@ export default function Home() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.25rem] border border-black/5 bg-[#fff8f1] p-4">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-xl font-semibold text-slate-950">{value}</p>
+    <div className="border-border bg-background rounded-lg border p-4">
+      <p className="text-muted-foreground text-sm">{label}</p>
+      <p className="text-foreground mt-2 text-xl font-semibold">{value}</p>
     </div>
   );
 }
 
-function PhaseItem({
-  title,
-  description,
-  active = false,
-}: {
-  title: string;
-  description: string;
-  active?: boolean;
-}) {
+function PhaseItem({ title, status }: { title: string; status: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">{title}</h2>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold tracking-[0.2em] uppercase ${
-            active
-              ? "bg-emerald-300 text-emerald-950"
-              : "bg-white/10 text-white/70"
-          }`}
-        >
-          {active ? "Active" : "Queued"}
-        </span>
-      </div>
-      <p className="mt-2 text-sm leading-6 text-white/70">{description}</p>
+    <div className="border-border bg-background flex items-center justify-between rounded-lg border px-4 py-3">
+      <span className="text-foreground text-sm font-medium">{title}</span>
+      <span className="bg-muted text-muted-foreground rounded-md px-2 py-1 text-xs font-medium">
+        {status}
+      </span>
     </div>
   );
 }

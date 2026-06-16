@@ -1,170 +1,106 @@
 "use client";
 
-import type { ReactNode } from "react";
+import {
+  Boxes,
+  LayoutDashboard,
+  ReceiptText,
+  Settings2,
+  Store,
+  UsersRound,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useDashboardRangeSession } from "@/hooks/use-dashboard-range-session";
 import { ADMIN_NAV_ITEMS } from "@/lib/constants/admin";
-import { cx } from "@/lib/utils/cx";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
-const iconClassName = "h-4.5 w-4.5";
+const sidebarMenuLinkClassName =
+  "peer/menu-button group/menu-button flex h-12 w-full items-center gap-2.5 overflow-hidden rounded-[11px] px-3.5 text-left text-sm font-semibold ring-white/30 outline-hidden transition-[background,color,box-shadow] focus-visible:ring-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 [&_svg]:size-5 [&_svg]:shrink-0";
 
-const ICONS: Record<string, ReactNode> = {
-  Dashboard: (
-    <svg
-      aria-hidden="true"
-      className={iconClassName}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <rect
-        height="7"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        width="7"
-        x="3.5"
-        y="3.5"
-      />
-      <rect
-        height="7"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        width="9"
-        x="11.5"
-        y="3.5"
-      />
-      <rect
-        height="9"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        width="7"
-        x="3.5"
-        y="11.5"
-      />
-      <rect
-        height="9"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        width="9"
-        x="11.5"
-        y="11.5"
-      />
-    </svg>
-  ),
-  Restaurant: (
-    <svg
-      aria-hidden="true"
-      className={iconClassName}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4 8.5h16M6 4.5h12l1.5 4v10a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2v-10l1.5-4Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M9 12h6M9 15.5h4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  ),
-  Branches: (
-    <svg
-      aria-hidden="true"
-      className={iconClassName}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M12 20.5s6-4.6 6-10a6 6 0 1 0-12 0c0 5.4 6 10 6 10Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <circle cx="12" cy="10.5" r="2.25" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  ),
-  WhatsApp: (
-    <svg
-      aria-hidden="true"
-      className={iconClassName}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M20 11.5a8 8 0 0 1-11.7 7.1L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M9.6 9.3c.2-.4.4-.4.8-.4.1 0 .3 0 .4.4l.7 1.6c.1.2 0 .4-.1.6l-.3.4c-.1.1-.2.2 0 .5.5.8 1.2 1.4 2 1.8.2.1.4.1.5 0l.4-.3c.1-.1.4-.2.6-.1l1.5.7c.4.2.4.3.4.4 0 .5-.1 1-.4 1.2-.3.2-.9.5-1.9.3-.9-.2-2.2-.8-3.5-2.1-1.2-1.3-1.8-2.7-2-3.5-.2-.9 0-1.5.3-1.8.2-.3.5-.5.6-.7Z"
-        fill="currentColor"
-      />
-    </svg>
-  ),
+const ICONS: Record<string, LucideIcon> = {
+  Dashboard: LayoutDashboard,
+  Orders: ReceiptText,
+  Branches: Store,
+  Catalog: Boxes,
+  Settings: Settings2,
+  Customers: UsersRound,
 };
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { dashboardHref } = useDashboardRangeSession();
 
   return (
-    <nav className="space-y-2">
-      {ADMIN_NAV_ITEMS.map((item) => {
-        const isActive =
-          item.href === "/admin"
-            ? pathname === "/admin"
-            : pathname.startsWith(item.href);
+    <SidebarGroup className="px-3">
+      <SidebarGroupLabel className="mb-2.5 px-1 text-xs font-semibold text-white/45 group-data-[collapsible=icon]:sr-only">
+        Operations
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu className="gap-2">
+          {ADMIN_NAV_ITEMS.map((item) => {
+            const isActive = item.matchPrefixes.some((prefix) =>
+              prefix === "/admin"
+                ? pathname === prefix
+                : pathname.startsWith(prefix),
+            );
+            const Icon = ICONS[item.label];
+            const children = "children" in item ? item.children : undefined;
 
-        return (
-          <Link
-            key={item.href}
-            className={cx(
-              "group flex items-center justify-between rounded-[1.3rem] px-4 py-3 transition",
-              isActive
-                ? "bg-[#0f1720] text-white shadow-[0_20px_50px_rgba(15,23,32,0.16)]"
-                : "text-slate-600 hover:bg-white/70 hover:text-slate-950",
-            )}
-            href={item.href}
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <span
-                className={cx(
-                  "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition",
-                  isActive
-                    ? "bg-white/12 text-[#c4ff5f]"
-                    : "bg-white/90 text-slate-700 ring-1 ring-black/5",
-                )}
-              >
-                {ICONS[item.label]}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{item.label}</p>
-                <p
-                  className={cx(
-                    "truncate text-xs",
-                    isActive ? "text-white/58" : "text-slate-400",
+            return (
+              <SidebarMenuItem className="space-y-1.5" key={item.href}>
+                <Link
+                  className={cn(
+                    sidebarMenuLinkClassName,
+                    isActive
+                      ? "!bg-white !text-[#111] shadow-[0_18px_34px_rgba(0,0,0,0.28)]"
+                      : "!text-white/80 hover:bg-white/10 hover:!text-white",
                   )}
+                  data-sidebar="menu-button"
+                  data-size="default"
+                  data-slot="sidebar-menu-button"
+                  href={item.href === "/admin" ? dashboardHref : item.href}
                 >
-                  {item.description}
-                </p>
-              </div>
-            </div>
-            <span
-              className={cx(
-                "h-2.5 w-2.5 rounded-full transition",
-                isActive ? "bg-[#c4ff5f]" : "bg-transparent group-hover:bg-slate-300",
-              )}
-            />
-          </Link>
-        );
-      })}
-    </nav>
+                  <Icon aria-hidden="true" />
+                  <span className="truncate group-data-[collapsible=icon]:hidden">
+                    {item.label}
+                  </span>
+                </Link>
+                {children && isActive ? (
+                  <div className="ml-5 grid gap-1 border-l border-white/10 pl-3.5 group-data-[collapsible=icon]:hidden">
+                    {children.map((child) => {
+                      const childActive =
+                        "matchExact" in child && child.matchExact
+                          ? pathname === child.href
+                          : pathname.startsWith(child.href);
+
+                      return (
+                        <Link
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-white/62 transition hover:bg-white/10 hover:text-white",
+                            childActive && "!bg-white/15 !text-white",
+                          )}
+                          href={child.href}
+                          key={child.href}
+                        >
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }
