@@ -45,7 +45,7 @@ export default async function AdminLayout({
         }
       >
         <Sidebar
-          className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[radial-gradient(circle_at_18%_12%,rgba(255,99,36,0.18),transparent_28%),linear-gradient(180deg,#642B93_0%,#56227f_48%,#3f165f_100%)] [&_[data-sidebar=sidebar]]:text-white"
+          className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[var(--admin-primary)] [&_[data-sidebar=sidebar]]:text-white"
           variant="inset"
           collapsible="icon"
         >

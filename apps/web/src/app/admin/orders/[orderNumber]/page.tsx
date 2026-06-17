@@ -214,8 +214,8 @@ export default async function OrderDetailPage({
           </Panel>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1fr_390px]">
-          <div className="space-y-6">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,390px)]">
+          <div className="min-w-0 space-y-6">
             <Panel className="p-6">
               <PanelHeader
                 description="Stored customer and fulfillment snapshot captured at checkout."
@@ -503,7 +503,7 @@ export default async function OrderDetailPage({
             </Panel>
           </div>
 
-          <aside className="space-y-6">
+          <aside className="min-w-0 space-y-6">
             <Panel className="p-6">
               <PanelHeader title="Payment summary" />
               <div className="mt-6 space-y-4">

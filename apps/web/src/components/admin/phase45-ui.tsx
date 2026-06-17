@@ -47,7 +47,7 @@ export function AdminWorkspace({
   return (
     <main
       className={cx(
-        "min-h-[calc(100svh-32px)] rounded-[24px] border border-[#e7e7e3] bg-white p-6 shadow-[0_22px_70px_rgba(16,18,16,0.06)] md:p-8",
+        "min-w-0 min-h-[calc(100svh-32px)] rounded-[24px] border border-[#e7e7e3] bg-white p-6 shadow-[0_22px_70px_rgba(16,18,16,0.06)] md:p-8",
         className,
       )}
     >
