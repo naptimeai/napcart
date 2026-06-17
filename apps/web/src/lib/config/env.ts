@@ -10,6 +10,7 @@ const requiredPublicEnv = {
     process.env.NEXT_PUBLIC_CLIENT_DESCRIPTION ??
     "Restaurant ordering, catalog, branch, delivery, and WhatsApp operations dashboard.",
   clientIconPath: process.env.NEXT_PUBLIC_CLIENT_ICON_PATH ?? "",
+  clientWebsiteUrl: process.env.NEXT_PUBLIC_CLIENT_WEBSITE_URL ?? "",
   defaultCountry: process.env.NEXT_PUBLIC_DEFAULT_COUNTRY ?? "PK",
   defaultCurrency: process.env.NEXT_PUBLIC_DEFAULT_CURRENCY ?? "PKR",
   defaultTimezone: process.env.NEXT_PUBLIC_DEFAULT_TIMEZONE ?? "Asia/Karachi",
