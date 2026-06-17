@@ -45,7 +45,7 @@ export default async function AdminLayout({
         }
       >
         <Sidebar
-          className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[#101111] [&_[data-sidebar=sidebar]]:text-white"
+          className="border-r-0 [&_[data-sidebar=sidebar]]:bg-[radial-gradient(circle_at_18%_12%,rgba(255,99,36,0.18),transparent_28%),linear-gradient(180deg,#642B93_0%,#56227f_48%,#3f165f_100%)] [&_[data-sidebar=sidebar]]:text-white"
           variant="inset"
           collapsible="icon"
         >
@@ -53,13 +53,13 @@ export default async function AdminLayout({
             <SidebarMenu className="gap-2">
               <SidebarMenuItem>
                 <PersistentDashboardLink
-                  className={`${sidebarMenuLinkClassName} min-h-14 text-white hover:text-white`}
+                  className={`${sidebarMenuLinkClassName} min-h-14 text-white hover:bg-white/10 hover:text-white`}
                   data-sidebar="menu-button"
                   data-size="lg"
                   data-slot="sidebar-menu-button"
                   prefetch={false}
                 >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black tracking-tight text-[#111]">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black tracking-tight text-[var(--admin-primary)] shadow-[0_12px_26px_rgba(50,16,75,0.22)]">
                     N
                   </span>
                   <div className="min-w-0 group-data-[collapsible=icon]:hidden">
@@ -103,11 +103,11 @@ export default async function AdminLayout({
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset className="min-w-0 min-h-svh bg-[#f3f3f1] peer-data-[variant=inset]:border-0">
+        <SidebarInset className="min-w-0 min-h-svh bg-[#f7f4f8] peer-data-[variant=inset]:border-0">
           <div className="flex min-h-svh flex-col gap-4 p-3 md:p-4">
-            <header className="sticky top-3 z-30 flex min-h-16 flex-col gap-3 rounded-[22px] border border-[#e5e5df] bg-white/95 px-4 py-3 shadow-[0_18px_50px_rgba(16,18,16,0.06)] backdrop-blur md:flex-row md:items-center md:justify-between">
+            <header className="sticky top-3 z-30 flex min-h-16 flex-col gap-3 rounded-[22px] border border-[var(--admin-primary-border)]/60 bg-white/95 px-4 py-3 shadow-[0_18px_50px_rgba(100,43,147,0.08)] backdrop-blur md:flex-row md:items-center md:justify-between">
               <div className="flex w-full min-w-0 items-center gap-3 md:w-auto">
-                <SidebarTrigger className="size-10 rounded-[14px] border border-[#deded8] bg-[#f7f7f3] text-[#111] hover:bg-[#efefea]" />
+                <SidebarTrigger className="size-10 rounded-[14px] border border-[var(--admin-primary-border)] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)] hover:bg-[#eadcf5]" />
                 <AdminSearchLauncher branches={searchBranches} />
               </div>
               <AdminHeaderControls

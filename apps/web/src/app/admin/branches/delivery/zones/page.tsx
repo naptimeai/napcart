@@ -161,7 +161,7 @@ export default async function DeliveryZonesEditorPage({
                           <tr
                             className={
                               isSelected
-                                ? "rounded-[12px] border border-[#239b53] bg-[#eef8f1]"
+                                ? "rounded-[12px] border border-[var(--admin-primary)] bg-[var(--admin-primary-softer)]"
                                 : "border-b border-[#eeeeea]"
                             }
                             key={zone.id}
@@ -298,7 +298,7 @@ export default async function DeliveryZonesEditorPage({
               />
               <Panel className="p-5">
                 <div className="flex items-center gap-4">
-                  <Target className="size-14 rounded-full bg-[#ddf5e7] p-4 text-[#239b53]" />
+                  <Target className="size-14 rounded-full bg-[var(--admin-primary-soft)] p-4 text-[var(--admin-primary)]" />
                   <div>
                     <p className="font-semibold text-[#111]">Estimated coverage</p>
                     <p className="mt-1 text-sm text-[#555]">
@@ -339,7 +339,7 @@ function SummaryStat({
 }) {
   return (
     <div className="flex items-center gap-4 border-l border-[#e7e7e3] pl-6">
-      <Icon className="size-12 rounded-full bg-[#ddf5e7] p-3 text-[#239b53]" />
+      <Icon className="size-12 rounded-full bg-[var(--admin-primary-soft)] p-3 text-[var(--admin-primary)]" />
       <div>
         <p className="text-2xl font-semibold text-[#111]">{value}</p>
         <p className="text-sm text-[#777]">{label}</p>

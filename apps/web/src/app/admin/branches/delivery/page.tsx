@@ -180,7 +180,7 @@ export default async function DeliveryOverviewPage({
                   <Link
                     className={
                       isSelected
-                        ? "grid min-h-[82px] grid-cols-[1.4fr_0.8fr_1fr_0.5fr_0.8fr_50px] items-center rounded-[12px] border-2 border-[#111] px-3"
+                        ? "grid min-h-[82px] grid-cols-[1.4fr_0.8fr_1fr_0.5fr_0.8fr_50px] items-center rounded-[12px] border-2 border-[var(--admin-primary)] bg-[var(--admin-primary-softer)] px-3"
                         : "grid min-h-[82px] grid-cols-[1.4fr_0.8fr_1fr_0.5fr_0.8fr_50px] items-center border-b border-[#eeeeea] px-3"
                     }
                     href={`/admin/branches/delivery?branch=${branch.id}`}
@@ -295,8 +295,8 @@ function DeliveryBranchPanel({
           <Link
             className={
               activeTab === key
-                ? "border-b-2 border-[#111] pb-3 text-sm font-semibold !text-[#111]"
-                : "pb-3 text-sm font-semibold !text-[#666] transition hover:!text-[#111]"
+                ? "border-b-2 border-[var(--admin-primary)] pb-3 text-sm font-semibold !text-[var(--admin-primary)]"
+                : "pb-3 text-sm font-semibold !text-[#666] transition hover:!text-[var(--admin-primary)]"
             }
             href={`/admin/branches/delivery?branch=${branch.id}&panelTab=${key}`}
             key={key}

@@ -340,7 +340,7 @@ function PendingStep({
 }) {
   return (
     <Link
-      className="flex items-center gap-4 rounded-[12px] border border-[#deded8] p-4 transition hover:border-[#111]"
+      className="flex items-center gap-4 rounded-[12px] border border-[#deded8] p-4 transition hover:border-[var(--admin-primary)] hover:bg-[var(--admin-primary-softer)]"
       href={href}
     >
       <span className="flex size-8 items-center justify-center rounded-full bg-[#eeeeeb] text-sm font-semibold text-[#111]">

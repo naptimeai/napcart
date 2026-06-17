@@ -60,8 +60,8 @@ export function SidebarNav() {
                   className={cn(
                     sidebarMenuLinkClassName,
                     isActive
-                      ? "!bg-white !text-[#111] shadow-[0_18px_34px_rgba(0,0,0,0.28)]"
-                      : "!text-white/80 hover:bg-white/10 hover:!text-white",
+                      ? "!bg-white !text-[var(--admin-primary)] shadow-[0_18px_34px_rgba(55,18,86,0.28)]"
+                      : "!text-white/82 hover:bg-white/10 hover:!text-white",
                   )}
                   data-sidebar="menu-button"
                   data-size="default"
@@ -84,7 +84,7 @@ export function SidebarNav() {
                       return (
                         <Link
                           className={cn(
-                            "rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-white/62 transition hover:bg-white/10 hover:text-white",
+                            "rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-white/68 transition hover:bg-white/10 hover:text-white",
                             childActive && "!bg-white/15 !text-white",
                           )}
                           href={child.href}

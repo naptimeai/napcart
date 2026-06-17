@@ -142,7 +142,7 @@ export function PrimaryButton({
   type?: "button" | "submit";
 }) {
   const classes = cx(
-    "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-[#111] px-5 text-sm font-semibold !text-white shadow-[0_14px_28px_rgba(17,17,17,0.18)] transition hover:bg-[#242424] [&_svg]:!text-white",
+    "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-[var(--admin-primary)] px-5 text-sm font-semibold !text-white shadow-[0_14px_28px_rgba(100,43,147,0.22)] transition hover:bg-[var(--admin-primary-dark)] [&_svg]:!text-white",
     className,
   );
 
@@ -218,10 +218,10 @@ export function IconBubble({
   className?: string;
 }) {
   const tones = {
-    dark: "bg-[#111] !text-white",
+    dark: "bg-[var(--admin-primary)] !text-white",
     gray: "bg-[#f1f1ef] text-[#111]",
-    green: "bg-[#e4f5eb] text-[#111]",
-    yellow: "bg-[#fbefc9] text-[#6d4c05]",
+    green: "bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]",
+    yellow: "bg-[var(--admin-accent-soft)] text-[var(--admin-accent)]",
   };
 
   return (
@@ -327,7 +327,7 @@ export function FormInput({
     <input
       {...props}
       className={cx(
-        "h-12 w-full rounded-[10px] border border-[#deded8] bg-white px-4 text-sm text-[#111] transition outline-none placeholder:text-[#a7a7a1] focus:border-[#111] focus:ring-4 focus:ring-black/5",
+        "h-12 w-full rounded-[10px] border border-[#deded8] bg-white px-4 text-sm text-[#111] transition outline-none placeholder:text-[#a7a7a1] focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[rgba(100,43,147,0.10)]",
         className,
       )}
     />
@@ -342,7 +342,7 @@ export function FormTextarea({
     <textarea
       {...props}
       className={cx(
-        "min-h-28 w-full rounded-[10px] border border-[#deded8] bg-white px-4 py-3 text-sm text-[#111] transition outline-none placeholder:text-[#a7a7a1] focus:border-[#111] focus:ring-4 focus:ring-black/5",
+        "min-h-28 w-full rounded-[10px] border border-[#deded8] bg-white px-4 py-3 text-sm text-[#111] transition outline-none placeholder:text-[#a7a7a1] focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[rgba(100,43,147,0.10)]",
         className,
       )}
     />
@@ -359,7 +359,7 @@ export function FormSelect({
       <select
         {...props}
         className={cx(
-          "h-12 w-full appearance-none rounded-[10px] border border-[#deded8] bg-white px-4 pr-10 text-sm text-[#111] transition outline-none focus:border-[#111] focus:ring-4 focus:ring-black/5",
+          "h-12 w-full appearance-none rounded-[10px] border border-[#deded8] bg-white px-4 pr-10 text-sm text-[#111] transition outline-none focus:border-[var(--admin-primary)] focus:ring-4 focus:ring-[rgba(100,43,147,0.10)]",
           className,
         )}
       >
@@ -565,9 +565,9 @@ export function Stepper({ activeStep }: { activeStep: 1 | 2 | 3 | 4 }) {
                   className={cx(
                     "flex size-10 items-center justify-center rounded-full text-sm font-semibold",
                     isActive
-                      ? "bg-[#111] !text-white"
+                      ? "bg-[var(--admin-primary)] !text-white"
                       : isComplete
-                        ? "bg-[#ddf5e7] text-[#239b53]"
+                        ? "bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]"
                         : "bg-[#eeeeeb] text-[#333]",
                   )}
                 >
@@ -579,7 +579,7 @@ export function Stepper({ activeStep }: { activeStep: 1 | 2 | 3 | 4 }) {
                 </div>
               </div>
               {isActive ? (
-                <span className="absolute bottom-0 left-0 h-[3px] w-full rounded-full bg-[#111]" />
+                <span className="absolute bottom-0 left-0 h-[3px] w-full rounded-full bg-[var(--admin-primary)]" />
               ) : null}
             </div>
           );
@@ -639,7 +639,7 @@ export function ActionTile({
 }) {
   return (
     <Link
-      className="flex min-h-[74px] items-center gap-4 rounded-[12px] border border-[#deded8] bg-white p-4 transition hover:border-[#111]"
+      className="flex min-h-[74px] items-center gap-4 rounded-[12px] border border-[#deded8] bg-white p-4 transition hover:border-[var(--admin-primary)] hover:bg-[var(--admin-primary-softer)]"
       href={href}
     >
       <Icon className="size-6 shrink-0 text-[#111]" />

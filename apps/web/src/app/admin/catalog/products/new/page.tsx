@@ -633,7 +633,7 @@ function StepThree({
             <div className="border-t border-[#e7e7e3] py-5">
               <p className="font-semibold text-[#111]">Selected branches</p>
               <div className="mt-4 flex items-center gap-4">
-                <Store className="size-11 rounded-full bg-[#ddf5e7] p-3 text-[#239b53]" />
+                <Store className="size-11 rounded-full bg-[var(--admin-primary-soft)] p-3 text-[var(--admin-primary)]" />
                 <div className="flex-1">
                   <p className="text-lg font-semibold text-[#111]">
                     {selectedBranchCount}
@@ -818,7 +818,7 @@ function StepFour({
             </button>
           </div>
           <Link
-            className="inline-flex h-14 items-center justify-center gap-3 rounded-[10px] bg-[#111] px-8 font-semibold !text-white [&_svg]:!text-white"
+            className="inline-flex h-14 items-center justify-center gap-3 rounded-[10px] bg-[var(--admin-primary)] px-8 font-semibold !text-white shadow-[0_14px_28px_rgba(100,43,147,0.22)] transition hover:bg-[var(--admin-primary-dark)] [&_svg]:!text-white"
             href="/admin/catalog/products"
           >
             Publish product

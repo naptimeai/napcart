@@ -112,8 +112,8 @@ export default async function CatalogCategoriesPage({
                   <a
                     className={
                       isSelected
-                        ? "flex min-h-[92px] items-center gap-4 rounded-[12px] border-2 border-[#111] p-4"
-                        : "flex min-h-[92px] items-center gap-4 rounded-[12px] border border-[#e2e2dd] p-4 transition hover:border-[#111]"
+                        ? "flex min-h-[92px] items-center gap-4 rounded-[12px] border-2 border-[var(--admin-primary)] bg-[var(--admin-primary-softer)] p-4"
+                        : "flex min-h-[92px] items-center gap-4 rounded-[12px] border border-[#e2e2dd] p-4 transition hover:border-[var(--admin-primary)] hover:bg-[var(--admin-primary-softer)]"
                     }
                     href={`/admin/catalog/categories?category=${category.id}`}
                     key={category.id}

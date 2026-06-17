@@ -266,7 +266,7 @@ export default async function CatalogProductsPage({
             </span>
             <div className="flex items-center overflow-hidden rounded-[10px] border border-[#deded8]">
               <span className="px-4 py-3 text-[#aaa]">‹</span>
-              <span className="bg-[#111] px-4 py-3 font-semibold text-white">1</span>
+              <span className="bg-[var(--admin-primary)] px-4 py-3 font-semibold text-white">1</span>
               <span className="px-4 py-3">2</span>
               <span className="px-4 py-3">3</span>
               <span className="px-4 py-3">...</span>

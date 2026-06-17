@@ -202,7 +202,7 @@ export default async function BranchSettingsPage({
 function SummaryTile({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-[14px] border border-[#e5e5e1] bg-white p-5">
-      <Settings2 className="size-10 rounded-full bg-[#ddf5e7] p-2.5 text-[#239b53]" />
+      <Settings2 className="size-10 rounded-full bg-[var(--admin-primary-soft)] p-2.5 text-[var(--admin-primary)]" />
       <p className="mt-4 text-3xl font-semibold text-[#111]">{value}</p>
       <p className="mt-1 text-sm text-[#777]">{label}</p>
     </div>

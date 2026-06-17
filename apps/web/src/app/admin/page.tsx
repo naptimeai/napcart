@@ -115,7 +115,7 @@ function buildOrderStatusData(
       key: "cancelled",
       label: "Cancelled",
       value: data.metrics.cancelledOrdersCount,
-      fill: "var(--chart-5)",
+      fill: "var(--chart-4)",
     },
   ];
 }

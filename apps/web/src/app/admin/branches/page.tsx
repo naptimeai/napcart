@@ -122,8 +122,8 @@ export default async function BranchManagementPage({
                   <Link
                     className={
                       isSelected
-                        ? "grid min-h-[86px] grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] items-center rounded-[12px] border-2 border-[#111] px-4"
-                        : "grid min-h-[86px] grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] items-center rounded-[12px] border border-[#e2e2dd] px-4 transition hover:border-[#111]"
+                        ? "grid min-h-[86px] grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] items-center rounded-[12px] border-2 border-[var(--admin-primary)] bg-[var(--admin-primary-softer)] px-4"
+                        : "grid min-h-[86px] grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] items-center rounded-[12px] border border-[#e2e2dd] px-4 transition hover:border-[var(--admin-primary)] hover:bg-[var(--admin-primary-softer)]"
                     }
                     href={`/admin/branches?branch=${branch.id}`}
                     key={branch.id}
@@ -231,8 +231,8 @@ function BranchInspector({
           <Link
             className={
               activeTab === key
-                ? "border-b-2 border-[#111] pb-3 text-sm font-semibold !text-[#111]"
-                : "pb-3 text-sm font-semibold !text-[#666]"
+                ? "border-b-2 border-[var(--admin-primary)] pb-3 text-sm font-semibold !text-[var(--admin-primary)]"
+                : "pb-3 text-sm font-semibold !text-[#666] transition hover:!text-[var(--admin-primary)]"
             }
             href={`/admin/branches?branch=${branch.id}&tab=${key}`}
             key={key}
@@ -422,7 +422,7 @@ function BranchCatalogTab({
       </div>
       <Panel className="p-5">
         <div className="flex items-center gap-4">
-          <Package className="size-12 rounded-full bg-[#ddf5e7] p-3 text-[#239b53]" />
+          <Package className="size-12 rounded-full bg-[var(--admin-primary-soft)] p-3 text-[var(--admin-primary)]" />
           <div>
             <p className="text-3xl font-semibold text-[#111]">
               {availableProducts}

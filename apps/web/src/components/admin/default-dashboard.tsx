@@ -139,28 +139,24 @@ export function MetricCards({
   return (
     <div className="grid grid-cols-1 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs xl:grid-cols-4">
       <MetricCard
-        accent="green"
         icon="revenue"
         label="Total Revenue"
         value={revenue}
         note="Confirmed order value"
       />
       <MetricCard
-        accent="amber"
         icon="orders"
         label="Total Orders"
         value={metrics.totalOrdersCount.toLocaleString()}
         note="Orders placed in this period"
       />
       <MetricCard
-        accent="teal"
         icon="average"
         label="Average Order Value"
         value={averageOrderValue}
         note="Confirmed revenue per order"
       />
       <MetricCard
-        accent="orange"
         icon="customers"
         label="New Customers"
         value={metrics.newCustomersCount.toLocaleString()}
@@ -171,13 +167,11 @@ export function MetricCards({
 }
 
 function MetricCard({
-  accent,
   icon,
   label,
   note,
   value,
 }: {
-  accent: "green" | "amber" | "teal" | "orange";
   icon: "revenue" | "orders" | "average" | "customers";
   label: string;
   note: string;
@@ -191,30 +185,11 @@ function MetricCard({
         : icon === "average"
           ? CircleCheckIcon
           : UserPlus;
-  const accentClasses = {
-    amber: {
-      card: "border-t-[#d8a21b] bg-linear-to-br from-[#fff7dd] via-white to-white",
-      icon: "border-[#f5df9a] bg-[#fff3cb] text-[#a36a00]",
-    },
-    green: {
-      card: "border-t-[#239b53] bg-linear-to-br from-[#edf9f1] via-white to-white",
-      icon: "border-[#bee9cc] bg-[#ddf5e7] text-[#23834b]",
-    },
-    orange: {
-      card: "border-t-[#f97316] bg-linear-to-br from-[#fff1e8] via-white to-white",
-      icon: "border-[#ffd0b6] bg-[#ffe8d7] text-[#c95605]",
-    },
-    teal: {
-      card: "border-t-[#3d8b68] bg-linear-to-br from-[#eef8f3] via-white to-white",
-      icon: "border-[#c5e6d5] bg-[#e4f5eb] text-[#2f7657]",
-    },
-  }[accent];
-
   return (
-    <Card className={`overflow-hidden border-t-2 ${accentClasses.card}`}>
+    <Card className="overflow-hidden border-t-2 border-t-[var(--admin-primary)] bg-linear-to-br from-[var(--admin-primary-soft)] via-white to-white">
       <CardHeader>
         <CardTitle>
-          <div className={`flex size-8 items-center justify-center rounded-lg border ${accentClasses.icon}`}>
+          <div className="flex size-8 items-center justify-center rounded-lg border border-[var(--admin-primary-border)] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
             <Icon className="size-4" />
           </div>
         </CardTitle>

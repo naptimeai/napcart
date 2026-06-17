@@ -41,7 +41,7 @@ export function MetricCard({
 }) {
   const accentClassName =
     accent === "lime"
-      ? "border-primary bg-[linear-gradient(135deg,#0c4b2d_0%,#0e6f43_100%)] text-primary-foreground"
+      ? "border-primary bg-[linear-gradient(135deg,#642B93_0%,#4d1f73_100%)] text-primary-foreground"
       : accent === "copper"
         ? "bg-[#f6f3ee] text-foreground"
         : "bg-card";

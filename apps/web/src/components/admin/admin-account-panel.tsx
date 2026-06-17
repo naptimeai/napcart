@@ -279,10 +279,10 @@ function getTriggerClassName(variant: AdminAccountPanelProps["triggerVariant"]) 
   }
 
   if (variant === "sidebar-collapsed") {
-    return "flex size-10 items-center justify-center rounded-xl border border-transparent bg-transparent transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+    return "flex size-10 items-center justify-center rounded-xl border border-transparent bg-transparent text-white transition hover:bg-white/10 hover:text-white";
   }
 
-  return "flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+  return "flex w-full items-center gap-3 rounded-xl p-2 text-left text-white transition hover:bg-white/10 hover:text-white [&_p:last-child]:text-white/65";
 }
 
 function SignOutConfirmation({
