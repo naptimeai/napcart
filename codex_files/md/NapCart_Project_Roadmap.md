@@ -21,6 +21,7 @@ Build NapCart as a reusable restaurant ordering platform where:
 - A clean order summary is automatically sent to the restaurant's WhatsApp.
 - Restaurant staff manage order status through an admin dashboard.
 - The platform can later support multiple restaurants with configurable branding, menus, and WhatsApp settings.
+- The same product core can be deployed separately for each restaurant without maintaining permanent client branches.
 
 ## 3. Business Goals
 
@@ -69,6 +70,7 @@ Build NapCart as a reusable restaurant ordering platform where:
 - Secure data separation per restaurant
 - Clean admin workflows
 - Upgrade-ready modules for payments, branches, promotions, and loyalty
+- Restaurant-specific deployment, branding, and domain control
 
 ## 6. Core MVP Features
 
@@ -90,8 +92,7 @@ Build NapCart as a reusable restaurant ordering platform where:
 
 - Create order
 - Save line items and totals
-- Pending/confirmed/preparing/dispatched/delivered/cancelled statuses
-- Order history
+- Pending confirmation / confirmed / cancelled statuses
 - Daily order view
 
 ### WhatsApp Integration
@@ -116,11 +117,8 @@ Build NapCart as a reusable restaurant ordering platform where:
 ## 7. Future Features
 
 - Online payments
-- Branch support
 - Multi-language menu
 - Coupon and discount engine
-- Minimum order rules
-- Delivery zones and fees
 - Rider assignment and tracking
 - Inventory sync/light stock control
 - Loyalty points
@@ -136,6 +134,11 @@ Build NapCart as a reusable restaurant ordering platform where:
 ## 8. Missing Requirements To Confirm Early
 
 These are the main decisions that should be finalized before development:
+
+Note:
+
+- several of these decisions were finalized during planning and later implementation
+- the approved answers should be treated as locked where newer sections in this roadmap define them
 
 1. Single-restaurant first or true multi-tenant from day one.
 2. WhatsApp provider choice:
@@ -167,6 +170,9 @@ Best practical launch approach:
 
 - Phase 1 product model: single codebase with multi-tenant-ready structure
 - MVP market model: onboard one restaurant first
+- Production delivery model: separate deployment per restaurant, not permanent client branches
+- Data isolation model: recommended dedicated Supabase project per real restaurant production launch
+- Storefront model: keep custom branded storefronts in separate repos when needed, connected through NapCart APIs
 - Operational model: guest checkout, cash on delivery, delivery-only or delivery + pickup
 - Messaging model: system sends order to restaurant WhatsApp, admin dashboard remains source of truth
 
@@ -200,10 +206,18 @@ This reduces launch risk while preserving scalability.
 
 - Vercel for frontend/app
 - Supabase or Neon for PostgreSQL
+- Separate Vercel project per real restaurant production deployment is recommended
 
 ### File/Image Storage
 
 - Cloudinary, Supabase Storage, or S3-compatible storage
+
+### Production Infrastructure Recommendation
+
+- one internal NapCart environment for development, QA, and demos
+- one dedicated Vercel project per real restaurant production launch
+- one dedicated Supabase project per real restaurant production launch
+- public storefront domain and protected admin subdomain per restaurant
 
 ### WhatsApp
 
@@ -267,6 +281,17 @@ Possible routing models later:
 
 - `restaurantname.yourapp.com`
 - custom domain per restaurant
+
+### Approved MVP Production Adjustment
+
+NapCart remains multi-tenant-ready in schema and service design.
+
+For real restaurant production launches, the approved direction is:
+
+- do not maintain a permanent Git branch per restaurant
+- do not duplicate the full product codebase per restaurant
+- do launch each restaurant through its own deployment/configuration stack
+- do keep storefront SEO, metadata, and branding at the restaurant deployment level
 
 ## 14. Database Structure Overview
 
@@ -648,9 +673,9 @@ MVP should be intentionally narrow:
 - Guest checkout only
 - Cash on delivery
 - Delivery and optional pickup
-- Manual status updates from admin
-- Outbound WhatsApp notification to restaurant only
+- WhatsApp-first staff confirmation flow
 - Basic dashboard and reporting
+- One core NapCart codebase with separate client production deployments
 
 This is enough to prove value without overbuilding.
 
@@ -842,6 +867,7 @@ This is enough to prove value without overbuilding.
 - Configure storage
 - Configure secrets
 - Set up staging and production
+- For real client launch, create dedicated client deployment targets instead of reusing the shared internal environment
 
 ### Phase 6.2 Launch Prep
 
@@ -850,6 +876,7 @@ This is enough to prove value without overbuilding.
 - Configure WhatsApp credentials
 - Configure domain
 - Create backup policy
+- Connect storefront to the correct restaurant-specific backend deployment
 
 ### Phase 6.3 Go Live
 
@@ -967,6 +994,7 @@ Estimated MVP total:
 4. Use modular monolith architecture first.
 5. Abstract the WhatsApp provider behind a service layer so you can change vendors later.
 6. Launch with one real restaurant, then generalize after observing real behavior.
+7. Use one core repo and separate per-restaurant deployments instead of permanent client branches.
 
 ## 28. Immediate Next Deliverables
 

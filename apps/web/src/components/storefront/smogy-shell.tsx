@@ -95,6 +95,7 @@ function useHashScroller() {
 
 function Navbar() {
   const { basePath, totalItems, setDrawerOpen } = useSmogyStorefront();
+  const homePath = basePath || "/";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -128,7 +129,7 @@ function Navbar() {
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
-          <Link className="flex items-center gap-3" href={basePath}>
+          <Link className="flex items-center gap-3" href={homePath}>
             <Image
               alt="Smogy Ice logo"
               className="size-11 shrink-0 rounded-full object-cover shadow-lg"
@@ -448,6 +449,7 @@ function CartDrawer() {
 
 function Footer() {
   const { basePath } = useSmogyStorefront();
+  const homePath = basePath || "/";
   const navItems = [
     { label: "Menu", href: `${basePath}/menu` },
     { label: "Favorites", href: `${basePath}#menu` },
@@ -460,7 +462,7 @@ function Footer() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-6">
-            <Link className="flex items-center gap-3" href={basePath}>
+            <Link className="flex items-center gap-3" href={homePath}>
               <Image
                 alt="Smogy Ice logo"
                 className="size-11 shrink-0 rounded-full object-cover"

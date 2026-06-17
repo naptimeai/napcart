@@ -312,16 +312,25 @@ Responsibilities:
 
 ### 10.1 Frontend Model
 
-MVP frontend should be a `standalone storefront + admin dashboard` inside the same Next.js application.
+MVP frontend should support a `standalone storefront + admin dashboard` inside the same Next.js application for NapCart-managed deployments.
 
 This gives us:
 
 - fastest launch path
 - shared design tokens and app infrastructure
-- a single deployment target
 - simpler tenant branding support
 
+Approved production adjustment:
+
+- NapCart core remains one codebase
+- real restaurants should not require permanent code branches
+- NapCart-managed storefronts may live inside the same Next.js app
+- heavily branded client storefronts may live in separate repos and consume the same backend contract
+
 ### 10.2 Frontend Areas
+
+These route examples describe the NapCart-managed application shape.
+For separate custom storefront repos, the public URL structure may differ while still consuming the same backend contract.
 
 ```text
 /                     -> storefront landing
@@ -421,13 +430,19 @@ Important:
 
 ### 13.1 Database Strategy
 
-Use one `PostgreSQL` database for MVP.
+Use the same `PostgreSQL` schema design for MVP across all deployments.
 
 Why:
 
 - all main entities are relational
 - reporting needs joins and filters
 - transaction integrity matters during order creation
+
+Approved production recommendation:
+
+- NapCart internal development/QA can use a shared internal database
+- each real restaurant production launch should ideally get its own Supabase Postgres project
+- schema stays restaurant-aware either way, so the product remains multi-tenant-ready without forcing a shared live database for all clients
 
 ### 13.2 Multi-Tenant Strategy
 
@@ -826,12 +841,17 @@ NapCart can scale later through:
 ### 24.1 MVP Deployment Topology
 
 ```text
-Vercel
+NapCart Internal Environment
   -> Next.js application
-     -> storefront routes
+     -> internal storefront/demo routes
      -> admin routes
      -> API routes
      -> webhook routes
+
+Client Production Environment (per restaurant)
+  -> dedicated deployment target
+  -> restaurant-branded storefront/admin experience
+  -> same backend business contract
 
 Supabase
   -> PostgreSQL
@@ -844,14 +864,16 @@ Supabase
 Recommended environments:
 
 - local
-- staging
-- production
+- internal staging / QA
+- per-restaurant production
 
 ### 24.3 Environment Rules
 
 - staging uses mock WhatsApp or safe test configuration
 - production uses real restaurant credentials when available
 - environment variables must be separated per deployment target
+- restaurant-facing domains and metadata must be deployment-specific
+- admin deployment and storefront deployment may be separate projects when the client storefront is custom
 
 ## 25. Configuration Architecture
 

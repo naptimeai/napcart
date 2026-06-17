@@ -14,6 +14,12 @@ This SOP explains how to onboard the first real restaurant into NapCart without 
 
 For the current demo target, the restaurant is Smogy Ice.
 
+Approved onboarding model:
+
+- NapCart core remains the product source of truth
+- real restaurants are launched on separate deployment infrastructure
+- heavily branded storefronts may live in separate repos while using the same backend contract
+
 ---
 
 ## 2. Onboarding Inputs Required
@@ -42,6 +48,21 @@ Collect these before setup:
 ---
 
 ## 3. Setup Sequence
+
+### Step 0: Create Restaurant-Specific Infrastructure
+
+Create and document:
+
+- dedicated Vercel project for the restaurant admin/backend deployment
+- dedicated Supabase project for the restaurant production data
+- restaurant-facing domains/subdomains
+- storefront repo/project mapping if the restaurant has a custom storefront
+
+Acceptance:
+
+- the restaurant does not depend on the internal NapCart test environment for production
+- Vercel and Supabase ownership is documented
+- storefront-to-backend connection path is documented
 
 ### Step 1: Create Restaurant Record
 
@@ -229,8 +250,8 @@ Keep internally:
 
 - Supabase project reference.
 - Vercel project reference.
+- storefront repo and deployment reference if storefront is separate from NapCart core
 - Environment variable checklist.
 - Admin setup notes.
 - WhatsApp credential notes.
 - Launch QA evidence.
-

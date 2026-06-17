@@ -14,6 +14,12 @@ Phase 7B prepares NapCart for a professional first-restaurant demo and productio
 
 The goal is not only to make the app run locally. The goal is to prove that NapCart can be safely reviewed, deployed, configured, and demonstrated for a real restaurant without confusing the agreed MVP scope.
 
+Approved production direction for this phase:
+
+- NapCart remains the internal product core
+- Smogy Ice is packaged as the first restaurant-specific deployment
+- real restaurant launches should use separate production infrastructure, not permanent client branches
+
 ---
 
 ## 2. MVP Scope Guardrails
@@ -37,6 +43,16 @@ These rules must not change during Phase 7B unless explicitly approved.
 
 ## 3. Environment Readiness
 
+### 3.0 Deployment Model
+
+Required:
+
+- [ ] NapCart core/testing environment remains available for internal development and QA.
+- [ ] Smogy Ice uses a dedicated production deployment target.
+- [ ] Smogy Ice uses a dedicated Supabase project.
+- [ ] Restaurant-facing URLs use Smogy Ice branding, not generic NapCart public URLs.
+- [ ] Custom storefront and admin/backend deployment mapping is documented.
+
 ### 3.1 Local Development
 
 Required:
@@ -59,7 +75,7 @@ Evidence:
 
 Required:
 
-- [ ] Vercel project exists for `napcart`.
+- [ ] Preview deployment strategy is defined for the restaurant-facing stack.
 - [ ] Preview environment variables are configured.
 - [ ] Preview deployment builds successfully.
 - [ ] Preview storefront URL loads.
@@ -78,6 +94,7 @@ Evidence:
 
 Required:
 
+- [ ] Dedicated Vercel project exists for Smogy Ice production.
 - [ ] Production environment variables are configured.
 - [ ] Production deployment builds successfully.
 - [ ] Production URL loads.
@@ -99,10 +116,10 @@ Evidence:
 
 Required:
 
-- [ ] Supabase project is active.
+- [ ] Dedicated Smogy Ice Supabase project is active.
 - [ ] Database schema matches Prisma schema.
 - [ ] Required migrations are applied.
-- [ ] Demo restaurant seed data exists.
+- [ ] Smogy Ice-only production seed/config data exists.
 - [ ] Smogy Ice restaurant record exists.
 - [ ] Smogy Ice branches exist.
 - [ ] Smogy Ice categories/products/variants/add-ons exist.
@@ -196,11 +213,12 @@ Required before recording:
 - [ ] Local server or deployed URL is stable.
 - [ ] Browser has clean tabs ready.
 - [ ] Admin account credentials are known.
-- [ ] Smogy storefront opens without localhost errors.
+- [ ] Smogy storefront opens on the intended restaurant-facing deployment.
 - [ ] Cart and checkout are tested once before recording.
 - [ ] Admin Orders page is tested once before recording.
 - [ ] Mock WhatsApp confirm/cancel link or provider log path is ready.
 - [ ] Demo order data does not expose private secrets.
+- [ ] Restaurant-facing URLs do not expose generic NapCart branding unless intentionally shown as internal tooling.
 
 Recommended Loom flow:
 
@@ -229,7 +247,7 @@ Phase 7B can be considered complete when:
 - [ ] Production readiness checklist is complete or clearly marked with approved deferrals.
 - [ ] First restaurant onboarding SOP exists.
 - [ ] Demo/Loom path is verified end-to-end.
-- [ ] Vercel preview or production deployment is validated, unless explicitly deferred.
+- [ ] Restaurant-specific production deployment is validated.
+- [ ] Restaurant-specific Supabase project is validated.
 - [ ] Open launch risks are documented.
 - [ ] User approves moving to live Meta WhatsApp API testing or client handoff.
-

@@ -64,10 +64,28 @@ The MVP should let a customer place a correct order online, route that order to 
 - Launch with one real restaurant first
 - Keep architecture multi-tenant-ready from day one
 - Use a single codebase
-- Use a standalone storefront + admin for MVP
+- Use per-restaurant production deployments instead of permanent client branches
+- Use a dedicated client infrastructure stack for each real restaurant production launch:
+  - separate Vercel project
+  - separate domain/subdomain
+  - recommended separate Supabase project
+- Use a standalone storefront + admin for MVP, but allow heavily branded storefronts to live in separate repos
 - Keep backend API-first for future website integrations
 
-### 2.3 Success Criteria
+### 2.3 Approved Production Delivery Model
+
+NapCart should be treated as a reusable product core, not as one permanently shared live tenant for all restaurants.
+
+Approved model:
+
+- one main NapCart codebase remains the source of truth
+- one internal NapCart environment can be used for development, QA, and demos
+- each real restaurant production launch should get its own deployment target
+- each real restaurant should ideally get its own Supabase project for stronger isolation
+- restaurant branding, menu data, branch data, and WhatsApp settings remain configuration-driven
+- custom storefronts may live in separate repos while consuming the same ordering/backend contract
+
+### 2.4 Success Criteria
 
 The MVP will be considered successful if it achieves the following:
 
@@ -275,6 +293,7 @@ Login -> Review dashboard metrics -> Manage menu/settings/branches
 The storefront must support:
 
 - branded restaurant presentation
+- restaurant-specific metadata and page identity
 - manual branch selection
 - branch-aware ordering
 - menu categories
@@ -297,6 +316,9 @@ The storefront must support:
 - checkout validates required fields before order creation
 - unavailable products cannot be ordered
 - closed restaurant or branch must block ordering clearly
+- storefront can be deployed either:
+  - inside the NapCart application for internal/testing flows
+  - or as a separate branded client storefront that uses the same backend contract
 
 ### 8.2 Menu Management
 
@@ -459,7 +481,11 @@ Each restaurant must be able to manage:
 - contact details
 - basic branding presentation
 
-The architecture must also remain ready for future custom domains.
+The architecture must also remain ready for:
+
+- restaurant-specific admin identity
+- restaurant-specific SEO/meta content on public storefront pages
+- restaurant-specific domains and subdomains
 
 ## 9. Non-Functional Requirements
 
@@ -488,6 +514,7 @@ The architecture must also remain ready for future custom domains.
 - schema must be restaurant-aware from day one
 - branch routing must be configurable
 - backend must stay API-first for future integration with existing websites
+- one core codebase must be able to serve many separate client deployments without requiring permanent code forks
 
 ### 9.5 Maintainability
 
@@ -623,6 +650,7 @@ The MVP is acceptable when all of the following are true:
 - customer receives confirmation or cancellation message
 - admin dashboard shows core order and customer visibility
 - basic analytics are available
+- the first client deployment can be launched without forking NapCart into a permanent restaurant-specific branch
 
 ## 16. Delivery Phases After PRD
 
@@ -639,7 +667,11 @@ Phase F: testing, pilot launch, iteration
 
 ```text
 Launch model: one real restaurant first, multi-tenant-ready architecture
-Frontend model: standalone storefront + admin, API-first backend
+Frontend model: API-first backend with either:
+  - a NapCart-managed storefront inside the same app
+  - or a separate custom storefront repo for heavily branded client sites
+Deployment model: one core codebase, separate production deployment per restaurant
+Client infrastructure: recommended separate Vercel + Supabase project per restaurant production launch
 Checkout: guest only
 Language: English only
 Payments: cash on delivery / cash on pickup only

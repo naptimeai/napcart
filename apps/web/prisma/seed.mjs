@@ -18,7 +18,7 @@ import { config as loadEnv } from "dotenv";
 import { flattenSmogyiceCatalog } from "./smogyice-catalog.mjs";
 
 if (existsSync(".env.local")) {
-  loadEnv({ path: ".env.local", override: true });
+  loadEnv({ path: ".env.local" });
 }
 
 loadEnv();
@@ -37,6 +37,7 @@ const smogyiceAdminEmail =
 const smogyiceAdminPassword =
   process.env.SMOGYICE_ADMIN_PASSWORD ?? "SmogyIce123!";
 const smogyiceAdminName = process.env.SMOGYICE_ADMIN_NAME ?? "Smogy Ice Owner";
+const seedTarget = process.env.SEED_TARGET ?? "all";
 const DASHBOARD_CUSTOMER_TARGET = 1000;
 
 const FIRST_NAMES = [
@@ -866,6 +867,53 @@ async function upsertSmogyiceDemo() {
 }
 
 async function main() {
+  if (!["all", "smogyice"].includes(seedTarget)) {
+    throw new Error(
+      `Unsupported SEED_TARGET "${seedTarget}". Use all or smogyice.`,
+    );
+  }
+
+  if (seedTarget === "smogyice") {
+    const smogyiceAuthAdmin = await ensureAuthAdmin({
+      email: smogyiceAdminEmail,
+      password: smogyiceAdminPassword,
+      name: smogyiceAdminName,
+    });
+    const smogyiceDemo = await upsertSmogyiceDemo();
+
+    await prisma.adminUser.upsert({
+      where: { authUserId: smogyiceAuthAdmin.id },
+      update: {
+        restaurantId: smogyiceDemo.restaurant.id,
+        name: smogyiceAdminName,
+        email: smogyiceAdminEmail,
+        isActive: true,
+      },
+      create: {
+        restaurantId: smogyiceDemo.restaurant.id,
+        authUserId: smogyiceAuthAdmin.id,
+        name: smogyiceAdminName,
+        email: smogyiceAdminEmail,
+        isActive: true,
+      },
+    });
+
+    console.log("Smogy Ice seed complete.");
+    console.log(
+      JSON.stringify(
+        {
+          restaurant: smogyiceDemo.restaurant.slug,
+          branches: smogyiceDemo.branches.map((branch) => branch.slug),
+          products: smogyiceDemo.productsCount,
+          adminEmail: smogyiceAdminEmail,
+        },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
+
   const authAdmin = await ensureAuthAdmin({
     email: adminEmail,
     password: adminPassword,

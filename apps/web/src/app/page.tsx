@@ -1,14 +1,33 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { buttonBaseClassName, Surface } from "@/components/admin/primitives";
+import { SmogyHomePage } from "@/components/storefront/smogy-pages";
+import {
+  isStorefrontDeployment,
+  SmogyDefaultStorefrontRoute,
+} from "@/components/storefront/smogy-route-frame";
 import {
   DEFAULT_MARKET,
   PLATFORM_NAME,
   PLATFORM_OWNER,
 } from "@/lib/constants/platform";
+import { publicEnv } from "@/lib/config/env";
 import { cx } from "@/lib/utils/cx";
 
 export default function Home() {
+  if (isStorefrontDeployment()) {
+    return (
+      <SmogyDefaultStorefrontRoute>
+        <SmogyHomePage />
+      </SmogyDefaultStorefrontRoute>
+    );
+  }
+
+  if (publicEnv.deploymentMode === "admin") {
+    redirect("/login");
+  }
+
   return (
     <main className="bg-background text-foreground min-h-screen px-4 py-6 lg:px-6">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">

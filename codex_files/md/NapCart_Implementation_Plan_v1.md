@@ -52,8 +52,11 @@ The MVP goal is to deliver a production-ready first version of NapCart that allo
 Recommended delivery model:
 
 - one codebase
-- one MVP branch strategy
-- one primary environment stack
+- one main branch strategy for product development
+- one internal NapCart environment stack for development, QA, and demos
+- one separate production deployment per real restaurant
+- one recommended dedicated Supabase project per real restaurant
+- separate custom storefront repo when a restaurant storefront is heavily branded
 - milestone-based execution
 - task breakdown by module and dependency order
 
@@ -122,6 +125,8 @@ Primary outcome:
 - configure linting, formatting, and project scripts
 - define the app folder/module structure
 - create base environment variable strategy
+- define core-vs-client deployment strategy
+- define restaurant domain and subdomain naming rules
 - create Vercel project
 - create Supabase project
 - connect local development env
@@ -132,6 +137,11 @@ Primary outcome:
   - currency `PKR`
   - timezone `Asia/Karachi`
   - country/phone assumptions
+- document client deployment packaging rules:
+  - one codebase
+  - no permanent client branches
+  - one Vercel project per production restaurant
+  - recommended one Supabase project per production restaurant
 
 ### Exit Criteria
 
@@ -361,12 +371,20 @@ Primary outcome:
 - test Pakistan phone normalization assumptions
 - prepare staging review checklist
 - prepare production env checklist
+- prepare first-restaurant deployment packaging checklist
+- define Smogy Ice deployment ownership and environment mapping:
+  - storefront deployment
+  - admin/backend deployment
+  - Supabase project
+  - domain/subdomain structure
+- verify client-facing metadata and branding are deployment-driven
 
 ### Exit Criteria
 
 - MVP passes core functional QA
 - launch checklist is complete
 - first restaurant onboarding path is documented
+- first restaurant deployment model is documented and approved
 
 ## 8. Ticket Structure
 
@@ -538,6 +556,7 @@ A task is done only when:
 - customer confirm/cancel message is verified
 - management dashboard shows correct metrics
 - first restaurant configuration can be completed without code edits
+- first restaurant can be launched through a dedicated deployment stack without forking the NapCart core repo
 
 ## 14. Risks During Implementation
 
@@ -585,17 +604,19 @@ Mitigation:
 
 ## 15. Recommended Immediate Next Execution Step
 
-After this implementation plan is approved, the next action should be:
+Current approved production adjustment:
 
-`Set up the actual project foundation`
+- keep the current NapCart codebase as the product source of truth
+- treat the current internal environment as NapCart core/testing
+- package the first real restaurant, Smogy Ice, into its own deployment stack
 
-That means:
+That means the next execution step is:
 
-- create GitHub repo
-- create Supabase project
-- create Vercel project
-- initialize the Next.js app
-- implement Prisma schema foundation
+- create a dedicated Smogy Ice Supabase project
+- create a dedicated Smogy Ice Vercel project
+- connect the Smogy Ice storefront to the Smogy Ice backend deployment
+- move restaurant-facing URLs and metadata to Smogy Ice branding
+- keep NapCart internal URLs/environments for product development and QA
 
 ## 16. Final Recommendation
 
@@ -612,6 +633,7 @@ Implementation Plan
   -> Order Engine
   -> WhatsApp
   -> QA
+  -> Client Deployment Packaging
   -> Launch
 ```
 

@@ -651,6 +651,7 @@ function BranchesSection() {
 export function SmogyMenuPage() {
   const searchParams = useSearchParams();
   const { addItem, basePath, menuCategories } = useSmogyStorefront();
+  const homePath = basePath || "/";
   const [activeCategory, setActiveCategory] = useState(
     searchParams.get("category") ?? menuCategories[0]?.id ?? "",
   );
@@ -710,7 +711,7 @@ export function SmogyMenuPage() {
       <div className="mx-auto mb-12 max-w-7xl px-6">
         <Link
           className="group mb-8 inline-flex items-center gap-2 text-smogy-primary transition-colors hover:text-smogy-secondary"
-          href={basePath}
+          href={homePath}
         >
           <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-1" />
           <span className="font-bold">Back to Home</span>
@@ -2070,6 +2071,7 @@ export function SmogyOrderSuccessPage({
   order: StorefrontOrderSummary;
 }) {
   const { basePath } = useSmogyStorefront();
+  const homePath = basePath || "/";
   const isDelivery = order.fulfillmentType === "delivery";
   const paymentMethodLabel = isDelivery
     ? "Cash on Delivery"
@@ -2310,7 +2312,7 @@ export function SmogyOrderSuccessPage({
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <Link
                 className="inline-flex h-14 items-center justify-center gap-3 rounded-[18px] border border-[#5d2396] bg-white px-6 text-base font-bold text-[#5d2396] transition hover:bg-[#f5effb]"
-                href={basePath}
+                href={homePath}
               >
                 <House className="size-5" />
                 <span>Back to Home</span>

@@ -15,6 +15,7 @@ import type {
   StorefrontProduct,
   StorefrontVariant,
 } from "@/server/storefront/types";
+import { publicEnv } from "@/lib/config/env";
 
 export type SmogyCartItem = {
   key: string;
@@ -201,7 +202,10 @@ export function SmogyStorefrontProvider({
   data: StorefrontData;
   restaurantSlug: string;
 }) {
-  const basePath = `/storefront/${restaurantSlug}`;
+  const useCleanStorefrontRoutes =
+    publicEnv.deploymentMode === "storefront" &&
+    publicEnv.defaultRestaurantSlug === restaurantSlug;
+  const basePath = useCleanStorefrontRoutes ? "" : `/storefront/${restaurantSlug}`;
   const currency = data.restaurant.defaultCurrency;
   const storageKey = `napcart:${restaurantSlug}:smogy-cart`;
   const orderTypeStorageKey = `napcart:${restaurantSlug}:smogy-order-type`;

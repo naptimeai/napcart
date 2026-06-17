@@ -3,7 +3,7 @@ import { config as loadEnv } from "dotenv";
 import { defineConfig, env } from "prisma/config";
 
 if (existsSync(".env.local")) {
-  loadEnv({ path: ".env.local", override: true });
+  loadEnv({ path: ".env.local" });
 }
 
 loadEnv();
