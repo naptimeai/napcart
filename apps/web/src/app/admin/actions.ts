@@ -1,6 +1,6 @@
 "use server";
 
-import { DayOfWeek, WhatsappProvider } from "@prisma/client";
+import { DayOfWeek, Prisma, WhatsappProvider } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -11,7 +11,15 @@ import { slugify } from "@/lib/utils/slugify";
 import { getPrisma } from "@/server/db/prisma";
 import { runInTransaction } from "@/server/db/transaction";
 import { findAdminUserByAuthUserId } from "@/server/repositories/admin-users";
-import { uploadRestaurantAsset } from "@/server/storage/restaurant-assets";
+import { encryptFieldValue } from "@/server/security/field-encryption";
+import {
+  deleteRestaurantAssetByPublicUrl,
+  uploadRestaurantAsset,
+} from "@/server/storage/restaurant-assets";
+import {
+  applyMockWhatsappStaffAction,
+  type MockWhatsappStaffAction,
+} from "@/server/storefront/whatsapp";
 
 const optionalString = z.string().trim().optional().or(z.literal(""));
 
@@ -118,6 +126,13 @@ const deliveryZoneSchema = z.object({
   sortOrder: optionalString,
 });
 
+const mockWhatsappActionSchema = z.object({
+  redirectTo: optionalString,
+  orderNumber: z.string().trim().min(1),
+  action: z.enum(["confirm", "cancel"]),
+  token: z.string().trim().min(20),
+});
+
 const changePasswordSchema = z
   .object({
     redirectTo: optionalString,
@@ -181,7 +196,7 @@ function buildRedirectPath(pathname: string, params: Record<string, string>) {
 }
 
 function resolveAdminRedirectTarget(value?: string | null) {
-  if (value && value.startsWith("/admin")) {
+  if (isSafeAdminRedirect(value)) {
     return value;
   }
 
@@ -191,11 +206,19 @@ function resolveAdminRedirectTarget(value?: string | null) {
 function resolveFormRedirectTarget(formData: FormData, fallback: string) {
   const redirectTo = String(formData.get("redirectTo") ?? "").trim();
 
-  if (redirectTo && redirectTo.startsWith("/admin")) {
+  if (isSafeAdminRedirect(redirectTo)) {
     return redirectTo;
   }
 
   return fallback;
+}
+
+function isSafeAdminRedirect(value?: string | null): value is string {
+  return (
+    value === "/admin" ||
+    Boolean(value?.startsWith("/admin/")) ||
+    Boolean(value?.startsWith("/admin?"))
+  );
 }
 
 function redirectWithError(pathname: string, message: string): never {
@@ -335,7 +358,6 @@ function revalidateAdminPaths() {
   revalidatePath("/admin/catalog/products");
   revalidatePath("/admin/catalog/products/new");
   revalidatePath("/admin/catalog/settings");
-  revalidatePath("/admin/delivery");
   revalidatePath("/admin/customers");
 }
 
@@ -399,12 +421,15 @@ async function assertProductOwnership(productId: string, restaurantId: string) {
     },
     select: {
       id: true,
+      imageUrl: true,
     },
   });
 
   if (!product) {
     throw new Error("Product not found for this restaurant.");
   }
+
+  return product;
 }
 
 async function assertAddonGroupOwnership(
@@ -495,7 +520,7 @@ export async function loginToAdmin(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect(next && next.startsWith("/") ? next : "/admin");
+  redirect(resolveAdminRedirectTarget(next));
 }
 
 export async function logoutFromAdmin() {
@@ -570,8 +595,16 @@ export async function updateRestaurantIdentity(formData: FormData) {
   const uniqueSlug = await buildUniqueRestaurantSlug(slugBase, session.restaurantId);
   const maybeLogoFile = formData.get("logo");
   let uploadedLogoUrl: string | null = null;
+  let previousLogoUrl: string | null = null;
 
   if (maybeLogoFile instanceof File && maybeLogoFile.size > 0) {
+    const existingRestaurant = await getPrisma().restaurant.findUnique({
+      where: { id: session.restaurantId },
+      select: { logoUrl: true },
+    });
+
+    previousLogoUrl = existingRestaurant?.logoUrl ?? null;
+
     const upload = await uploadRestaurantAsset({
       restaurantSlug: uniqueSlug,
       scope: "branding",
@@ -591,6 +624,10 @@ export async function updateRestaurantIdentity(formData: FormData) {
       logoUrl: uploadedLogoUrl ?? undefined,
     },
   });
+
+  if (uploadedLogoUrl) {
+    await deleteRestaurantAssetByPublicUrl(previousLogoUrl);
+  }
 
   revalidateAdminPhaseTwoPaths();
   redirectWithNotice("/admin/settings", "Restaurant profile saved.");
@@ -687,13 +724,6 @@ export async function updateCatalogSettings(formData: FormData) {
       minimumOrderAmount?: number | null;
     } = {};
 
-    if (settingsSection === "pricing") {
-      settingsUpdate.taxEnabled = formData.get("taxEnabled") === "on";
-      settingsUpdate.minimumOrderAmount = normalizeOptionalNumber(
-        parsed.data.minimumOrderAmount,
-      );
-    }
-
     if (settingsSection === "behavior") {
       settingsUpdate.deliveryEnabled = formData.get("deliveryEnabled") === "on";
       settingsUpdate.pickupEnabled = formData.get("pickupEnabled") === "on";
@@ -742,6 +772,7 @@ export async function createOrUpdateBranch(formData: FormData) {
   }
 
   const branchId = normalizeOptionalString(parsed.data.branchId) ?? undefined;
+  let savedBranchId = branchId;
   const slugBase = slugify(parsed.data.slug || parsed.data.name) || "branch";
   const uniqueSlug = await buildUniqueBranchSlug(
     session.restaurantId,
@@ -790,12 +821,19 @@ export async function createOrUpdateBranch(formData: FormData) {
           isClosed: false,
         })),
       });
+      savedBranchId = branch.id;
     });
   }
 
   revalidateAdminPhaseTwoPaths();
+  const finalRedirectTo = !branchId && savedBranchId
+    ? redirectTo.includes("__BRANCH_ID__")
+      ? redirectTo.replace("__BRANCH_ID__", savedBranchId)
+      : `/admin/branches?branch=${savedBranchId}`
+    : redirectTo;
+
   redirectWithNotice(
-    redirectTo,
+    finalRedirectTo,
     branchId ? "Branch profile saved." : "Branch created.",
   );
 }
@@ -936,16 +974,28 @@ export async function createOrUpdateWhatsappConnection(formData: FormData) {
       phoneNumberId: normalizeOptionalString(parsed.data.phoneNumberId),
       apiBaseUrl: normalizeOptionalString(parsed.data.apiBaseUrl),
       accessTokenEncrypted:
-        normalizeOptionalString(parsed.data.accessToken) ??
+        encryptFieldValue(normalizeOptionalString(parsed.data.accessToken)) ??
         existing?.accessTokenEncrypted ??
         null,
       webhookVerifyTokenEncrypted:
-        normalizeOptionalString(parsed.data.webhookVerifyToken) ??
+        encryptFieldValue(normalizeOptionalString(parsed.data.webhookVerifyToken)) ??
         existing?.webhookVerifyTokenEncrypted ??
         null,
       isActive,
       isDefaultForRestaurant,
     };
+
+    if (isActive && normalizedBranchId) {
+      await tx.whatsappConnection.updateMany({
+        where: {
+          restaurantId: session.restaurantId,
+          branchId: normalizedBranchId,
+          isActive: true,
+          ...(connectionId ? { id: { not: connectionId } } : {}),
+        },
+        data: { isActive: false },
+      });
+    }
 
     if (connectionId) {
       await tx.whatsappConnection.update({
@@ -976,12 +1026,16 @@ export async function deleteWhatsappConnection(formData: FormData) {
 
   await assertConnectionOwnership(connectionId, session.restaurantId);
 
-  await getPrisma().whatsappConnection.delete({
+  await getPrisma().whatsappConnection.update({
     where: { id: connectionId },
+    data: {
+      isActive: false,
+      isDefaultForRestaurant: false,
+    },
   });
 
   revalidateAdminPhaseTwoPaths();
-  redirectWithNotice("/admin/whatsapp", "WhatsApp route deleted.");
+  redirectWithNotice("/admin/whatsapp", "WhatsApp route archived.");
 }
 
 export async function createOrUpdateCategory(formData: FormData) {
@@ -1000,6 +1054,7 @@ export async function createOrUpdateCategory(formData: FormData) {
   }
 
   const categoryId = normalizeOptionalString(parsed.data.categoryId) ?? undefined;
+  let savedCategoryId = categoryId;
   const slugBase = slugify(parsed.data.slug || parsed.data.name) || "category";
   const uniqueSlug = await buildUniqueCategorySlug(
     session.restaurantId,
@@ -1021,7 +1076,7 @@ export async function createOrUpdateCategory(formData: FormData) {
       },
     });
   } else {
-    await getPrisma().category.create({
+    const category = await getPrisma().category.create({
       data: {
         restaurantId: session.restaurantId,
         name: parsed.data.name,
@@ -1031,11 +1086,18 @@ export async function createOrUpdateCategory(formData: FormData) {
         isActive: true,
       },
     });
+    savedCategoryId = category.id;
   }
 
   revalidateAdminPaths();
+  const finalRedirectTo = savedCategoryId
+    ? redirectTo.includes("__CATEGORY_ID__")
+      ? redirectTo.replace("__CATEGORY_ID__", savedCategoryId)
+      : `/admin/catalog/categories?category=${savedCategoryId}`
+    : redirectTo;
+
   redirectWithNotice(
-    redirectTo,
+    finalRedirectTo,
     categoryId ? "Category saved." : "Category created.",
   );
 }
@@ -1143,7 +1205,7 @@ export async function createOrUpdateProduct(formData: FormData) {
   }
 
   if (productId) {
-    await assertProductOwnership(productId, session.restaurantId);
+    const existingProduct = await assertProductOwnership(productId, session.restaurantId);
 
     await getPrisma().product.update({
       where: { id: productId },
@@ -1161,6 +1223,10 @@ export async function createOrUpdateProduct(formData: FormData) {
         pickupAvailable: formData.get("pickupAvailable") === "on",
       },
     });
+
+    if (uploadedImageUrl) {
+      await deleteRestaurantAssetByPublicUrl(existingProduct.imageUrl);
+    }
   } else {
     const createdProduct = await getPrisma().product.create({
       data: {
@@ -1356,6 +1422,7 @@ export async function updateProductBranchAvailability(formData: FormData) {
 
   await assertProductOwnership(parsed.data.productId, session.restaurantId);
 
+  const availableEverywhere = formData.get("availableEverywhere") === "on";
   const branches = await getPrisma().branch.findMany({
     where: { restaurantId: session.restaurantId, isActive: true },
     select: { id: true },
@@ -1371,16 +1438,26 @@ export async function updateProductBranchAvailability(formData: FormData) {
           },
         },
         update: {
-          isAvailable: formData.get(`${branch.id}_isAvailable`) === "on",
-          deliveryAvailable: formData.get(`${branch.id}_deliveryAvailable`) === "on",
-          pickupAvailable: formData.get(`${branch.id}_pickupAvailable`) === "on",
+          isAvailable:
+            availableEverywhere || formData.get(`${branch.id}_isAvailable`) === "on",
+          deliveryAvailable:
+            availableEverywhere ||
+            formData.get(`${branch.id}_deliveryAvailable`) === "on",
+          pickupAvailable:
+            availableEverywhere ||
+            formData.get(`${branch.id}_pickupAvailable`) === "on",
         },
         create: {
           productId: parsed.data.productId,
           branchId: branch.id,
-          isAvailable: formData.get(`${branch.id}_isAvailable`) === "on",
-          deliveryAvailable: formData.get(`${branch.id}_deliveryAvailable`) === "on",
-          pickupAvailable: formData.get(`${branch.id}_pickupAvailable`) === "on",
+          isAvailable:
+            availableEverywhere || formData.get(`${branch.id}_isAvailable`) === "on",
+          deliveryAvailable:
+            availableEverywhere ||
+            formData.get(`${branch.id}_deliveryAvailable`) === "on",
+          pickupAvailable:
+            availableEverywhere ||
+            formData.get(`${branch.id}_pickupAvailable`) === "on",
         },
       });
     }
@@ -1676,6 +1753,7 @@ export async function createOrUpdateDeliveryZone(formData: FormData) {
   await assertBranchOwnership(parsed.data.branchId, session.restaurantId);
 
   const deliveryZoneId = normalizeOptionalString(parsed.data.deliveryZoneId);
+  let savedDeliveryZoneId = deliveryZoneId;
   const maxDistanceKm = normalizeRequiredMoney(parsed.data.maxDistanceKm);
   const fee = normalizeRequiredMoney(parsed.data.fee);
 
@@ -1708,17 +1786,50 @@ export async function createOrUpdateDeliveryZone(formData: FormData) {
       redirectWithError(redirectTo, "Delivery zone branch cannot be changed.");
     }
 
-    await getPrisma().deliveryZone.update({
-      where: { id: deliveryZoneId },
-      data,
-    });
+    try {
+      await getPrisma().deliveryZone.update({
+        where: { id: deliveryZoneId },
+        data,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        redirectWithError(
+          redirectTo,
+          "A delivery zone with this name already exists for this branch.",
+        );
+      }
+
+      throw error;
+    }
   } else {
-    await getPrisma().deliveryZone.create({ data });
+    try {
+      const zone = await getPrisma().deliveryZone.create({ data });
+      savedDeliveryZoneId = zone.id;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        redirectWithError(
+          redirectTo,
+          "A delivery zone with this name already exists for this branch.",
+        );
+      }
+
+      throw error;
+    }
   }
 
   revalidateAdminPaths();
+  const finalRedirectTo = savedDeliveryZoneId
+    ? `/admin/branches/delivery/zones?branch=${parsed.data.branchId}&zone=${savedDeliveryZoneId}`
+    : redirectTo;
+
   redirectWithNotice(
-    redirectTo,
+    finalRedirectTo,
     deliveryZoneId ? "Delivery zone saved." : "Delivery zone added.",
   );
 }
@@ -1740,4 +1851,55 @@ export async function deleteDeliveryZone(formData: FormData) {
 
   revalidateAdminPaths();
   redirectWithNotice(redirectTo, "Delivery zone removed.");
+}
+
+export async function applyAdminMockWhatsappAction(formData: FormData) {
+  const session = await requireAdminSession();
+  const parsed = mockWhatsappActionSchema.safeParse({
+    redirectTo: formData.get("redirectTo"),
+    orderNumber: formData.get("orderNumber"),
+    action: formData.get("action"),
+    token: formData.get("token"),
+  });
+  const fallbackRedirectTo = "/admin/orders";
+  const redirectTo = resolveFormRedirectTarget(formData, fallbackRedirectTo);
+
+  if (!parsed.success) {
+    redirectWithError(redirectTo, "Mock WhatsApp action payload is invalid.");
+  }
+
+  const restaurant = await getPrisma().restaurant.findUnique({
+    where: { id: session.restaurantId },
+    select: { slug: true },
+  });
+
+  if (!restaurant) {
+    redirectWithError(redirectTo, "Restaurant admin scope was not found.");
+  }
+
+  let result: Awaited<ReturnType<typeof applyMockWhatsappStaffAction>>;
+
+  try {
+    result = await applyMockWhatsappStaffAction({
+      restaurantSlug: restaurant.slug,
+      orderNumber: parsed.data.orderNumber,
+      action: parsed.data.action as MockWhatsappStaffAction,
+      token: parsed.data.token,
+    });
+  } catch (error) {
+    redirectWithError(
+      redirectTo,
+      error instanceof Error
+        ? error.message
+        : "Unable to apply mock WhatsApp action.",
+    );
+  }
+
+  revalidateAdminPaths();
+  redirectWithNotice(
+    redirectTo,
+    result.changed
+      ? `Order ${parsed.data.action === "confirm" ? "confirmed" : "cancelled"} through the mock WhatsApp action.`
+      : "Mock WhatsApp action was already applied.",
+  );
 }

@@ -28,6 +28,8 @@ import {
   StatusBadge,
   formatAdminMoney,
 } from "@/components/admin/phase45-ui";
+import { PageNotice } from "@/components/admin/primitives";
+import { applyAdminMockWhatsappAction } from "@/app/admin/actions";
 import { requireAdminSession } from "@/lib/auth/admin-session";
 import { getAdminOrderDetailData } from "@/server/repositories/restaurant-admin";
 
@@ -35,6 +37,16 @@ type OrderDetailPageProps = {
   params: Promise<{
     orderNumber: string;
   }>;
+  searchParams?: Promise<{
+    notice?: string;
+    error?: string;
+  }>;
+};
+
+type MockStaffAction = {
+  action: "confirm" | "cancel";
+  label: string;
+  token: string;
 };
 
 function formatStatus(status: OrderStatus | string | null | undefined) {
@@ -100,11 +112,68 @@ function safeJsonPreview(value: unknown) {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getMockStaffActions(
+  logs: Array<{ payloadJson: unknown }>,
+): MockStaffAction[] {
+  for (const log of logs) {
+    if (!isRecord(log.payloadJson)) {
+      continue;
+    }
+
+    const actions = log.payloadJson.interactiveActions;
+    if (!Array.isArray(actions)) {
+      continue;
+    }
+
+    const parsedActions = actions.flatMap((action): MockStaffAction[] => {
+      if (!isRecord(action)) {
+        return [];
+      }
+
+      const actionType = action.action;
+      const token = action.token;
+      const label = action.label;
+
+      if (
+        (actionType !== "confirm" && actionType !== "cancel") ||
+        typeof token !== "string"
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          action: actionType,
+          label:
+            typeof label === "string"
+              ? label
+              : actionType === "confirm"
+                ? "Confirm"
+                : "Cancel",
+          token,
+        },
+      ];
+    });
+
+    if (parsedActions.length) {
+      return parsedActions;
+    }
+  }
+
+  return [];
+}
+
 export default async function OrderDetailPage({
   params,
+  searchParams,
 }: OrderDetailPageProps) {
   const session = await requireAdminSession();
   const { orderNumber } = await params;
+  const resolvedSearchParams = await searchParams;
   const order = await getAdminOrderDetailData(
     session.restaurantId,
     decodeURIComponent(orderNumber),
@@ -124,10 +193,22 @@ export default async function OrderDetailPage({
     (total, item) => total + item.addons.length,
     0,
   );
+  const mockStaffActions = getMockStaffActions(order.whatsappMessageLogs);
+  const canApplyMockStaffAction =
+    order.status === OrderStatus.PENDING_CONFIRMATION &&
+    mockStaffActions.length > 0;
+  const currentPath = `/admin/orders/${encodeURIComponent(order.orderNumber)}`;
 
   return (
     <AdminWorkspace>
       <div className="space-y-6">
+        {resolvedSearchParams?.notice ? (
+          <PageNotice message={resolvedSearchParams.notice} />
+        ) : null}
+        {resolvedSearchParams?.error ? (
+          <PageNotice message={resolvedSearchParams.error} tone="error" />
+        ) : null}
+
         <PageTitle
           action={
             <Link
@@ -196,7 +277,7 @@ export default async function OrderDetailPage({
           </Panel>
           <Panel className="p-5">
             <div className="flex items-start gap-4">
-              <IconBubble icon={MessageCircleMore} tone="yellow" />
+              <IconBubble icon={MessageCircleMore} />
               <div>
                 <p className="text-sm font-semibold text-[#111]">
                   Provider logs
@@ -213,6 +294,56 @@ export default async function OrderDetailPage({
             </div>
           </Panel>
         </div>
+
+        {canApplyMockStaffAction ? (
+          <Panel className="border-[var(--admin-primary-border)] bg-[var(--admin-primary-softer)] p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-4">
+                <IconBubble icon={MessageCircleMore} />
+                <div>
+                  <h2 className="text-lg font-semibold text-[#111]">
+                    Mock WhatsApp staff action
+                  </h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[#666]">
+                    Use this only for local/demo testing while Meta WhatsApp is
+                    not connected. It uses the signed Confirm/Cancel tokens from
+                    the stored mock staff notification and records the same
+                    status/provider audit trail.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {mockStaffActions.map((action) => (
+                  <form action={applyAdminMockWhatsappAction} key={action.action}>
+                    <input name="redirectTo" type="hidden" value={currentPath} />
+                    <input
+                      name="orderNumber"
+                      type="hidden"
+                      value={order.orderNumber}
+                    />
+                    <input name="action" type="hidden" value={action.action} />
+                    <input name="token" type="hidden" value={action.token} />
+                    <button
+                      className={
+                        action.action === "confirm"
+                          ? "inline-flex h-12 min-w-32 items-center justify-center gap-2 rounded-[10px] bg-[var(--admin-primary)] px-5 text-sm font-semibold !text-white shadow-[0_14px_28px_rgba(100,43,147,0.22)] transition hover:bg-[var(--admin-primary-dark)]"
+                          : "inline-flex h-12 min-w-32 items-center justify-center gap-2 rounded-[10px] border border-[#f0c7cc] bg-white px-5 text-sm font-semibold text-[#c73645] transition hover:bg-[#fff3f4]"
+                      }
+                      type="submit"
+                    >
+                      {action.action === "confirm" ? (
+                        <CheckCircle2 className="size-4" />
+                      ) : (
+                        <XCircle className="size-4" />
+                      )}
+                      {action.label} order
+                    </button>
+                  </form>
+                ))}
+              </div>
+            </div>
+          </Panel>
+        ) : null}
 
         <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,390px)]">
           <div className="min-w-0 space-y-6">
@@ -363,7 +494,7 @@ export default async function OrderDetailPage({
                       className="flex gap-4 rounded-[14px] border border-[#e5e5e1] bg-white p-4"
                       key={event.id}
                     >
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f1f1ef] text-[#111]">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
                         <History className="size-5" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -415,7 +546,7 @@ export default async function OrderDetailPage({
                       key={log.id}
                     >
                       <summary className="flex cursor-pointer list-none items-start gap-4">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f1f1ef] text-[#111]">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
                           <Send className="size-5" />
                         </span>
                         <div className="min-w-0 flex-1">
@@ -639,7 +770,7 @@ function InfoBlock({
   return (
     <div className="rounded-[14px] border border-[#e5e5e1] bg-white p-4">
       <div className="flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[#f1f1ef] text-[#111]">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
           <Icon className="size-5" />
         </span>
         <div className="min-w-0">

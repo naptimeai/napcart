@@ -164,18 +164,30 @@ export function PrimaryButton({
 export function SecondaryButton({
   children,
   className,
+  href,
   type = "button",
 }: {
   children: ReactNode;
   className?: string;
+  href?: string;
   type?: "button" | "submit";
 }) {
+  const classes = cx(
+    "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-[#deded8] bg-white px-5 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]",
+    className,
+  );
+
+  if (href) {
+    return (
+      <Link className={classes} href={href}>
+        {children}
+      </Link>
+    );
+  }
+
   return (
     <button
-      className={cx(
-        "inline-flex h-12 items-center justify-center gap-2 rounded-[10px] border border-[#deded8] bg-white px-5 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]",
-        className,
-      )}
+      className={classes}
       type={type}
     >
       {children}
@@ -219,9 +231,9 @@ export function IconBubble({
 }) {
   const tones = {
     dark: "bg-[var(--admin-primary)] !text-white",
-    gray: "bg-[#f1f1ef] text-[#111]",
+    gray: "bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]",
     green: "bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]",
-    yellow: "bg-[var(--admin-accent-soft)] text-[var(--admin-accent)]",
+    yellow: "bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]",
   };
 
   return (
@@ -252,8 +264,18 @@ export function StatCard({
   action?: ReactNode;
   tone?: "green" | "yellow" | "gray";
 }) {
+  const topBorderClassName =
+    tone === "yellow" || tone === "gray" || tone === "green"
+      ? "border-t-[3px] border-t-[var(--admin-primary)]"
+      : "";
+
   return (
-    <Panel className="flex min-h-[124px] flex-col justify-between p-4 sm:p-5">
+    <Panel
+      className={cx(
+        "flex min-h-[124px] flex-col justify-between p-4 sm:p-5",
+        topBorderClassName,
+      )}
+    >
       <div className="flex min-w-0 flex-col">
         <div className="flex min-w-0 items-start justify-between gap-3">
           <p className="min-w-0 pt-1 text-sm font-medium text-[#222]">
@@ -449,7 +471,7 @@ export function SettingToggleRow({
   return (
     <div className="flex items-center gap-4 rounded-[12px] border border-[#e5e5e1] bg-white p-4">
       {Icon ? (
-        <span className="flex size-10 items-center justify-center rounded-[10px] bg-[#f1f1ef]">
+        <span className="flex size-10 items-center justify-center rounded-[10px] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
           <Icon className="size-5" />
         </span>
       ) : null}
@@ -510,14 +532,14 @@ export function ProductThumb({
   return (
     <div
       className={cx(
-        "relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[#f1f1ef]",
+        "relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[var(--admin-primary-soft)]",
         className,
       )}
     >
       {src ? (
         <Image alt={alt} className="object-cover" fill sizes="96px" src={src} />
       ) : (
-        <ImageIcon className="size-6 text-[#777]" />
+        <ImageIcon className="size-6 text-[var(--admin-primary)]" />
       )}
     </div>
   );

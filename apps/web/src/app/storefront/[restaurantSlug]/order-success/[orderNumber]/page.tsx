@@ -8,15 +8,19 @@ import {
 
 export default async function StorefrontOrderSuccessPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ restaurantSlug: string; orderNumber: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { restaurantSlug, orderNumber } = await params;
+  const { token } = await searchParams;
   const [data, order] = await Promise.all([
     getStorefrontData(restaurantSlug),
     getStorefrontOrderSummary({
       restaurantSlug,
       orderNumber,
+      accessToken: token,
     }),
   ]);
 

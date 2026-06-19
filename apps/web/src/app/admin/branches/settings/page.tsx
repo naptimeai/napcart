@@ -58,7 +58,11 @@ export default async function BranchSettingsPage({
               title="Add branch"
             />
             <form action={createOrUpdateBranch} className="mt-7 space-y-5">
-              <input name="redirectTo" type="hidden" value="/admin/branches" />
+              <input
+                name="redirectTo"
+                type="hidden"
+                value="/admin/branches?branch=__BRANCH_ID__"
+              />
               <FormField label="Branch name">
                 <FormInput
                   name="name"
@@ -177,7 +181,7 @@ export default async function BranchSettingsPage({
                     key={branch.id}
                   >
                     <div className="flex items-center gap-3">
-                      <Store className="size-10 rounded-full bg-[#f1f1ef] p-2 text-[#111]" />
+                      <Store className="size-10 rounded-full bg-[var(--admin-primary-soft)] p-2 text-[var(--admin-primary)]" />
                       <div>
                         <p className="font-semibold text-[#111]">{branch.name}</p>
                         <p className="mt-1 text-xs text-[#777]">

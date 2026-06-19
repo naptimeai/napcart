@@ -103,19 +103,19 @@ function buildOrderStatusData(
       key: "confirmed",
       label: "Confirmed",
       value: data.metrics.confirmedOrdersCount,
-      fill: "var(--chart-1)",
+      fill: "var(--admin-primary)",
     },
     {
       key: "pending",
       label: "Pending",
       value: data.metrics.pendingConfirmationOrdersCount,
-      fill: "var(--chart-3)",
+      fill: "color-mix(in srgb, var(--admin-primary) 72%, white)",
     },
     {
       key: "cancelled",
       label: "Cancelled",
       value: data.metrics.cancelledOrdersCount,
-      fill: "var(--chart-4)",
+      fill: "color-mix(in srgb, var(--admin-primary) 38%, white)",
     },
   ];
 }

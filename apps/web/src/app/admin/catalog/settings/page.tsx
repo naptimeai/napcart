@@ -1,8 +1,9 @@
 import {
-  Bell,
   DollarSign,
-  List,
+  Eye,
+  Folder,
   Settings,
+  Store,
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -10,13 +11,12 @@ import { updateCatalogSettings } from "@/app/admin/actions";
 import {
   AdminWorkspace,
   FormField,
-  FormInput,
   FormSelect,
   IconBubble,
   PageTitle,
   Panel,
   PrimaryButton,
-  SettingToggleRow,
+  SecondaryButton,
 } from "@/components/admin/phase45-ui";
 import { PageNotice } from "@/components/admin/primitives";
 import { requireAdminSession } from "@/lib/auth/admin-session";
@@ -30,7 +30,6 @@ export default async function CatalogSettingsPage({
   const session = await requireAdminSession();
   const data = await getCatalogManagementData(session.restaurantId);
   const params = searchParams ? await searchParams : undefined;
-  const settings = data.restaurant.settings;
 
   return (
     <AdminWorkspace>
@@ -60,15 +59,6 @@ export default async function CatalogSettingsPage({
                 type="hidden"
                 value="/admin/catalog/settings"
               />
-              <FormField
-                hint="This is used internally to identify your catalog."
-                label="Catalog name"
-              >
-                <FormInput
-                  defaultValue={`${data.restaurant.name} Menu`}
-                  name="catalogName"
-                />
-              </FormField>
               <FormField
                 hint="The default language for your catalog."
                 label="Default language"
@@ -115,93 +105,56 @@ export default async function CatalogSettingsPage({
                   <option value="PKR">PKR - Pakistani Rupee</option>
                 </FormSelect>
               </FormField>
-              <SettingToggleRow
-                defaultChecked={settings?.taxEnabled ?? false}
-                description="Prices will include tax for customers when enabled."
-                name="taxEnabled"
-                title="Include tax in prices"
-              />
-              <FormField
-                hint="Used as the default order threshold where needed."
-                label="Minimum order amount"
-              >
-                <FormInput
-                  defaultValue={settings?.minimumOrderAmount?.toString() ?? ""}
-                  name="minimumOrderAmount"
-                  placeholder="500"
-                  type="number"
-                />
-              </FormField>
+              <InfoBox>
+                Taxes and branch minimum-order rules are not part of Catalog
+                Settings in the MVP. Delivery fees and minimums live under
+                Branches &gt; Delivery.
+              </InfoBox>
               <SaveRow />
             </form>
           </SettingsCard>
 
           <SettingsCard
-            description="Control how your catalog behaves."
-            icon={List}
-            title="Catalog behavior"
+            description="Control what customers can browse and order."
+            icon={Eye}
+            title="Product visibility"
           >
-            <form action={updateCatalogSettings} className="space-y-5">
-              <input name="settingsSection" type="hidden" value="behavior" />
-              <input
-                name="redirectTo"
-                type="hidden"
-                value="/admin/catalog/settings"
-              />
-              <SettingToggleRow
-                defaultChecked={settings?.deliveryEnabled ?? true}
-                description="Allow products to be ordered for delivery."
-                name="deliveryEnabled"
-                title="Delivery enabled"
-              />
-              <SettingToggleRow
-                defaultChecked={settings?.pickupEnabled ?? true}
-                description="Allow products to be ordered for pickup."
-                name="pickupEnabled"
-                title="Pickup enabled"
-              />
-              <SettingToggleRow
-                defaultChecked={settings?.showBranchSelection ?? true}
-                description="Let customers select their preferred branch."
-                name="showBranchSelection"
-                title="Show branch selection"
-              />
-              <SaveRow />
-            </form>
+            <div className="space-y-5">
+              <InfoBox>
+                Product visibility is controlled per product and per branch.
+                Unavailable products stay hidden from the storefront order flow.
+              </InfoBox>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <SecondaryButton href="/admin/catalog/categories">
+                  <Folder className="size-4" />
+                  Categories
+                </SecondaryButton>
+                <PrimaryButton href="/admin/catalog/products">
+                  Manage products
+                </PrimaryButton>
+              </div>
+            </div>
           </SettingsCard>
 
           <SettingsCard
-            description="Manage customer alerts and updates."
-            icon={Bell}
-            title="Notifications"
+            description="Branch-specific rules live in the Branches section."
+            icon={Store}
+            title="Branch & delivery setup"
           >
-            <form action={updateCatalogSettings} className="space-y-5">
-              <input name="settingsSection" type="hidden" value="notifications" />
-              <input
-                name="redirectTo"
-                type="hidden"
-                value="/admin/catalog/settings"
-              />
-              <SettingToggleRow
-                defaultChecked={settings?.customerNotificationsEnabled ?? false}
-                description="Send customer-facing updates when supported."
-                name="customerNotificationsEnabled"
-                title="Customer notifications"
-              />
-              <SettingToggleRow
-                defaultChecked={false}
-                description="Receive email when your catalog is published."
-                name="catalogUpdates"
-                title="Catalog updates"
-              />
-              <SettingToggleRow
-                defaultChecked={false}
-                description="Get a weekly summary of catalog activity."
-                name="weeklySummary"
-                title="Weekly summary"
-              />
-              <SaveRow />
-            </form>
+            <div className="space-y-5">
+              <InfoBox>
+                Opening hours, temporary closure, delivery zones, delivery fees,
+                and minimum-order rules are managed at branch level.
+              </InfoBox>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <SecondaryButton href="/admin/branches">
+                  Branches
+                </SecondaryButton>
+                <PrimaryButton href="/admin/branches/delivery">
+                  Delivery settings
+                </PrimaryButton>
+              </div>
+            </div>
           </SettingsCard>
         </div>
       </div>
@@ -231,6 +184,14 @@ function SettingsCard({
       </div>
       {children}
     </Panel>
+  );
+}
+
+function InfoBox({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-[12px] border border-[var(--admin-primary-soft)] bg-[var(--admin-primary-softer)] p-4 text-sm leading-6 text-[#4d3b5e]">
+      {children}
+    </div>
   );
 }
 

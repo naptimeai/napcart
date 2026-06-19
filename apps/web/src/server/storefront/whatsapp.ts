@@ -85,7 +85,7 @@ function formatMoney(currency: string, value: Prisma.Decimal | number) {
 
 function formatOrderMessage(order: OrderForMessage) {
   const lines = [
-    `New NapCart Order: ${order.orderNumber}`,
+    `New Order: ${order.orderNumber}`,
     `Status: pending confirmation`,
     `Customer: ${order.customerNameSnapshot}`,
     `Phone: ${order.customerPhoneSnapshot}`,
@@ -211,7 +211,7 @@ function renderCustomerNotification({
 
   if (action === "confirm") {
     return [
-      `Your NapCart order ${order.orderNumber} has been confirmed.`,
+      `Your order ${order.orderNumber} has been confirmed.`,
       `Branch: ${order.branchNameSnapshot}`,
       `Type: ${orderType}`,
       `Total: ${formatMoney(order.currency, order.grandTotal)}`,
@@ -220,7 +220,7 @@ function renderCustomerNotification({
   }
 
   return [
-    `Your NapCart order ${order.orderNumber} has been cancelled by the restaurant.`,
+    `Your order ${order.orderNumber} has been cancelled by the restaurant.`,
     `Branch: ${order.branchNameSnapshot}`,
     "Please contact the restaurant if you need help placing another order.",
   ].join("\n");

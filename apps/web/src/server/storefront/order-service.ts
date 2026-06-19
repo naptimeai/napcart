@@ -8,7 +8,10 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 import { runInTransaction } from "@/server/db/transaction";
+import { isWithinOperatingHours } from "@/lib/branch-hours";
+import { resolveSelectedAddons } from "@/server/storefront/addon-validation";
 import { normalizePakistanPhone } from "@/server/storefront/phone";
+import { signStorefrontOrderAccessToken } from "@/server/storefront/order-access";
 import type {
   StorefrontOrderRequest,
   StorefrontOrderResponse,
@@ -31,6 +34,7 @@ export const storefrontOrderSchema = z.object({
     phone: z.string().trim().min(7).max(30),
   }),
   addressText: z.string().trim().max(700).optional(),
+  deliveryZoneId: z.string().uuid().optional(),
   deliveryNotes: z.string().trim().max(500).optional(),
   orderNotes: z.string().trim().max(500).optional(),
   items: z.array(orderItemSchema).min(1).max(40),
@@ -154,6 +158,7 @@ export async function placeStorefrontOrder(
           where: { isActive: true },
           orderBy: [{ sortOrder: "asc" }, { fee: "asc" }],
         },
+        operatingHours: true,
       },
     });
 
@@ -163,6 +168,10 @@ export async function placeStorefrontOrder(
 
     if (!branch.isAcceptingOrders || branch.isTemporarilyClosed) {
       throw new Error("Selected branch is not accepting orders right now.");
+    }
+
+    if (!isWithinOperatingHours(branch.operatingHours, restaurant.timezone)) {
+      throw new Error("Selected branch is closed right now.");
     }
 
     const productIds = [
@@ -239,32 +248,12 @@ export async function placeStorefrontOrder(
         throw new Error(`${product.name} has no available variant.`);
       }
 
-      const addonMap = new Map(
-        product.addonGroups.flatMap((group) =>
-          group.addons.map((addon) => [addon.id, { addon, group }] as const),
-        ),
-      );
-      const selectedAddons = (item.addonIds ?? []).map((addonId) => {
-        const match = addonMap.get(addonId);
-        if (!match) {
-          throw new Error(`Invalid add-on selected for ${product.name}.`);
-        }
-        return match;
+      const addonIds = item.addonIds ?? [];
+      const selectedAddons = resolveSelectedAddons({
+        addonGroups: product.addonGroups,
+        addonIds,
+        productName: product.name,
       });
-
-      for (const group of product.addonGroups) {
-        const selectedCount = selectedAddons.filter(
-          (match) => match.group.id === group.id,
-        ).length;
-        if (group.isRequired && selectedCount < group.minSelect) {
-          throw new Error(`${product.name} requires ${group.name}.`);
-        }
-        if (selectedCount > group.maxSelect) {
-          throw new Error(
-            `${product.name} allows only ${group.maxSelect} option(s) for ${group.name}.`,
-          );
-        }
-      }
 
       const addonTotal = selectedAddons.reduce(
         (sum, match) => sum + Number(match.addon.price),
@@ -291,7 +280,18 @@ export async function placeStorefrontOrder(
 
     const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
     const deliveryZone =
-      request.fulfillmentType === "delivery" ? branch.deliveryZones[0] : null;
+      request.fulfillmentType === "delivery"
+        ? (request.deliveryZoneId
+            ? branch.deliveryZones.find(
+                (zone) => zone.id === request.deliveryZoneId,
+              )
+            : branch.deliveryZones[0])
+        : null;
+
+    if (request.fulfillmentType === "delivery" && !deliveryZone) {
+      throw new Error("Selected branch has no active delivery zone.");
+    }
+
     const deliveryFee = deliveryZone ? Number(deliveryZone.fee) : 0;
     const grandTotal = subtotal + deliveryFee;
     const minimumOrderAmount =
@@ -439,6 +439,11 @@ export async function placeStorefrontOrder(
     return {
       orderId: order.id,
       orderNumber: order.orderNumber,
+      accessToken: signStorefrontOrderAccessToken({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        customerPhone: order.customerPhoneSnapshot,
+      }),
       status: "pending_confirmation",
       branchName: branch.name,
       fulfillmentType: request.fulfillmentType,

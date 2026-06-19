@@ -11,14 +11,18 @@ import {
   Plus,
   Send,
   Store,
+  Trash2,
 } from "lucide-react";
 import {
   createOrUpdateAddon,
   createOrUpdateAddonGroup,
   createOrUpdateProduct,
   createOrUpdateProductVariant,
+  deleteAddon,
+  deleteProductVariant,
   updateProductBranchAvailability,
 } from "@/app/admin/actions";
+import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import {
   AdminWorkspace,
   EmptyState,
@@ -57,6 +61,7 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
   const data = await getCatalogManagementData(session.restaurantId);
   const step = resolveStep(params?.step);
   const product = data.products.find((item) => item.id === params?.product);
+  const isEditing = Boolean(product);
   const activeCategories = data.categories.filter((category) => category.isActive);
   const selectedCategory =
     product?.category ?? activeCategories[0] ?? data.categories[0];
@@ -89,10 +94,12 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-[34px] font-semibold leading-tight tracking-normal text-[#111]">
-              New product
+              {isEditing ? "Edit product" : "New product"}
             </h1>
             <p className="mt-2 text-[15px] leading-6 text-[#767676]">
-              Create your item in 4 simple steps.
+              {isEditing
+                ? "Update product details, availability, variations, and add-ons."
+                : "Create your item in 4 simple steps."}
             </p>
           </div>
           <Link
@@ -111,6 +118,7 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
           <StepOne
             categories={activeCategories}
             currency={data.restaurant.defaultCurrency}
+            isEditing={isEditing}
             product={product}
             selectedCategoryName={selectedCategory?.name}
           />
@@ -119,6 +127,7 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
           <StepTwo
             branchAvailability={branchAvailability}
             currency={data.restaurant.defaultCurrency}
+            isEditing={isEditing}
             product={product}
             selectedBranchCount={selectedBranchCount}
             totalBranches={data.branches.length}
@@ -127,6 +136,7 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
         {step === 3 ? (
           <StepThree
             currency={data.restaurant.defaultCurrency}
+            isEditing={isEditing}
             product={product}
             selectedBranchCount={selectedBranchCount}
           />
@@ -156,11 +166,13 @@ function StepOne({
   product,
   categories,
   currency,
+  isEditing,
   selectedCategoryName,
 }: {
   product: ProductDraft | undefined;
   categories: Array<{ id: string; name: string }>;
   currency: string;
+  isEditing: boolean;
   selectedCategoryName?: string;
 }) {
   return (
@@ -179,7 +191,11 @@ function StepOne({
             <input
               name="redirectTo"
               type="hidden"
-              value="/admin/catalog/products/new?step=2&product=__PRODUCT_ID__"
+              value={
+                isEditing && product
+                  ? `/admin/catalog/products/new?step=1&product=${product.id}`
+                  : "/admin/catalog/products/new?step=2&product=__PRODUCT_ID__"
+              }
             />
             <div className="grid gap-8 lg:grid-cols-[250px_1fr]">
               <FormField label="Product image">
@@ -285,8 +301,13 @@ function StepOne({
             />
             <WizardActionBar
               backHref="/admin/catalog/products"
-              continueLabel="Continue to availability"
-              saveDraft
+              continueLabel={isEditing ? "Save changes" : "Continue to availability"}
+              secondaryHref={
+                isEditing && product
+                  ? `/admin/catalog/products/new?step=2&product=${product.id}`
+                  : undefined
+              }
+              secondaryLabel={isEditing ? "Next: Availability" : undefined}
               submit
             />
           </form>
@@ -308,12 +329,14 @@ function StepOne({
 function StepTwo({
   product,
   branchAvailability,
+  isEditing,
   selectedBranchCount,
   totalBranches,
 }: {
   product: ProductDraft | undefined;
   currency: string;
   branchAvailability: BranchAvailabilityDraft[];
+  isEditing: boolean;
   selectedBranchCount: number;
   totalBranches: number;
 }) {
@@ -327,7 +350,11 @@ function StepTwo({
       <input
         name="redirectTo"
         type="hidden"
-        value={`/admin/catalog/products/new?step=3&product=${product.id}`}
+        value={
+          isEditing
+            ? `/admin/catalog/products/new?step=2&product=${product.id}`
+            : `/admin/catalog/products/new?step=3&product=${product.id}`
+        }
       />
       <div className="grid gap-7 xl:grid-cols-[1fr_330px]">
         <Panel className="p-6">
@@ -336,7 +363,10 @@ function StepTwo({
             title="Availability"
           />
           <div className="mt-6 flex min-h-20 items-center gap-5 rounded-[12px] border border-[#deded8] p-5">
-            <ToggleInput defaultChecked name="availableEverywhere" />
+            <ToggleInput
+              defaultChecked={selectedBranchCount === totalBranches}
+              name="availableEverywhere"
+            />
             <div>
               <p className="font-semibold text-[#111]">Available in all branches</p>
               <p className="mt-1 text-sm text-[#777]">
@@ -358,7 +388,7 @@ function StepTwo({
                 className="flex items-center gap-4 rounded-[12px] border border-[#deded8] p-4"
                 key={branch.id}
               >
-                <Store className="size-5 rounded-[10px] bg-[#f1f1ef] p-3 box-content" />
+                <Store className="size-5 rounded-[10px] bg-[var(--admin-primary-soft)] p-3 text-[var(--admin-primary)] box-content" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-[#111]">{branch.name}</p>
                   <p className="mt-1 text-sm text-[#777]">
@@ -407,17 +437,28 @@ function StepTwo({
             <p className="mt-1 text-sm text-[#777]">
               This product is available in {selectedBranchCount} branches.
             </p>
-            <button className="mt-5 inline-flex h-11 items-center gap-2 rounded-[10px] border border-[#deded8] px-4 text-sm font-semibold">
+            <Link
+              className="mt-5 inline-flex h-11 items-center gap-2 rounded-[10px] border border-[#deded8] px-4 text-sm font-semibold"
+              href={`/admin/catalog/products/new?step=2&product=${product.id}`}
+            >
               <List className="size-4" />
               View branch list
-            </button>
+            </Link>
           </div>
           <WhatsNext steps={[["3", "Variations & Add-ons", "Add sizes, options, and add-ons."], ["4", "Review & Publish", "Review details and publish when you are ready."]]} />
         </ProductPreviewCard>
       </div>
       <WizardActionBar
         backHref={`/admin/catalog/products/new?step=1&product=${product.id}`}
-        continueLabel="Continue to variations & add-ons"
+        continueLabel={
+          isEditing ? "Save availability" : "Continue to variations & add-ons"
+        }
+        secondaryHref={
+          isEditing
+            ? `/admin/catalog/products/new?step=3&product=${product.id}`
+            : undefined
+        }
+        secondaryLabel={isEditing ? "Next: Variations & add-ons" : undefined}
         submit
       />
     </form>
@@ -425,10 +466,12 @@ function StepTwo({
 }
 
 function StepThree({
+  isEditing,
   product,
   selectedBranchCount,
   currency,
 }: {
+  isEditing: boolean;
   product: ProductDraft | undefined;
   selectedBranchCount: number;
   currency: string;
@@ -450,37 +493,60 @@ function StepThree({
               <GroupHeader badge="Required" title="Size" />
               <div className="mt-3 space-y-2">
                 {(product.variants.length ? product.variants : []).map((variant) => (
-                  <form
-                    action={createOrUpdateProductVariant}
-                    className="flex min-h-12 items-center gap-3 rounded-[10px] border border-[#e7e7e3] px-3"
+                  <div
+                    className="grid min-h-12 items-center gap-3 rounded-[10px] border border-[#e7e7e3] px-3 py-2 md:grid-cols-[18px_1fr_120px_36px_36px]"
                     key={variant.id}
                   >
-                    <input name="productId" type="hidden" value={product.id} />
-                    <input name="variantId" type="hidden" value={variant.id} />
-                    <input
-                      name="redirectTo"
-                      type="hidden"
-                      value={`/admin/catalog/products/new?step=3&product=${product.id}`}
-                    />
-                    <GripVertical className="size-4 text-[#999]" />
-                    <FormInput
-                      className="h-9 border-0 px-0 focus:ring-0"
-                      defaultValue={variant.name}
-                      name="name"
-                    />
-                    <FormInput
-                      className="h-9 w-28"
-                      defaultValue={Number(variant.priceDelta ?? 0)}
-                      name="priceDelta"
-                      placeholder="+ PKR"
-                    />
-                    <input name="fixedPrice" type="hidden" value="" />
-                    <input name="sortOrder" type="hidden" value={variant.sortOrder} />
-                    <input name="isActive" type="hidden" value="on" />
-                    <button aria-label="Save variation" type="submit">
-                      <Check className="size-4" />
-                    </button>
-                  </form>
+                    <form
+                      action={createOrUpdateProductVariant}
+                      className="contents"
+                    >
+                      <input name="productId" type="hidden" value={product.id} />
+                      <input name="variantId" type="hidden" value={variant.id} />
+                      <input
+                        name="redirectTo"
+                        type="hidden"
+                        value={`/admin/catalog/products/new?step=3&product=${product.id}`}
+                      />
+                      <GripVertical className="size-4 text-[#999]" />
+                      <FormInput
+                        className="h-9 border-0 px-0 focus:ring-0"
+                        defaultValue={variant.name}
+                        name="name"
+                      />
+                      <FormInput
+                        className="h-9 w-28"
+                        defaultValue={Number(variant.priceDelta ?? 0)}
+                        name="priceDelta"
+                        placeholder="+ PKR"
+                      />
+                      <input name="fixedPrice" type="hidden" value="" />
+                      <input name="sortOrder" type="hidden" value={variant.sortOrder} />
+                      <input name="isActive" type="hidden" value="on" />
+                      <button aria-label="Save variation" type="submit">
+                        <Check className="size-4" />
+                      </button>
+                    </form>
+                    <form action={deleteProductVariant}>
+                      <input
+                        name="productVariantId"
+                        type="hidden"
+                        value={variant.id}
+                      />
+                      <input
+                        name="redirectTo"
+                        type="hidden"
+                        value={`/admin/catalog/products/new?step=3&product=${product.id}`}
+                      />
+                    <ConfirmSubmitButton
+                      className="inline-flex size-8 items-center justify-center rounded-lg text-[#c73645] transition hover:bg-[#fff3f4]"
+                      confirmMessage={`Remove "${variant.name}" variation?`}
+                      label="Remove variation"
+                    >
+                      <Trash2 className="size-4" />
+                    </ConfirmSubmitButton>
+                    </form>
+                  </div>
                 ))}
                 <form
                   action={createOrUpdateProductVariant}
@@ -503,10 +569,10 @@ function StepThree({
                   </PrimaryButton>
                 </form>
               </div>
-              <button className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#d7d7d1] text-sm font-semibold">
+              <div className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#d7d7d1] text-sm font-semibold text-[#777]">
                 <Plus className="size-4" />
-                Add variation group
-              </button>
+                One variation group is supported in MVP
+              </div>
             </div>
           </Panel>
 
@@ -527,35 +593,54 @@ function StepThree({
                   />
                   <div className="mt-3 divide-y divide-[#eeeeea] overflow-hidden rounded-[10px] border border-[#e7e7e3]">
                     {group.addons.map((addon) => (
-                      <form
-                        action={createOrUpdateAddon}
-                        className="grid min-h-11 items-center gap-3 px-3 py-2 md:grid-cols-[24px_1fr_80px_80px]"
+                      <div
+                        className="grid min-h-11 items-center gap-3 px-3 py-2 md:grid-cols-[24px_1fr_70px_90px_36px_36px]"
                         key={addon.id}
                       >
-                        <input name="productId" type="hidden" value={product.id} />
-                        <input name="addonGroupId" type="hidden" value={group.id} />
-                        <input name="addonId" type="hidden" value={addon.id} />
-                        <input
-                          name="redirectTo"
-                          type="hidden"
-                          value={`/admin/catalog/products/new?step=3&product=${product.id}`}
-                        />
-                        <input type="checkbox" />
-                        <FormInput
-                          className="h-8 border-0 px-0 focus:ring-0"
-                          defaultValue={addon.name}
-                          name="name"
-                        />
-                        <span className="text-sm text-[#777]">+ PKR</span>
-                        <FormInput
-                          className="h-8"
-                          defaultValue={Number(addon.price)}
-                          name="price"
-                          type="number"
-                        />
-                        <input name="sortOrder" type="hidden" value={addon.sortOrder} />
-                        <input name="isActive" type="hidden" value="on" />
-                      </form>
+                        <form action={createOrUpdateAddon} className="contents">
+                          <input name="productId" type="hidden" value={product.id} />
+                          <input name="addonGroupId" type="hidden" value={group.id} />
+                          <input name="addonId" type="hidden" value={addon.id} />
+                          <input
+                            name="redirectTo"
+                            type="hidden"
+                            value={`/admin/catalog/products/new?step=3&product=${product.id}`}
+                          />
+                          <input type="checkbox" />
+                          <FormInput
+                            className="h-8 border-0 px-0 focus:ring-0"
+                            defaultValue={addon.name}
+                            name="name"
+                          />
+                          <span className="text-sm text-[#777]">+ PKR</span>
+                          <FormInput
+                            className="h-8"
+                            defaultValue={Number(addon.price)}
+                            name="price"
+                            type="number"
+                          />
+                          <input name="sortOrder" type="hidden" value={addon.sortOrder} />
+                          <input name="isActive" type="hidden" value="on" />
+                          <button aria-label="Save add-on" type="submit">
+                            <Check className="size-4" />
+                          </button>
+                        </form>
+                        <form action={deleteAddon}>
+                          <input name="addonId" type="hidden" value={addon.id} />
+                          <input
+                            name="redirectTo"
+                            type="hidden"
+                            value={`/admin/catalog/products/new?step=3&product=${product.id}`}
+                          />
+                        <ConfirmSubmitButton
+                          className="inline-flex size-8 items-center justify-center rounded-lg text-[#c73645] transition hover:bg-[#fff3f4]"
+                          confirmMessage={`Remove "${addon.name}" add-on?`}
+                          label="Remove add-on"
+                        >
+                          <Trash2 className="size-4" />
+                        </ConfirmSubmitButton>
+                        </form>
+                      </div>
                     ))}
                   </div>
                   <form
@@ -640,9 +725,12 @@ function StepThree({
                   </p>
                   <p className="text-sm text-[#777]">branches</p>
                 </div>
-                <button className="rounded-[10px] border border-[#deded8] px-3 py-2 text-sm font-semibold">
+                <Link
+                  className="rounded-[10px] border border-[#deded8] px-3 py-2 text-sm font-semibold"
+                  href={`/admin/catalog/products/new?step=2&product=${product.id}`}
+                >
                   View all
-                </button>
+                </Link>
               </div>
             </div>
             <WhatsNext steps={[["4", "Review & Publish", "Confirm details and publish when you are ready."]]} />
@@ -652,7 +740,7 @@ function StepThree({
       <WizardActionBar
         backHref={`/admin/catalog/products/new?step=2&product=${product.id}`}
         continueHref={`/admin/catalog/products/new?step=4&product=${product.id}`}
-        continueLabel="Continue to review"
+        continueLabel={isEditing ? "Review saved changes" : "Continue to review"}
       />
     </>
   );
@@ -805,23 +893,23 @@ function StepFour({
             >
               Back
             </Link>
-            <button className="inline-flex h-14 items-center gap-3 rounded-[10px] border border-[#deded8] px-5 text-left">
+            <span className="inline-flex h-14 items-center gap-3 rounded-[10px] border border-[#deded8] px-5 text-left">
               <BriefcaseBusiness className="size-5" />
               <span>
                 <span className="block text-sm font-semibold text-[#111]">
-                  Save draft
+                  Saved record
                 </span>
                 <span className="block text-xs text-[#777]">
-                  All changes are saved
+                  Review reflects saved changes
                 </span>
               </span>
-            </button>
+            </span>
           </div>
           <Link
             className="inline-flex h-14 items-center justify-center gap-3 rounded-[10px] bg-[var(--admin-primary)] px-8 font-semibold !text-white shadow-[0_14px_28px_rgba(100,43,147,0.22)] transition hover:bg-[var(--admin-primary-dark)] [&_svg]:!text-white"
             href="/admin/catalog/products"
           >
-            Publish product
+            Finish
             <Send className="size-5" />
           </Link>
         </div>
@@ -850,29 +938,21 @@ function WizardActionBar({
   backHref,
   continueHref,
   continueLabel,
+  secondaryHref,
+  secondaryLabel,
   submit = false,
-  saveDraft = false,
 }: {
   backHref: string;
   continueHref?: string;
   continueLabel: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
   submit?: boolean;
-  saveDraft?: boolean;
 }) {
   return (
     <div className="rounded-[18px] border border-[#e5e5e1] bg-white p-5 shadow-[0_14px_45px_rgba(16,18,16,0.035)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        {saveDraft ? (
-          <button className="inline-flex h-14 items-center gap-3 rounded-[10px] border border-[#deded8] px-5 text-left">
-            <BriefcaseBusiness className="size-5" />
-            <span>
-              <span className="block text-sm font-semibold text-[#111]">Save draft</span>
-              <span className="block text-xs text-[#777]">All changes are saved</span>
-            </span>
-          </button>
-        ) : (
-          <span />
-        )}
+        <span />
         <div className="flex gap-4">
           <Link
             className="inline-flex h-13 min-w-36 items-center justify-center rounded-[10px] bg-[#f4f4f2] px-5 text-sm font-semibold text-[#111]"
@@ -880,6 +960,14 @@ function WizardActionBar({
           >
             Back
           </Link>
+          {secondaryHref && secondaryLabel ? (
+            <Link
+              className="inline-flex h-13 min-w-44 items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-5 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]"
+              href={secondaryHref}
+            >
+              {secondaryLabel}
+            </Link>
+          ) : null}
           {submit ? (
             <PrimaryButton className="min-w-[250px]" type="submit">
               {continueLabel}

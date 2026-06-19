@@ -83,3 +83,33 @@ export async function uploadRestaurantAsset({
     publicUrl: data.publicUrl,
   };
 }
+
+function getBucketPathFromPublicUrl(publicUrl: string) {
+  const marker = `/object/public/${ASSET_BUCKET}/`;
+  const markerIndex = publicUrl.indexOf(marker);
+
+  if (markerIndex === -1) {
+    return null;
+  }
+
+  return decodeURIComponent(publicUrl.slice(markerIndex + marker.length));
+}
+
+export async function deleteRestaurantAssetByPublicUrl(publicUrl: string | null | undefined) {
+  if (!publicUrl) {
+    return;
+  }
+
+  const filePath = getBucketPathFromPublicUrl(publicUrl);
+
+  if (!filePath) {
+    return;
+  }
+
+  const supabase = await ensureAssetBucket();
+  const { error } = await supabase.storage.from(ASSET_BUCKET).remove([filePath]);
+
+  if (error) {
+    console.warn("Unable to remove old restaurant asset", { filePath, error });
+  }
+}

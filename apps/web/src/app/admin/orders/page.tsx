@@ -37,6 +37,7 @@ type OrdersPageProps = {
     branch?: string;
     fulfillment?: string;
     page?: string;
+    pageSize?: string;
     notice?: string;
     error?: string;
   }>;
@@ -60,6 +61,11 @@ function parseFulfillmentType(value?: string): FulfillmentType | "all" {
 function parsePage(value?: string) {
   const page = Number(value);
   return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+}
+
+function parsePageSize(value?: string) {
+  const pageSize = Number(value);
+  return [10, 20, 50].includes(pageSize) ? pageSize : 20;
 }
 
 function formatStatus(status: OrderStatus) {
@@ -153,6 +159,10 @@ function buildOrdersHref(
     params.set("page", String(next.page));
   }
 
+  if (next.pageSize && next.pageSize !== 20) {
+    params.set("pageSize", String(next.pageSize));
+  }
+
   const query = params.toString();
   return query ? `/admin/orders?${query}` : "/admin/orders";
 }
@@ -166,7 +176,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     branchId: params?.branch,
     fulfillmentType: parseFulfillmentType(params?.fulfillment),
     page: parsePage(params?.page),
-    pageSize: 20,
+    pageSize: parsePageSize(params?.pageSize),
   };
   const data = await getAdminOrdersData(session.restaurantId, filters);
   const hasFilters = Boolean(
@@ -214,7 +224,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             icon={Clock3}
             label="Pending"
             note="Needs staff action"
-            tone="yellow"
             value={data.metrics.pendingConfirmationOrdersCount.toLocaleString()}
           />
           <StatCard
@@ -227,7 +236,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             icon={XCircle}
             label="Cancelled"
             note="Stopped orders"
-            tone="gray"
             value={data.metrics.cancelledOrdersCount.toLocaleString()}
           />
           <StatCard
@@ -252,7 +260,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                 scoped to {data.restaurant.name}.
               </p>
             </div>
-            <form className="grid min-w-0 gap-3 sm:grid-cols-2 xl:max-w-[640px] xl:flex-1 xl:grid-cols-[minmax(210px,1fr)_minmax(140px,0.65fr)_minmax(150px,0.75fr)] 2xl:max-w-none 2xl:grid-cols-[minmax(280px,1.4fr)_170px_180px_150px_auto_auto]">
+            <form className="ml-auto grid min-w-0 gap-3 sm:grid-cols-2 xl:max-w-[780px] xl:flex-1 xl:grid-cols-[minmax(210px,1fr)_minmax(140px,0.65fr)_minmax(150px,0.75fr)] 2xl:max-w-none 2xl:grid-cols-[minmax(280px,1.4fr)_170px_180px_150px_auto]">
               <div className="relative sm:col-span-2 xl:col-span-1">
                 <FormInput
                   className="pl-10"
@@ -289,18 +297,21 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   </option>
                 ))}
               </FormSelect>
-              <PrimaryButton className="w-full" type="submit">
-                <Filter className="size-4" />
-                Apply
-              </PrimaryButton>
-              {hasFilters ? (
-                <Link
-                  className="inline-flex h-12 w-full items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-5 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]"
-                  href="/admin/orders"
-                >
-                  Clear
-                </Link>
-              ) : null}
+              <input name="pageSize" type="hidden" value={filters.pageSize} />
+              <div className="flex min-w-0 gap-3 sm:col-span-2 xl:col-span-1 xl:justify-end">
+                <PrimaryButton className="min-w-[112px] flex-1 xl:flex-none" type="submit">
+                  <Filter className="size-4" />
+                  Apply
+                </PrimaryButton>
+                {hasFilters ? (
+                  <Link
+                    className="inline-flex h-12 min-w-[104px] flex-1 items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-5 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3] xl:flex-none"
+                    href="/admin/orders"
+                  >
+                    Clear
+                  </Link>
+                ) : null}
+              </div>
             </form>
           </div>
 
@@ -327,7 +338,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         <tr className="align-middle" key={order.id}>
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <span className="flex size-11 items-center justify-center rounded-[12px] bg-[#f1f1ef] text-[#111]">
+                              <span className="flex size-11 items-center justify-center rounded-[12px] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
                                 <ShoppingBag className="size-5" />
                               </span>
                               <div>
@@ -399,7 +410,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                           </td>
                           <td className="px-5 py-4 text-right">
                             <Link
-                              className="inline-flex h-10 items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-4 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]"
+                              className="inline-flex h-10 items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-4 text-sm font-semibold whitespace-nowrap text-[#111] transition hover:bg-[#f6f6f3]"
                               href={`/admin/orders/${encodeURIComponent(
                                 order.orderNumber,
                               )}`}
@@ -415,7 +426,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
               </div>
             ) : (
               <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-10 text-center">
-                <span className="flex size-14 items-center justify-center rounded-full bg-[#f1f1ef] text-[#555]">
+                <span className="flex size-14 items-center justify-center rounded-full bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
                   {hasFilters ? (
                     <Search className="size-6" />
                   ) : (
@@ -445,11 +456,34 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
           </div>
 
           <div className="mt-5 flex flex-col gap-3 text-sm text-[#777] sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              Showing {data.pagination.startRecord.toLocaleString()}-
-              {data.pagination.endRecord.toLocaleString()} of{" "}
-              {data.pagination.totalRecords.toLocaleString()} orders
-            </p>
+            <form className="flex items-center gap-3">
+              <input name="q" type="hidden" value={filters.q ?? ""} />
+              <input name="status" type="hidden" value={filters.status ?? "all"} />
+              <input name="branch" type="hidden" value={filters.branchId ?? ""} />
+              <input
+                name="fulfillment"
+                type="hidden"
+                value={filters.fulfillmentType ?? "all"}
+              />
+              <span>Show</span>
+              <FormSelect
+                className="h-11 w-[86px]"
+                defaultValue={String(filters.pageSize)}
+                name="pageSize"
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </FormSelect>
+              <span>
+                per page · {data.pagination.startRecord.toLocaleString()}-
+                {data.pagination.endRecord.toLocaleString()} of{" "}
+                {data.pagination.totalRecords.toLocaleString()} orders
+              </span>
+              <PrimaryButton className="h-11 px-4" type="submit">
+                Apply
+              </PrimaryButton>
+            </form>
             <div className="flex items-center gap-2">
               <Link
                 aria-disabled={data.pagination.page <= 1}

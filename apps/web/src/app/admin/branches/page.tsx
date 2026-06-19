@@ -14,10 +14,13 @@ import {
   SearchBox,
   SettingToggleRow,
   StatusBadge,
-  ToggleVisual,
 } from "@/components/admin/phase45-ui";
 import { PageNotice } from "@/components/admin/primitives";
 import { DAY_LABELS } from "@/lib/constants/admin";
+import {
+  formatOperatingHoursSummary,
+  getBranchOperationalStatus,
+} from "@/lib/branch-hours";
 import { requireAdminSession } from "@/lib/auth/admin-session";
 import {
   getBranchManagementData,
@@ -29,6 +32,7 @@ type BranchPageProps = {
     branch?: string;
     tab?: string;
     q?: string;
+    panel?: string;
     notice?: string;
     error?: string;
   }>;
@@ -54,9 +58,11 @@ export default async function BranchManagementPage({
     branches.find((branch) => branch.id === params?.branch) ??
     filteredBranches[0] ??
     branches[0];
+  const timezone = catalog.restaurant.timezone;
   const activeTab = params?.tab === "hours" || params?.tab === "catalog"
     ? params.tab
     : "details";
+  const inspectorOpen = params?.panel !== "closed";
   const selectedProducts = selectedBranch
     ? catalog.products.filter((product) => {
         const availability = product.branchAvailability.find(
@@ -68,7 +74,13 @@ export default async function BranchManagementPage({
 
   return (
     <AdminWorkspace className="p-0">
-      <div className="grid min-h-[calc(100svh-32px)] xl:grid-cols-[1fr_390px]">
+      <div
+        className={
+          inspectorOpen
+            ? "grid min-h-[calc(100svh-32px)] xl:grid-cols-[1fr_390px]"
+            : "grid min-h-[calc(100svh-32px)]"
+        }
+      >
         <section className="p-6 md:p-8">
           <div className="space-y-7">
             {typeof params?.notice === "string" ? (
@@ -90,11 +102,16 @@ export default async function BranchManagementPage({
             />
 
             <form>
-              <SearchBox
-                className="max-w-[320px]"
-                defaultValue={params?.q}
-                placeholder="Search branches..."
-              />
+              <div className="flex max-w-[440px] gap-3">
+                <SearchBox
+                  className="flex-1"
+                  defaultValue={params?.q}
+                  placeholder="Search branches..."
+                />
+                <PrimaryButton className="h-12 px-5" type="submit">
+                  Apply
+                </PrimaryButton>
+              </div>
             </form>
 
             <div className="grid grid-cols-[1.5fr_0.72fr_1fr_0.7fr_48px] px-4 text-sm font-medium text-[#666]">
@@ -114,9 +131,20 @@ export default async function BranchManagementPage({
                   );
                   return availability?.isAvailable ?? product.isAvailable;
                 }).length;
-                const firstOpenDay = branch.operatingHours.find(
-                  (hour) => !hour.isClosed,
+                const hoursSummary = formatOperatingHoursSummary(
+                  branch.operatingHours,
                 );
+                const operationalStatus = getBranchOperationalStatus(
+                  branch,
+                  timezone,
+                );
+                const statusLabel = branch.isActive
+                  ? operationalStatus === "open"
+                    ? "Active"
+                    : operationalStatus === "paused"
+                      ? "Paused"
+                      : "Closed"
+                  : "Inactive";
 
                 return (
                   <Link
@@ -142,19 +170,17 @@ export default async function BranchManagementPage({
                     <span>
                       <StatusBadge
                         dot
-                        tone={branch.isActive ? "green" : "gray"}
+                        tone={branch.isActive && operationalStatus === "open" ? "green" : "gray"}
                       >
-                        {branch.isActive ? "Active" : "Inactive"}
+                        {statusLabel}
                       </StatusBadge>
                     </span>
                     <span>
                       <span className="block text-sm text-[#111]">
-                        {firstOpenDay
-                          ? `${firstOpenDay.openTime} - ${firstOpenDay.closeTime}`
-                          : "-"}
+                        {hoursSummary.hours}
                       </span>
                       <span className="mt-1 block text-xs text-[#777]">
-                        {firstOpenDay ? "Every day" : "Closed"}
+                        {hoursSummary.label}
                       </span>
                     </span>
                     <span className="font-medium text-[#111]">
@@ -174,12 +200,15 @@ export default async function BranchManagementPage({
           </div>
         </section>
 
-        <BranchInspector
-          activeTab={activeTab}
-          availableProducts={selectedProducts.length}
-          branch={selectedBranch}
-          totalProducts={catalog.products.length}
-        />
+        {inspectorOpen ? (
+          <BranchInspector
+            activeTab={activeTab}
+            availableProducts={selectedProducts.length}
+            branch={selectedBranch}
+            timezone={timezone}
+            totalProducts={catalog.products.length}
+          />
+        ) : null}
       </div>
     </AdminWorkspace>
   );
@@ -189,11 +218,13 @@ function BranchInspector({
   branch,
   activeTab,
   availableProducts,
+  timezone,
   totalProducts,
 }: {
   branch: Awaited<ReturnType<typeof getBranchManagementData>>[number] | undefined;
   activeTab: "details" | "hours" | "catalog";
   availableProducts: number;
+  timezone: string;
   totalProducts: number;
 }) {
   if (!branch) {
@@ -207,7 +238,13 @@ function BranchInspector({
   return (
     <aside className="border-l border-[#e5e5e1] bg-white p-6 text-[#111] md:p-8">
       <div className="flex justify-end">
-        <X className="size-5" />
+        <Link
+          aria-label="Close branch details"
+          className="inline-flex size-9 items-center justify-center rounded-[10px] text-[#111] transition hover:bg-[#f6f6f3]"
+          href="/admin/branches?panel=closed"
+        >
+          <X className="size-5" />
+        </Link>
       </div>
       <div className="mt-2 flex gap-4">
         <BranchIcon className="size-16" />
@@ -215,8 +252,22 @@ function BranchInspector({
           <h2 className="text-xl font-semibold text-[#111]">{branch.name}</h2>
           <p className="mt-1 text-sm text-[#777]">{branch.slug}</p>
           <div className="mt-3">
-            <StatusBadge dot tone={branch.isActive ? "green" : "gray"}>
-              {branch.isActive ? "Active" : "Inactive"}
+            <StatusBadge
+              dot
+              tone={
+                branch.isActive &&
+                getBranchOperationalStatus(branch, timezone) === "open"
+                  ? "green"
+                  : "gray"
+              }
+            >
+              {!branch.isActive
+                ? "Inactive"
+                : getBranchOperationalStatus(branch, timezone) === "open"
+                  ? "Active"
+                  : getBranchOperationalStatus(branch, timezone) === "paused"
+                    ? "Paused"
+                    : "Closed"}
             </StatusBadge>
           </div>
         </div>
@@ -277,9 +328,6 @@ function BranchDetailsTab({
       <input name="slug" type="hidden" value={branch.slug} />
       <input name="displayOrder" type="hidden" value={branch.displayOrder} />
       <input name="phone" type="hidden" value={branch.phone ?? ""} />
-      {branch.isTemporarilyClosed ? (
-        <input name="isTemporarilyClosed" type="hidden" value="on" />
-      ) : null}
       <section>
         <h3 className="font-semibold text-[#111]">Address</h3>
         <div className="mt-4 flex gap-4">
@@ -295,37 +343,50 @@ function BranchDetailsTab({
         <div className="mt-4 space-y-3">
           <SettingToggleRow
             defaultChecked={branch.isAcceptingOrders}
-            description="Customers can order for delivery."
+            description="Controls whether this branch can receive new delivery or pickup orders."
             icon={Truck}
             name="isAcceptingOrders"
-            title="Delivery"
+            title="Accepting orders"
           />
           <div className="flex items-center gap-4 rounded-[12px] border border-[#e5e5e1] bg-white p-4">
-            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[#f1f1ef]">
+            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
               <Package className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-[#111]">Pickup</p>
+              <p className="text-sm font-semibold text-[#111]">Pickup follows branch status</p>
               <p className="mt-1 text-xs leading-5 text-[#777]">
-                Pickup follows this branch&apos;s open or closed state.
+                Pickup is enabled restaurant-wide; branch pause, closure, and hours still apply.
               </p>
             </div>
-            <ToggleVisual checked={!branch.isTemporarilyClosed} />
           </div>
         </div>
       </section>
       <section className="border-t border-[#e7e7e3] pt-7">
-        <h3 className="font-semibold text-[#111]">Catalog visibility</h3>
+        <h3 className="font-semibold text-[#111]">Temporary closure</h3>
         <p className="mt-1 text-sm text-[#777]">
-          Show or hide this branch in the customer app.
+          Use this when the branch needs to stop receiving orders for a short period.
+        </p>
+        <div className="mt-4">
+          <SettingToggleRow
+            defaultChecked={branch.isTemporarilyClosed}
+            description="Closed branches are hidden from checkout and cannot receive orders."
+            name="isTemporarilyClosed"
+            title="Mark branch temporarily closed"
+          />
+        </div>
+      </section>
+      <section className="border-t border-[#e7e7e3] pt-7">
+        <h3 className="font-semibold text-[#111]">Branch visibility</h3>
+        <p className="mt-1 text-sm text-[#777]">
+          Active branches can appear in storefront branch selection and checkout.
         </p>
         <div className="mt-4">
           <SettingToggleRow
             defaultChecked={branch.isActive}
-            description="This branch is visible to customers."
+            description="Inactive branches are hidden from customers and cannot receive orders."
             icon={Eye}
             name="isActive"
-            title="Visible"
+            title="Active in storefront"
           />
         </div>
       </section>

@@ -19,7 +19,7 @@ export function formatWhatsappMoney(
 
 export function formatStaffOrderMessage(order: OrderForWhatsappMessage) {
   const lines = [
-    `New NapCart Order: ${order.orderNumber}`,
+    `New Order: ${order.orderNumber}`,
     "Status: pending confirmation",
     `Customer: ${order.customerNameSnapshot}`,
     `Phone: ${order.customerPhoneSnapshot}`,

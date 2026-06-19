@@ -122,7 +122,6 @@ export default async function CatalogOverviewPage({
             icon={FileText}
             label="Draft changes"
             note="Unpublished or unavailable records"
-            tone="yellow"
             value={draftChanges}
           />
         </div>

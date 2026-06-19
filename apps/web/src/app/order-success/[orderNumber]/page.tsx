@@ -9,8 +9,10 @@ import { getStorefrontOrderSummary } from "@/server/storefront/repository";
 
 export default async function OrderSuccessPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orderNumber: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   if (!isStorefrontDeployment()) {
     notFound();
@@ -18,9 +20,11 @@ export default async function OrderSuccessPage({
 
   const restaurantSlug = getDefaultStorefrontSlug();
   const { orderNumber } = await params;
+  const { token } = await searchParams;
   const order = await getStorefrontOrderSummary({
     restaurantSlug,
     orderNumber,
+    accessToken: token,
   });
 
   if (!order) {

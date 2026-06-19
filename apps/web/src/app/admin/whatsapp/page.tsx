@@ -90,11 +90,14 @@ export default async function WhatsappSettingsPage({
             </div>
 
             <Field label="Business label">
-              <TextInput name="businessName" placeholder="NapCart DHA Ops" required />
+              <TextInput name="businessName" placeholder="Smogy Ice Wapda Ops" required />
             </Field>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Display phone number">
+              <Field
+                hint="This is the staff WhatsApp number that receives order notifications for this route."
+                label="Staff receiving number"
+              >
                 <TextInput
                   name="displayPhoneNumber"
                   placeholder="+92 300 2222222"
@@ -204,7 +207,10 @@ export default async function WhatsappSettingsPage({
                 </Field>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Display phone number">
+                  <Field
+                    hint="This is the staff WhatsApp number that receives order notifications for this route."
+                    label="Staff receiving number"
+                  >
                     <TextInput
                       defaultValue={connection.displayPhoneNumber}
                       name="displayPhoneNumber"

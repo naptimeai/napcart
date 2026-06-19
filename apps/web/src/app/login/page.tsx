@@ -16,7 +16,7 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = resolvedSearchParams?.error;
-  const nextPath = resolvedSearchParams?.next ?? "/admin";
+  const nextPath = sanitizeAdminNextPath(resolvedSearchParams?.next);
   const isClientAdmin = publicEnv.deploymentMode === "admin";
   const clientName = publicEnv.clientName;
   const loginContent = isClientAdmin
@@ -208,6 +208,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </div>
     </main>
   );
+}
+
+function sanitizeAdminNextPath(value?: string) {
+  return value === "/admin" ||
+    value?.startsWith("/admin/") ||
+    value?.startsWith("/admin?")
+    ? value
+    : "/admin";
 }
 
 function Field({

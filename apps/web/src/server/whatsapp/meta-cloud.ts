@@ -8,6 +8,7 @@ import {
 import { createHmac, timingSafeEqual } from "crypto";
 import { serverEnv } from "@/lib/config/server-env";
 import { getPrisma } from "@/server/db/prisma";
+import { decryptFieldValue } from "@/server/security/field-encryption";
 import {
   formatStaffOrderMessage,
   type OrderForWhatsappMessage,
@@ -190,7 +191,7 @@ export function buildMetaOrderInteractivePayload({
           text: formatStaffOrderMessage(order),
         },
         footer: {
-          text: "NapCart",
+          text: connection.businessName || "Restaurant order",
         },
         action: {
           buttons: [
@@ -306,8 +307,8 @@ export function verifyMetaWebhookSignature({
 }) {
   const appSecret = process.env.WHATSAPP_META_APP_SECRET;
   const allowUnsigned =
-    process.env.WHATSAPP_META_ALLOW_UNSIGNED_WEBHOOKS === "true" ||
-    process.env.NODE_ENV !== "production";
+    process.env.NODE_ENV !== "production" &&
+    process.env.WHATSAPP_META_ALLOW_UNSIGNED_WEBHOOKS === "true";
 
   if (!appSecret) {
     return {
@@ -344,16 +345,18 @@ export async function verifyMetaWebhookToken(verifyToken: string) {
     return true;
   }
 
-  const connection = await getPrisma().whatsappConnection.findFirst({
+  const connections = await getPrisma().whatsappConnection.findMany({
     where: {
       provider: WhatsappProvider.META_CLOUD,
-      webhookVerifyTokenEncrypted: verifyToken,
       isActive: true,
     },
-    select: { id: true },
+    select: { id: true, webhookVerifyTokenEncrypted: true },
   });
 
-  return Boolean(connection);
+  return connections.some(
+    (connection) =>
+      decryptFieldValue(connection.webhookVerifyTokenEncrypted) === verifyToken,
+  );
 }
 
 async function logUnprocessableMetaWebhookEvent({

@@ -82,7 +82,7 @@ export default async function RestaurantSettingsPage({
         />
         <SettingsNavCard
           description="Set branch-wise delivery radius zones, fees, and minimum order rules."
-          href="/admin/delivery"
+          href="/admin/branches/delivery"
           icon={<Truck className="size-5" />}
           title="Delivery"
         />
@@ -327,7 +327,7 @@ function SettingsNavCard({
       href={href}
     >
       <div className="flex items-start justify-between gap-4">
-        <span className="flex size-11 items-center justify-center rounded-2xl border bg-muted text-muted-foreground">
+        <span className="flex size-11 items-center justify-center rounded-2xl border border-[var(--admin-primary-border)] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
           {icon}
         </span>
         <span className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground">

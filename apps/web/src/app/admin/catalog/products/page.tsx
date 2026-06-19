@@ -7,6 +7,7 @@ import {
   Store,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
 import { deleteProduct, duplicateProduct } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import {
@@ -30,10 +31,65 @@ type ProductsPageProps = {
     q?: string;
     category?: string;
     status?: string;
+    page?: string;
+    pageSize?: string;
     notice?: string;
     error?: string;
   }>;
 };
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
+
+function parsePositiveInt(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+function parsePageSize(value: string | undefined) {
+  const parsed = parsePositiveInt(value, 10);
+  return PAGE_SIZE_OPTIONS.includes(parsed as (typeof PAGE_SIZE_OPTIONS)[number])
+    ? parsed
+    : 10;
+}
+
+function buildProductsHref({
+  category,
+  page,
+  pageSize,
+  q,
+  status,
+}: {
+  category?: string;
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  status?: string;
+}) {
+  const params = new URLSearchParams();
+
+  if (q?.trim()) {
+    params.set("q", q.trim());
+  }
+
+  if (category) {
+    params.set("category", category);
+  }
+
+  if (status) {
+    params.set("status", status);
+  }
+
+  if (pageSize && pageSize !== 10) {
+    params.set("pageSize", String(pageSize));
+  }
+
+  if (page && page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `/admin/catalog/products?${query}` : "/admin/catalog/products";
+}
 
 export default async function CatalogProductsPage({
   searchParams,
@@ -44,19 +100,27 @@ export default async function CatalogProductsPage({
   const query = params?.q?.toLowerCase() ?? "";
   const categoryFilter = params?.category ?? "";
   const statusFilter = params?.status ?? "";
+  const pageSize = parsePageSize(params?.pageSize);
+  const requestedPage = parsePositiveInt(params?.page, 1);
   const filteredProducts = data.products.filter((product) => {
     const matchesQuery =
       !query ||
       product.name.toLowerCase().includes(query) ||
       product.description?.toLowerCase().includes(query);
     const matchesCategory = !categoryFilter || product.categoryId === categoryFilter;
-    const normalizedStatus =
-      product.isActive && product.isAvailable ? "available" : "out";
+    const normalizedStatus = !product.isActive
+      ? "draft"
+      : product.isAvailable
+        ? "available"
+        : "out";
     const matchesStatus = !statusFilter || normalizedStatus === statusFilter;
 
     return matchesQuery && matchesCategory && matchesStatus;
   });
-  const visibleProducts = filteredProducts.slice(0, 10);
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const visibleProducts = filteredProducts.slice(startIndex, startIndex + pageSize);
   const availableCount = data.products.filter(
     (product) => product.isActive && product.isAvailable,
   ).length;
@@ -84,6 +148,7 @@ export default async function CatalogProductsPage({
         />
 
         <form className="grid gap-4 xl:grid-cols-[minmax(280px,460px)_190px_190px_1fr]">
+          <input name="pageSize" type="hidden" value={pageSize} />
           <SearchBox defaultValue={params?.q} placeholder="Search products..." />
           <FormSelect defaultValue={categoryFilter} name="category">
             <option value="">All categories</option>
@@ -97,6 +162,7 @@ export default async function CatalogProductsPage({
             <option value="">All statuses</option>
             <option value="available">Available</option>
             <option value="out">Out of stock</option>
+            <option value="draft">Draft</option>
           </FormSelect>
           <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] border border-[#deded8] bg-white px-5 text-sm font-semibold text-[#111] xl:ml-auto xl:w-32">
             <Filter className="size-4" />
@@ -149,19 +215,17 @@ export default async function CatalogProductsPage({
                       </td>
                       <td className="px-5 py-4">
                         <StatusBadge
-                          tone={
-                            product.isActive && product.isAvailable
-                              ? "green"
-                              : "gray"
-                          }
+                          tone={product.isActive && product.isAvailable ? "green" : "gray"}
                         >
-                          {product.isActive && product.isAvailable
-                            ? "Available"
-                            : "Out of stock"}
+                          {!product.isActive
+                            ? "Draft"
+                            : product.isAvailable
+                              ? "Available"
+                              : "Out of stock"}
                         </StatusBadge>
                       </td>
                       <td className="px-5 py-4 text-[#111]">
-                        {availableBranches || data.branches.length}
+                        {availableBranches}
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
@@ -251,27 +315,103 @@ export default async function CatalogProductsPage({
         </div>
 
         <div className="flex flex-col gap-4 text-sm text-[#555] md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
+          <form className="flex items-center gap-3">
+            <input name="q" type="hidden" value={params?.q ?? ""} />
+            <input name="category" type="hidden" value={categoryFilter} />
+            <input name="status" type="hidden" value={statusFilter} />
             <span>Show</span>
-            <span className="inline-flex h-11 items-center rounded-[10px] border border-[#deded8] px-4 text-[#111]">
-              10
-            </span>
+            <FormSelect
+              className="h-11 min-w-20"
+              defaultValue={String(pageSize)}
+              name="pageSize"
+            >
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </FormSelect>
             <span>per page</span>
-          </div>
+            <button className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-4 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]">
+              Apply
+            </button>
+          </form>
           <div className="flex items-center gap-3">
             <span>
               {visibleProducts.length
-                ? `1-${visibleProducts.length} of ${filteredProducts.length}`
+                ? `${startIndex + 1}-${startIndex + visibleProducts.length} of ${filteredProducts.length}`
                 : "0 of 0"}
             </span>
             <div className="flex items-center overflow-hidden rounded-[10px] border border-[#deded8]">
-              <span className="px-4 py-3 text-[#aaa]">‹</span>
-              <span className="bg-[var(--admin-primary)] px-4 py-3 font-semibold text-white">1</span>
-              <span className="px-4 py-3">2</span>
-              <span className="px-4 py-3">3</span>
-              <span className="px-4 py-3">...</span>
-              <span className="px-4 py-3">25</span>
-              <span className="px-4 py-3">›</span>
+              <Link
+                aria-disabled={currentPage <= 1}
+                className={
+                  currentPage <= 1
+                    ? "pointer-events-none px-4 py-3 text-[#aaa]"
+                    : "px-4 py-3 text-[#111] transition hover:bg-[#f6f6f3]"
+                }
+                href={buildProductsHref({
+                  category: categoryFilter,
+                  page: Math.max(1, currentPage - 1),
+                  pageSize,
+                  q: params?.q,
+                  status: statusFilter,
+                })}
+              >
+                ‹
+              </Link>
+              {Array.from({ length: totalPages }, (_, index) => index + 1)
+                .filter(
+                  (page) =>
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1,
+                )
+                .map((page, index, pages) => {
+                  const previous = pages[index - 1];
+                  const needsEllipsis = previous && page - previous > 1;
+
+                  return (
+                    <span className="contents" key={page}>
+                      {needsEllipsis ? (
+                        <span className="px-4 py-3">...</span>
+                      ) : null}
+                      <Link
+                        className={
+                          page === currentPage
+                            ? "bg-[var(--admin-primary)] px-4 py-3 font-semibold !text-white"
+                            : "px-4 py-3 text-[#111] transition hover:bg-[#f6f6f3]"
+                        }
+                        href={buildProductsHref({
+                          category: categoryFilter,
+                          page,
+                          pageSize,
+                          q: params?.q,
+                          status: statusFilter,
+                        })}
+                      >
+                        {page}
+                      </Link>
+                    </span>
+                  );
+                })}
+              <Link
+                aria-disabled={currentPage >= totalPages}
+                className={
+                  currentPage >= totalPages
+                    ? "pointer-events-none px-4 py-3 text-[#aaa]"
+                    : "px-4 py-3 text-[#111] transition hover:bg-[#f6f6f3]"
+                }
+                href={buildProductsHref({
+                  category: categoryFilter,
+                  page: Math.min(totalPages, currentPage + 1),
+                  pageSize,
+                  q: params?.q,
+                  status: statusFilter,
+                })}
+              >
+                ›
+              </Link>
             </div>
           </div>
         </div>

@@ -76,41 +76,41 @@ export type OrderStatusPoint = {
 const chartConfig = {
   newCustomers: {
     label: "New Customers",
-    color: "var(--chart-1)",
+    color: "color-mix(in srgb, var(--admin-primary) 72%, white)",
   },
   activeAccounts: {
     label: "Active Accounts",
-    color: "var(--chart-2)",
+    color: "var(--admin-primary)",
   },
   returningUsers: {
     label: "Returning Users",
-    color: "var(--chart-3)",
+    color: "color-mix(in srgb, var(--admin-primary) 48%, white)",
   },
 } satisfies ChartConfig;
 
 const orderRevenueChartConfig = {
   totalOrders: {
     label: "Total Orders",
-    color: "var(--chart-2)",
+    color: "color-mix(in srgb, var(--admin-primary) 56%, white)",
   },
   confirmedRevenue: {
     label: "Confirmed Revenue",
-    color: "var(--chart-1)",
+    color: "var(--admin-primary)",
   },
 } satisfies ChartConfig;
 
 const orderStatusChartConfig = {
   confirmed: {
     label: "Confirmed",
-    color: "var(--chart-1)",
+    color: "var(--admin-primary)",
   },
   pending: {
     label: "Pending",
-    color: "var(--chart-3)",
+    color: "color-mix(in srgb, var(--admin-primary) 72%, white)",
   },
   cancelled: {
     label: "Cancelled",
-    color: "var(--chart-5)",
+    color: "color-mix(in srgb, var(--admin-primary) 38%, white)",
   },
 } satisfies ChartConfig;
 

@@ -26,11 +26,26 @@ import type { StorefrontData } from "@/server/storefront/types";
 
 const smogyLogo = "/storefront/smogyice/smogyice-logo.png";
 const smogyDisplayPhone = "0301-1417221";
+const smogyEmail = "smogyice@gmail.com";
 const socialIcons = [
-  { label: "Instagram", Icon: InstagramIcon },
-  { label: "Facebook", Icon: FacebookIcon },
-  { label: "Twitter", Icon: TwitterIcon },
+  { label: "Instagram", Icon: InstagramIcon, href: "https://www.instagram.com/smogyice" },
+  { label: "Facebook", Icon: FacebookIcon, href: "https://www.facebook.com/smogyice" },
+  { label: "Twitter", Icon: TwitterIcon, href: "https://x.com/smogyice" },
 ];
+
+function BrandWordmark({ name }: { name: string }) {
+  const normalizedName = name.replace(/\s+/g, "").toLowerCase();
+
+  if (normalizedName === "smogyice") {
+    return (
+      <>
+        Smogy<span className="text-smogy-secondary">Ice</span>
+      </>
+    );
+  }
+
+  return name;
+}
 
 export function SmogyStorefrontShell({
   children,
@@ -94,8 +109,10 @@ function useHashScroller() {
 }
 
 function Navbar() {
-  const { basePath, totalItems, setDrawerOpen } = useSmogyStorefront();
+  const { basePath, data, totalItems, setDrawerOpen } = useSmogyStorefront();
   const homePath = basePath || "/";
+  const brandName = data.restaurant.name;
+  const logoUrl = data.restaurant.logoUrl || smogyLogo;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -131,14 +148,14 @@ function Navbar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
           <Link className="flex items-center gap-3" href={homePath}>
             <Image
-              alt="Smogy Ice logo"
+              alt={`${brandName} logo`}
               className="size-11 shrink-0 rounded-full object-cover shadow-lg"
               height={44}
-              src={smogyLogo}
+              src={logoUrl}
               width={44}
             />
             <span className="font-serif text-2xl font-bold tracking-tight text-smogy-primary">
-              Smogy<span className="text-smogy-secondary">Ice</span>
+              <BrandWordmark name={brandName} />
             </span>
           </Link>
 
@@ -345,9 +362,7 @@ function CartDrawer() {
                         </h3>
                         <button
                           className="text-neutral-300 transition-colors hover:text-red-500"
-                          onClick={() =>
-                            removeItem(item.itemId, item.variantKey)
-                          }
+                          onClick={() => removeItem(item.key)}
                           type="button"
                         >
                           <Trash2 className="size-4" />
@@ -358,13 +373,17 @@ function CartDrawer() {
                           ? `Variant: ${item.variantLabel}`
                           : "Standard"}
                       </p>
+                      {item.addons.length ? (
+                        <p className="-mt-2 mb-3 text-xs leading-5 text-neutral-500">
+                          Add-ons:{" "}
+                          {item.addons.map((addon) => addon.name).join(", ")}
+                        </p>
+                      ) : null}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-1 px-2">
                           <button
                             className="rounded-md p-1 text-smogy-primary transition-all hover:bg-white hover:shadow-sm"
-                            onClick={() =>
-                              updateQuantity(item.itemId, -1, item.variantKey)
-                            }
+                            onClick={() => updateQuantity(item.key, -1)}
                             type="button"
                           >
                             <Minus className="size-3.5" />
@@ -374,9 +393,7 @@ function CartDrawer() {
                           </span>
                           <button
                             className="rounded-md p-1 text-smogy-primary transition-all hover:bg-white hover:shadow-sm"
-                            onClick={() =>
-                              updateQuantity(item.itemId, 1, item.variantKey)
-                            }
+                            onClick={() => updateQuantity(item.key, 1)}
                             type="button"
                           >
                             <Plus className="size-3.5" />
@@ -436,7 +453,7 @@ function CartDrawer() {
                 <p className="mt-4 text-center text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
                   {orderType === "pickup"
                     ? "Pickup branch is selected at checkout"
-                    : "Delivery uses live location within 5 km"}
+                    : "Delivery branch and fee are confirmed at checkout"}
                 </p>
               </div>
             ) : null}
@@ -448,8 +465,12 @@ function CartDrawer() {
 }
 
 function Footer() {
-  const { basePath } = useSmogyStorefront();
+  const { basePath, data } = useSmogyStorefront();
   const homePath = basePath || "/";
+  const brandName = data.restaurant.name;
+  const logoUrl = data.restaurant.logoUrl || smogyLogo;
+  const supportPhone = data.restaurant.supportPhone || smogyDisplayPhone;
+  const supportEmail = data.restaurant.contactEmail || smogyEmail;
   const navItems = [
     { label: "Menu", href: `${basePath}/menu` },
     { label: "Favorites", href: `${basePath}#menu` },
@@ -464,27 +485,29 @@ function Footer() {
           <div className="space-y-6">
             <Link className="flex items-center gap-3" href={homePath}>
               <Image
-                alt="Smogy Ice logo"
+                alt={`${brandName} logo`}
                 className="size-11 shrink-0 rounded-full object-cover"
                 height={44}
-                src={smogyLogo}
+                src={logoUrl}
                 width={44}
               />
               <span className="font-serif text-2xl font-bold tracking-tight text-white">
-                Smogy<span className="text-smogy-secondary">Ice</span>
+                <BrandWordmark name={brandName} />
               </span>
             </Link>
             <p className="max-w-xs leading-relaxed text-white/60">
-              Pakistan&apos;s favorite spot for handcrafted curl ice cream and
+              {brandName} is Pakistan&apos;s favorite spot for handcrafted curl ice cream and
               premium desserts. Crafting happiness, one swirl at a time.
             </p>
             <div className="flex items-center gap-4">
-              {socialIcons.map(({ Icon, label }) => (
+              {socialIcons.map(({ Icon, href, label }) => (
                 <a
                   className="flex size-10 items-center justify-center rounded-full border border-white/10 transition-colors hover:bg-white/10"
-                  href="#"
+                  href={href}
                   key={label}
                   aria-label={label}
+                  rel="noreferrer"
+                  target="_blank"
                 >
                   <Icon className="size-[18px]" />
                 </a>
@@ -506,12 +529,12 @@ function Footer() {
                 </li>
               ))}
               <li>
-                <a
+                <Link
                   className="text-white/60 transition-colors hover:text-smogy-secondary"
-                  href="#"
+                  href="/menu"
                 >
-                  Track Order
-                </a>
+                  Order Menu
+                </Link>
               </li>
             </ul>
           </div>
@@ -521,11 +544,11 @@ function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Phone className="mt-1 size-[18px] shrink-0 text-smogy-secondary" />
-                <span className="text-white/60">{smogyDisplayPhone}</span>
+                <span className="text-white/60">{supportPhone}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="mt-1 size-[18px] shrink-0 text-smogy-secondary" />
-                <span className="text-white/60">smogyice@gmail.com</span>
+                <span className="text-white/60">{supportEmail}</span>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="mt-1 size-[18px] shrink-0 text-smogy-secondary" />
@@ -537,12 +560,13 @@ function Footer() {
           <div className="space-y-6">
             <h4 className="font-serif text-lg font-bold">Newsletter</h4>
             <p className="text-sm text-white/60">
-              Join the club for sweet deals and new flavors!
+              For offers and updates, contact {brandName} directly on social media.
             </p>
             <div className="flex gap-2">
               <input
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm focus:border-smogy-secondary focus:outline-none"
-                placeholder="Your email"
+                placeholder="Newsletter coming soon"
+                readOnly
                 type="email"
               />
               <button
@@ -557,14 +581,14 @@ function Footer() {
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-12 text-sm text-white/40 md:flex-row">
-          <p>© 2025 Smogy Ice. All rights reserved.</p>
+          <p>© 2025 {brandName}. All rights reserved.</p>
           <div className="flex gap-8">
-            <a className="transition-colors hover:text-white" href="#">
+            <Link className="transition-colors hover:text-white" href="/">
               Privacy Policy
-            </a>
-            <a className="transition-colors hover:text-white" href="#">
+            </Link>
+            <Link className="transition-colors hover:text-white" href="/">
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>

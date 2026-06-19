@@ -46,7 +46,10 @@ import {
   useSmogyStorefront,
   type SmogyMenuItem,
 } from "@/components/storefront/smogy-context";
-import type { StorefrontOrderSummary } from "@/server/storefront/types";
+import type {
+  StorefrontAddon,
+  StorefrontOrderSummary,
+} from "@/server/storefront/types";
 
 const featuredProducts = [
   {
@@ -141,9 +144,8 @@ type CheckoutForm = {
   customerName: string;
   customerPhone: string;
   deliveryAddress: string;
-  area: string;
+  deliveryZoneId: string;
   landmark: string;
-  deliveryInstructions: string;
   orderNotes: string;
 };
 
@@ -151,34 +153,10 @@ const initialCheckoutForm: CheckoutForm = {
   customerName: "",
   customerPhone: "",
   deliveryAddress: "",
-  area: "",
+  deliveryZoneId: "",
   landmark: "",
-  deliveryInstructions: "",
   orderNotes: "",
 };
-
-const deliveryAreaOptions = [
-  "Wapda Town",
-  "DHA Phase 8",
-  "Walton",
-  "Johar Town",
-  "Model Town",
-  "Gulberg",
-  "Cantt",
-  "Sheikhupura",
-  "Other",
-];
-
-function parseTestFlag(value: string | undefined) {
-  return value?.trim().toLowerCase() === "true";
-}
-
-function resolveAfterHoursTestMode(
-  explicitValue: string | undefined,
-  fallbackEnabled: boolean,
-) {
-  return explicitValue == null ? fallbackEnabled : parseTestFlag(explicitValue);
-}
 
 const smogyBranchMapLinks: Record<string, string> = {
   "Wapda Town": "https://maps.app.goo.gl/SxkX2nrpbMZsdoWD9",
@@ -187,6 +165,7 @@ const smogyBranchMapLinks: Record<string, string> = {
   Sheikhupura: "https://maps.app.goo.gl/Amkh5pC8YnBzCY9y5",
 };
 const smogyDisplayPhone = "0301-1417221";
+const smogyEmail = "smogyice@gmail.com";
 
 export function SmogyHomePage() {
   return (
@@ -331,11 +310,14 @@ function Hero() {
 
 function QuickActions() {
   const { data } = useSmogyStorefront();
+  const supportPhone = data.restaurant.supportPhone || smogyDisplayPhone;
+  const primaryBranchHours = data.branches.find((branch) => branch.isOpenNow)
+    ?.operatingHoursSummary ?? data.branches[0]?.operatingHoursSummary;
   const actions = [
     {
       icon: <Clock className="text-smogy-secondary" />,
-      title: "Open Daily",
-      desc: "2:00 PM - 2:00 AM",
+      title: primaryBranchHours?.label ?? "Opening Hours",
+      desc: primaryBranchHours?.hours ?? "See branch timings",
     },
     {
       icon: <MapPin className="text-smogy-secondary" />,
@@ -345,7 +327,7 @@ function QuickActions() {
     {
       icon: <Phone className="text-smogy-secondary" />,
       title: "Order Direct",
-      desc: "0301-1417221",
+      desc: supportPhone,
     },
   ];
 
@@ -622,11 +604,16 @@ function BranchesSection() {
             <div className="mb-8 space-y-3">
               <div className="flex items-center gap-3 text-sm text-neutral-600">
                 <Clock className="size-4" />
-                <span>2:00 PM - 2:00 AM</span>
+                <span>
+                  {branch.operatingHoursSummary.hours}
+                  {branch.operatingHoursSummary.label !== "Every day"
+                    ? ` • ${branch.operatingHoursSummary.label}`
+                    : ""}
+                </span>
               </div>
               <div className="flex items-center gap-3 text-sm text-neutral-600">
                 <Phone className="size-4" />
-                <span>{smogyDisplayPhone}</span>
+                <span>{branch.phone || data.restaurant.supportPhone || smogyDisplayPhone}</span>
               </div>
             </div>
             <a
@@ -788,12 +775,16 @@ export function SmogyMenuPage() {
                         <MenuItemCard
                           item={item}
                           key={item.id}
-                          onAdd={(variant) =>
+                          onAdd={(variant, addons) =>
                             addItem({
                               itemId: item.product.id,
                               variantKey: variant.id,
+                              addonIds: addons.map((addon) => addon.id),
+                              addons,
                               name: item.name,
-                              price: variant.price,
+                              price:
+                                variant.price +
+                                addons.reduce((sum, addon) => sum + addon.price, 0),
                               variantLabel: variant.name,
                               image: item.image ?? currentCategoryData?.image,
                               categoryId: item.categoryId,
@@ -866,8 +857,77 @@ function MenuItemCard({
   onAdd,
 }: {
   item: SmogyMenuItem;
-  onAdd: (variant: SmogyMenuItem["variants"][number]) => void;
+  onAdd: (
+    variant: SmogyMenuItem["variants"][number],
+    addons: StorefrontAddon[],
+  ) => void;
 }) {
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
+  const [addonError, setAddonError] = useState<string | null>(null);
+  const selectedAddons = item.product.addonGroups.flatMap((group) =>
+    group.addons.filter((addon) => selectedAddonIds.includes(addon.id)),
+  );
+
+  function selectedCountForGroup(groupId: string) {
+    const group = item.product.addonGroups.find((itemGroup) => itemGroup.id === groupId);
+    return (
+      group?.addons.filter((addon) => selectedAddonIds.includes(addon.id)).length ??
+      0
+    );
+  }
+
+  function toggleAddon(groupId: string, addonId: string) {
+    const group = item.product.addonGroups.find((itemGroup) => itemGroup.id === groupId);
+
+    if (!group) {
+      return;
+    }
+
+    setAddonError(null);
+    setSelectedAddonIds((currentIds) => {
+      if (currentIds.includes(addonId)) {
+        return currentIds.filter((id) => id !== addonId);
+      }
+
+      const groupSelectedCount = group.addons.filter((addon) =>
+        currentIds.includes(addon.id),
+      ).length;
+      const maxSelect = group.maxSelect > 0 ? group.maxSelect : group.addons.length;
+
+      if (groupSelectedCount >= maxSelect) {
+        setAddonError(`Choose up to ${maxSelect} option(s) for ${group.name}.`);
+        return currentIds;
+      }
+
+      return [...currentIds, addonId];
+    });
+  }
+
+  function validateAddonSelection() {
+    for (const group of item.product.addonGroups) {
+      const count = selectedCountForGroup(group.id);
+      const minRequired = group.isRequired
+        ? Math.max(group.minSelect, 1)
+        : group.minSelect;
+
+      if (count < minRequired) {
+        setAddonError(`Choose at least ${minRequired} option(s) for ${group.name}.`);
+        return false;
+      }
+    }
+
+    setAddonError(null);
+    return true;
+  }
+
+  function addVariant(variant: SmogyMenuItem["variants"][number]) {
+    if (!validateAddonSelection()) {
+      return;
+    }
+
+    onAdd(variant, selectedAddons);
+  }
+
   return (
     <div className="group rounded-3xl border border-smogy-cream bg-white p-6 transition-all hover:border-smogy-secondary/30 hover:shadow-xl hover:shadow-smogy-secondary/5">
       <div className="mb-4 flex items-start justify-between">
@@ -882,7 +942,7 @@ function MenuItemCard({
               item.variants[0];
 
             if (variant) {
-              onAdd(variant);
+              addVariant(variant);
             }
           }}
           type="button"
@@ -896,7 +956,7 @@ function MenuItemCard({
           <button
             className="rounded-xl border border-neutral-100 bg-neutral-50 px-3 py-1.5 text-left transition-all hover:border-smogy-secondary/20 hover:bg-smogy-secondary/10"
             key={variant.id}
-            onClick={() => onAdd(variant)}
+            onClick={() => addVariant(variant)}
             type="button"
           >
             <span className="block text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
@@ -908,6 +968,60 @@ function MenuItemCard({
           </button>
         ))}
       </div>
+
+      {item.product.addonGroups.length ? (
+        <div className="mt-5 space-y-4 border-t border-smogy-primary/10 pt-4">
+          {item.product.addonGroups.map((group) => (
+            <div key={group.id}>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-xs font-black tracking-[0.16em] text-smogy-primary uppercase">
+                  {group.name}
+                </p>
+                <span className="rounded-full bg-smogy-primary/5 px-2 py-1 text-[10px] font-bold text-smogy-primary/70">
+                  {group.isRequired ? "Required" : "Optional"} · max{" "}
+                  {group.maxSelect || group.addons.length}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {group.addons.map((addon) => {
+                  const isSelected = selectedAddonIds.includes(addon.id);
+
+                  return (
+                    <label
+                      className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold transition ${
+                        isSelected
+                          ? "border-smogy-primary bg-smogy-primary text-white"
+                          : "border-neutral-100 bg-neutral-50 text-smogy-primary hover:border-smogy-secondary/30"
+                      }`}
+                      key={addon.id}
+                    >
+                      <input
+                        checked={isSelected}
+                        className="sr-only"
+                        type="checkbox"
+                        onChange={() => toggleAddon(group.id, addon.id)}
+                      />
+                      <span>{addon.name}</span>
+                      <span
+                        className={
+                          isSelected ? "text-white/80" : "text-neutral-400"
+                        }
+                      >
+                        +Rs. {addon.price.toLocaleString()}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {addonError ? (
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">
+              {addonError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -919,8 +1033,6 @@ export function SmogyCheckoutPage() {
     clearCart,
     currency,
     data,
-    deliveryFee,
-    grandTotal,
     items,
     orderType,
     selectedBranchId,
@@ -930,15 +1042,6 @@ export function SmogyCheckoutPage() {
     restaurantSlug,
     updateQuantity,
   } = useSmogyStorefront();
-  const allowAfterHoursTestOrders = useMemo(
-    () =>
-      resolveAfterHoursTestMode(
-        process.env.NEXT_PUBLIC_ALLOW_AFTER_HOURS_TEST_ORDERS,
-        restaurantSlug === "smogyice-demo" ||
-          Boolean(process.env.NEXT_PUBLIC_ALLOWED_ADMIN_BYPASS_EMAILS?.trim()),
-      ),
-    [restaurantSlug],
-  );
   const [formState, setFormState] = useState(initialCheckoutForm);
   const [checkoutStep, setCheckoutStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -953,6 +1056,17 @@ export function SmogyCheckoutPage() {
   );
   const checkoutBranch =
     checkoutBranches.find((branch) => branch.id === selectedBranchId) ?? null;
+  const effectiveDeliveryZoneId =
+    formState.deliveryZoneId || checkoutBranch?.deliveryZones[0]?.id || "";
+  const selectedDeliveryZone =
+    orderType === "delivery"
+      ? (checkoutBranch?.deliveryZones.find(
+          (zone) => zone.id === effectiveDeliveryZoneId,
+        ) ?? checkoutBranch?.deliveryZones[0] ?? null)
+      : null;
+  const checkoutDeliveryFee = selectedDeliveryZone?.fee ?? 0;
+  const checkoutGrandTotal =
+    totalPrice + (orderType === "delivery" ? checkoutDeliveryFee : 0);
 
   useEffect(() => {
     if (
@@ -963,7 +1077,7 @@ export function SmogyCheckoutPage() {
     }
   }, [checkoutBranches, selectedBranchId, setSelectedBranchId]);
 
-  const branchAvailabilityNotice = useMemo(() => {
+  const branchAvailabilityNotice = (() => {
     if (!selectedBranchId) {
       return null;
     }
@@ -975,15 +1089,15 @@ export function SmogyCheckoutPage() {
       };
     }
 
-    if (!checkoutBranch.isOpenNow && !allowAfterHoursTestOrders) {
+    if (!checkoutBranch.isOpenNow) {
       return {
         tone: "warning" as const,
-        message: `${checkoutBranch.name} is closed right now. Orders open daily at 2:00 PM.`,
+        message: `${checkoutBranch.name} is closed right now. Please choose another open branch or try again during opening hours.`,
       };
     }
 
     return null;
-  }, [allowAfterHoursTestOrders, checkoutBranch, orderType, selectedBranchId]);
+  })();
   const isBranchCurrentlyUnavailable = branchAvailabilityNotice != null;
   const paymentMethodLabel =
     orderType === "delivery" ? "Cash on Delivery" : "Cash on Pickup";
@@ -1012,7 +1126,7 @@ export function SmogyCheckoutPage() {
       return "Please select a branch.";
     }
 
-    if (!checkoutBranch.isOpenNow && !allowAfterHoursTestOrders) {
+    if (!checkoutBranch.isOpenNow) {
       return "Selected branch is not accepting orders right now.";
     }
 
@@ -1028,17 +1142,18 @@ export function SmogyCheckoutPage() {
       return "Delivery address is required.";
     }
 
+    if (orderType === "delivery" && !selectedDeliveryZone) {
+      return "Please select a delivery zone.";
+    }
+
     return null;
   }
 
   function buildDeliveryNotes() {
     return [
-      formState.area.trim() ? `Area: ${formState.area.trim()}` : null,
+      selectedDeliveryZone ? `Delivery zone: ${selectedDeliveryZone.name}` : null,
       formState.landmark.trim()
         ? `Landmark: ${formState.landmark.trim()}`
-        : null,
-      formState.deliveryInstructions.trim()
-        ? `Instructions: ${formState.deliveryInstructions.trim()}`
         : null,
     ]
       .filter(Boolean)
@@ -1064,7 +1179,7 @@ export function SmogyCheckoutPage() {
     const delta = nextQuantity - item.quantity;
 
     if (delta !== 0) {
-      updateQuantity(item.itemId, delta, item.variantKey);
+      updateQuantity(item.key, delta);
     }
   }
 
@@ -1101,6 +1216,10 @@ export function SmogyCheckoutPage() {
           },
           addressText:
             orderType === "delivery" ? formState.deliveryAddress : undefined,
+          deliveryZoneId:
+            orderType === "delivery"
+              ? selectedDeliveryZone?.id
+              : undefined,
           deliveryNotes:
             orderType === "delivery" ? buildDeliveryNotes() || undefined : undefined,
           orderNotes: formState.orderNotes.trim() || undefined,
@@ -1108,17 +1227,17 @@ export function SmogyCheckoutPage() {
             productId: item.itemId,
             variantId: item.variantKey,
             quantity: item.quantity,
-            addonIds: [],
+            addonIds: item.addonIds,
           })),
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
       const payload = (await response.json()) as
-        | { orderNumber: string }
+        | { accessToken: string; orderNumber: string }
         | { error?: string };
 
-      if (!response.ok || !("orderNumber" in payload)) {
+      if (!response.ok || !("orderNumber" in payload) || !("accessToken" in payload)) {
         throw new Error(
           "error" in payload && payload.error
             ? payload.error
@@ -1128,7 +1247,11 @@ export function SmogyCheckoutPage() {
 
       clearCart();
       startTransition(() => {
-        router.push(`${basePath}/order-success/${payload.orderNumber}`);
+        router.push(
+          `${basePath}/order-success/${payload.orderNumber}?token=${encodeURIComponent(
+            payload.accessToken,
+          )}`,
+        );
       });
     } catch (submitError) {
       setError(
@@ -1175,8 +1298,8 @@ export function SmogyCheckoutPage() {
           },
           {
             icon: MapPin,
-            title: "Live Order Tracking",
-            description: "Track your order in real-time",
+            title: "WhatsApp Routed Orders",
+            description: "Your complete order is sent to the branch team",
           },
           {
             icon: ShieldCheck,
@@ -1197,8 +1320,8 @@ export function SmogyCheckoutPage() {
           },
           {
             icon: MapPin,
-            title: "Live Order Tracking",
-            description: "Track your order in real-time",
+            title: "Branch Confirmation",
+            description: "The branch team receives the full order details",
           },
         ];
 
@@ -1309,9 +1432,7 @@ export function SmogyCheckoutPage() {
                       onChange={(value) => setSelectedBranchId(value)}
                       options={checkoutBranches.map((branch) => ({
                         label: `${branch.name}${
-                          !allowAfterHoursTestOrders && !branch.isOpenNow
-                            ? " (Closed right now)"
-                            : ""
+                          !branch.isOpenNow ? " (Closed right now)" : ""
                         }`,
                         value: branch.id,
                       }))}
@@ -1331,7 +1452,7 @@ export function SmogyCheckoutPage() {
                         <div className="flex flex-wrap items-center gap-3 text-[#5d2396]">
                           <span className="font-bold">{checkoutBranch.name}</span>
                           <span className="text-xs">
-                            {checkoutBranch.isOpenNow || allowAfterHoursTestOrders
+                            {checkoutBranch.isOpenNow
                               ? "Accepting orders"
                               : "Closed right now"}
                           </span>
@@ -1356,14 +1477,22 @@ export function SmogyCheckoutPage() {
 
                         <div className="grid gap-4 md:grid-cols-2">
                           <CheckoutSelect
-                            label="Area"
-                            onChange={(value) => handleChange("area", value)}
-                            options={deliveryAreaOptions.map((area) => ({
-                              label: area,
-                              value: area,
-                            }))}
-                            placeholder="Select your area"
-                            value={formState.area}
+                            label="Delivery Zone"
+                            onChange={(value) =>
+                              handleChange("deliveryZoneId", value)
+                            }
+                            options={(checkoutBranch?.deliveryZones ?? []).map(
+                              (zone) => ({
+                                label: `${zone.name} - ${formatSmogyMoney(currency, zone.fee)}`,
+                                value: zone.id,
+                              }),
+                            )}
+                            placeholder={
+                              checkoutBranch?.deliveryZones.length
+                                ? "Select delivery zone"
+                                : "No delivery zones configured"
+                            }
+                            value={effectiveDeliveryZoneId}
                           />
                           <CheckoutInput
                             label="Landmark (Optional)"
@@ -1374,11 +1503,36 @@ export function SmogyCheckoutPage() {
                           />
                         </div>
 
+                        {selectedDeliveryZone ? (
+                          <div className="rounded-2xl border border-[#eadff2] bg-[#f8f1fd] px-4 py-3 text-sm text-[#5d2396]">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="font-bold">
+                                {selectedDeliveryZone.name}
+                              </span>
+                              <span className="font-black">
+                                {formatSmogyMoney(
+                                  currency,
+                                  selectedDeliveryZone.fee,
+                                )}
+                              </span>
+                            </div>
+                            {selectedDeliveryZone.minimumOrderAmount ? (
+                              <p className="mt-1 text-xs text-[#7e748c]">
+                                Minimum order:{" "}
+                                {formatSmogyMoney(
+                                  currency,
+                                  selectedDeliveryZone.minimumOrderAmount,
+                                )}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
+
                         <div className="flex items-start gap-3 rounded-2xl border border-[#d8e7ff] bg-[#eaf2ff] px-4 py-3 text-sm text-[#4a5f87]">
                           <BadgeInfo className="mt-0.5 size-4 shrink-0 text-[#4f73b8]" />
                           <p>
-                            Delivery orders are accepted from the nearest open
-                            branch within 5 km.
+                            Delivery fee and minimum order are calculated from
+                            the selected branch delivery zone.
                           </p>
                         </div>
                       </>
@@ -1423,13 +1577,6 @@ export function SmogyCheckoutPage() {
                     variant="white"
                   />
                 </CheckoutPanelSection>
-
-                {allowAfterHoursTestOrders ? (
-                  <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-                    Test mode is active. Off-hours branch restrictions are
-                    temporarily bypassed so you can place test orders anytime.
-                  </div>
-                ) : null}
 
                 {branchAvailabilityNotice ? (
                   <div
@@ -1498,15 +1645,10 @@ export function SmogyCheckoutPage() {
                       <>
                         <p>{formState.deliveryAddress}</p>
                         <p className="text-[#7e748c]">
-                          {[formState.area, formState.landmark]
+                          {[selectedDeliveryZone?.name, formState.landmark]
                             .filter(Boolean)
-                            .join(" • ") || "No landmark added"}
+                            .join(" • ") || "No delivery zone selected"}
                         </p>
-                        {formState.deliveryInstructions ? (
-                          <p className="text-[#7e748c]">
-                            {formState.deliveryInstructions}
-                          </p>
-                        ) : null}
                       </>
                     ) : (
                       <>
@@ -1564,6 +1706,12 @@ export function SmogyCheckoutPage() {
                             <p className="text-sm text-[#7e748c]">
                               {item.variantLabel}
                             </p>
+                            {item.addons.length ? (
+                              <p className="text-sm text-[#7e748c]">
+                                Add-ons:{" "}
+                                {item.addons.map((addon) => addon.name).join(", ")}
+                              </p>
+                            ) : null}
                             <p className="text-sm text-[#7e748c]">
                               Qty: {item.quantity}
                             </p>
@@ -1616,9 +1764,9 @@ export function SmogyCheckoutPage() {
                     },
                     {
                       icon: MapPin,
-                      title: "Live Order Tracking",
+                      title: "Branch Confirmation",
                       description:
-                        "Track your order in real-time from start to finish.",
+                        "Your selected branch receives the complete order.",
                     },
                   ].map((card) => (
                     <CheckoutTrustCard
@@ -1695,6 +1843,12 @@ export function SmogyCheckoutPage() {
                         {item.name}
                       </p>
                       <p className="text-sm text-[#7e748c]">{item.variantLabel}</p>
+                      {item.addons.length ? (
+                        <p className="text-sm text-[#7e748c]">
+                          Add-ons:{" "}
+                          {item.addons.map((addon) => addon.name).join(", ")}
+                        </p>
+                      ) : null}
                       <p className="text-sm text-[#7e748c]">
                         Qty: {item.quantity}
                       </p>
@@ -1719,7 +1873,7 @@ export function SmogyCheckoutPage() {
                     <BadgeInfo className="size-4 text-[#5d2396]" />
                   </div>
                   <span className="font-bold text-[#3d3151]">
-                    {formatSmogyMoney(currency, deliveryFee)}
+                    {formatSmogyMoney(currency, checkoutDeliveryFee)}
                   </span>
                 </div>
               ) : null}
@@ -1729,7 +1883,7 @@ export function SmogyCheckoutPage() {
               <div className="flex items-center justify-between gap-4 text-[#5d2396]">
                 <span className="text-[22px] font-black">Total Amount</span>
                 <span className="text-[22px] font-black">
-                  {formatSmogyMoney(currency, grandTotal)}
+                  {formatSmogyMoney(currency, checkoutGrandTotal)}
                 </span>
               </div>
             </div>
@@ -2070,8 +2224,10 @@ export function SmogyOrderSuccessPage({
 }: {
   order: StorefrontOrderSummary;
 }) {
-  const { basePath } = useSmogyStorefront();
+  const { basePath, data } = useSmogyStorefront();
   const homePath = basePath || "/";
+  const supportPhone = data.restaurant.supportPhone || smogyDisplayPhone;
+  const supportEmail = data.restaurant.contactEmail || smogyEmail;
   const isDelivery = order.fulfillmentType === "delivery";
   const paymentMethodLabel = isDelivery
     ? "Cash on Delivery"
@@ -2130,12 +2286,12 @@ export function SmogyOrderSuccessPage({
       icon: Headset,
     },
     {
-      title: smogyDisplayPhone,
+      title: supportPhone,
       text: "Call us",
       icon: Phone,
     },
     {
-      title: "smogyice@gmail.com",
+      title: supportEmail,
       text: "Email us",
       icon: Mail,
     },

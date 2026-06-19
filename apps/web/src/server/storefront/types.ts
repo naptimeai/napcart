@@ -6,6 +6,7 @@ export type StorefrontRestaurant = {
   slug: string;
   logoUrl: string | null;
   supportPhone: string;
+  contactEmail: string | null;
   defaultCurrency: string;
   timezone: string;
   isAcceptingOrders: boolean;
@@ -26,6 +27,10 @@ export type StorefrontBranch = {
   supportsPickup: boolean;
   supportsDelivery: boolean;
   deliveryRadiusKm: number | null;
+  operatingHoursSummary: {
+    hours: string;
+    label: string;
+  };
   isOpenNow: boolean;
   isAcceptingOrders: boolean;
   isTemporarilyClosed: boolean;
@@ -97,6 +102,7 @@ export type StorefrontOrderRequest = {
     phone: string;
   };
   addressText?: string;
+  deliveryZoneId?: string;
   deliveryNotes?: string;
   orderNotes?: string;
   items: Array<{
@@ -111,6 +117,7 @@ export type StorefrontOrderRequest = {
 export type StorefrontOrderResponse = {
   orderId: string;
   orderNumber: string;
+  accessToken: string;
   status: "pending_confirmation" | "confirmed" | "cancelled";
   branchName: string;
   fulfillmentType: StorefrontFulfillmentType;

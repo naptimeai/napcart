@@ -1,5 +1,7 @@
 import { FulfillmentType, OrderStatus, Prisma } from "@prisma/client";
 import { getPrisma } from "@/server/db/prisma";
+import { formatOperatingHoursSummary, isWithinOperatingHours } from "@/lib/branch-hours";
+import { verifyStorefrontOrderAccessToken } from "@/server/storefront/order-access";
 import type {
   StorefrontBranch,
   StorefrontCategory,
@@ -74,6 +76,7 @@ function mapRestaurant(
     slug: restaurant.slug,
     logoUrl: restaurant.logoUrl,
     supportPhone: restaurant.supportPhone,
+    contactEmail: restaurant.contactEmail,
     defaultCurrency: restaurant.defaultCurrency,
     timezone: restaurant.timezone,
     isAcceptingOrders: restaurant.settings?.isAcceptingOrders ?? true,
@@ -88,9 +91,17 @@ function mapBranch(
   branch: Prisma.BranchGetPayload<{
     include: {
       deliveryZones: true;
+      operatingHours: true;
     };
   }>,
+  timezone: string,
 ): StorefrontBranch {
+  const isOpenNow =
+    branch.isAcceptingOrders &&
+    !branch.isTemporarilyClosed &&
+    isWithinOperatingHours(branch.operatingHours, timezone);
+  const operatingHoursSummary = formatOperatingHoursSummary(branch.operatingHours);
+
   return {
     id: branch.id,
     name: branch.name,
@@ -99,10 +110,11 @@ function mapBranch(
     addressText: branch.addressText,
     latitude: moneyToNumber(branch.latitude),
     longitude: moneyToNumber(branch.longitude),
-    supportsPickup: true,
-    supportsDelivery: branch.deliveryZones.length > 0,
+    supportsPickup: branch.isActive,
+    supportsDelivery: branch.isActive && branch.deliveryZones.length > 0,
     deliveryRadiusKm: moneyToNumber(branch.deliveryZones[0]?.maxDistanceKm),
-    isOpenNow: branch.isAcceptingOrders && !branch.isTemporarilyClosed,
+    operatingHoursSummary,
+    isOpenNow,
     isAcceptingOrders: branch.isAcceptingOrders,
     isTemporarilyClosed: branch.isTemporarilyClosed,
     deliveryZones: branch.deliveryZones.map((zone) => ({
@@ -156,6 +168,16 @@ function mapProduct(
   };
 }
 
+export async function getFallbackStorefrontSlug() {
+  const restaurant = await getPrisma().restaurant.findFirst({
+    where: { isActive: true },
+    orderBy: [{ createdAt: "asc" }, { name: "asc" }],
+    select: { slug: true },
+  });
+
+  return restaurant?.slug ?? null;
+}
+
 export async function getStorefrontData(
   restaurantSlug: string,
 ): Promise<StorefrontData | null> {
@@ -184,6 +206,7 @@ export async function getStorefrontData(
           where: { isActive: true },
           orderBy: [{ sortOrder: "asc" }, { fee: "asc" }],
         },
+        operatingHours: true,
       },
       orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
     }),
@@ -215,7 +238,7 @@ export async function getStorefrontData(
 
   return {
     restaurant: mapRestaurant(restaurant),
-    branches: branches.map(mapBranch),
+    branches: branches.map((branch) => mapBranch(branch, restaurant.timezone)),
     categories: categories
       .map<StorefrontCategory>((category) => ({
         id: category.id,
@@ -231,9 +254,11 @@ export async function getStorefrontData(
 export async function getStorefrontOrderSummary({
   restaurantSlug,
   orderNumber,
+  accessToken,
 }: {
   restaurantSlug: string;
   orderNumber: string;
+  accessToken?: string | null;
 }): Promise<StorefrontOrderSummary | null> {
   const order = await getPrisma().order.findFirst({
     where: {
@@ -253,9 +278,21 @@ export async function getStorefrontOrderSummary({
     return null;
   }
 
+  if (
+    !verifyStorefrontOrderAccessToken({
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      customerPhone: order.customerPhoneSnapshot,
+      token: accessToken,
+    })
+  ) {
+    return null;
+  }
+
   return {
     orderId: order.id,
     orderNumber: order.orderNumber,
+    accessToken: accessToken ?? "",
     status: mapOrderStatus(order.status),
     branchName: order.branchNameSnapshot,
     fulfillmentType:

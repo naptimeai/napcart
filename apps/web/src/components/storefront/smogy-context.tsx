@@ -10,6 +10,7 @@ import {
 } from "react";
 import type {
   StorefrontBranch,
+  StorefrontAddon,
   StorefrontData,
   StorefrontFulfillmentType,
   StorefrontProduct,
@@ -21,6 +22,8 @@ export type SmogyCartItem = {
   key: string;
   itemId: string;
   variantKey: string;
+  addonIds: string[];
+  addons: StorefrontAddon[];
   name: string;
   price: number;
   quantity: number;
@@ -58,6 +61,8 @@ export type SmogyMenuCategory = {
 type AddCartItemInput = {
   itemId: string;
   variantKey: string;
+  addonIds?: string[];
+  addons?: StorefrontAddon[];
   name: string;
   price: number;
   variantLabel: string;
@@ -81,8 +86,8 @@ type SmogyStorefrontContextValue = {
   setSelectedBranchId: (value: string) => void;
   selectedBranch: StorefrontBranch | undefined;
   addItem: (item: AddCartItemInput) => void;
-  removeItem: (itemId: string, variantKey: string) => void;
-  updateQuantity: (itemId: string, delta: number, variantKey: string) => void;
+  removeItem: (key: string) => void;
+  updateQuantity: (key: string, delta: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -147,16 +152,38 @@ function inferSubCategory(product: StorefrontProduct, categoryName: string) {
   return categoryName;
 }
 
-function createCartKey(itemId: string, variantKey: string) {
-  return `${itemId}:${variantKey}`;
+function createCartKey(
+  itemId: string,
+  variantKey: string,
+  addonIds: string[] = [],
+) {
+  const addonKey = [...addonIds].sort().join(",");
+  return `${itemId}:${variantKey}:${addonKey}`;
 }
 
-function buildMenuCategories(data: StorefrontData): SmogyMenuCategory[] {
+function buildMenuCategories(
+  data: StorefrontData,
+  selectedBranchId: string,
+  orderType: StorefrontFulfillmentType,
+): SmogyMenuCategory[] {
   return data.categories.map((category) => {
     const visual = categoryVisuals[category.name];
     const subCategories = new Map<string, SmogyMenuItem[]>();
 
     for (const product of category.products) {
+      const isAvailableForFulfillment =
+        orderType === "delivery"
+          ? product.deliveryAvailable
+          : product.pickupAvailable;
+      const isAvailableAtBranch =
+        !selectedBranchId ||
+        product.availableBranchIds.length === 0 ||
+        product.availableBranchIds.includes(selectedBranchId);
+
+      if (!isAvailableForFulfillment || !isAvailableAtBranch) {
+        continue;
+      }
+
       const subCategoryName = inferSubCategory(product, category.name);
       const item: SmogyMenuItem = {
         id: product.id,
@@ -209,6 +236,7 @@ export function SmogyStorefrontProvider({
   const currency = data.restaurant.defaultCurrency;
   const storageKey = `napcart:${restaurantSlug}:smogy-cart`;
   const orderTypeStorageKey = `napcart:${restaurantSlug}:smogy-order-type`;
+  const selectedBranchStorageKey = `napcart:${restaurantSlug}:smogy-branch`;
 
   const [items, setItems] = useState<SmogyCartItem[]>([]);
   const [hasRestoredCart, setHasRestoredCart] = useState(false);
@@ -217,7 +245,10 @@ export function SmogyStorefrontProvider({
     useState<StorefrontFulfillmentType>("delivery");
   const [selectedBranchId, setSelectedBranchIdState] = useState("");
 
-  const menuCategories = useMemo(() => buildMenuCategories(data), [data]);
+  const menuCategories = useMemo(
+    () => buildMenuCategories(data, selectedBranchId, orderType),
+    [data, orderType, selectedBranchId],
+  );
   const selectedBranch = data.branches.find(
     (branch) => branch.id === selectedBranchId,
   );
@@ -234,11 +265,22 @@ export function SmogyStorefrontProvider({
     const timer = window.setTimeout(() => {
       const storedItems = window.localStorage.getItem(storageKey);
       const storedOrderType = window.localStorage.getItem(orderTypeStorageKey);
+      const storedSelectedBranchId = window.localStorage.getItem(
+        selectedBranchStorageKey,
+      );
 
       if (storedItems) {
         try {
           const parsedItems = JSON.parse(storedItems) as SmogyCartItem[];
-          setItems(parsedItems.filter((item) => item.quantity > 0));
+          setItems(
+            parsedItems
+              .filter((item) => item.quantity > 0)
+              .map((item) => ({
+                ...item,
+                addonIds: item.addonIds ?? [],
+                addons: item.addons ?? [],
+              })),
+          );
         } catch {
           window.localStorage.removeItem(storageKey);
         }
@@ -248,11 +290,18 @@ export function SmogyStorefrontProvider({
         setOrderTypeState(storedOrderType);
       }
 
+      if (
+        storedSelectedBranchId &&
+        data.branches.some((branch) => branch.id === storedSelectedBranchId)
+      ) {
+        setSelectedBranchIdState(storedSelectedBranchId);
+      }
+
       setHasRestoredCart(true);
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [orderTypeStorageKey, storageKey]);
+  }, [data.branches, orderTypeStorageKey, selectedBranchStorageKey, storageKey]);
 
   useEffect(() => {
     if (!hasRestoredCart) {
@@ -269,10 +318,18 @@ export function SmogyStorefrontProvider({
 
   function setSelectedBranchId(value: string) {
     setSelectedBranchIdState(value);
+
+    if (value) {
+      window.localStorage.setItem(selectedBranchStorageKey, value);
+    } else {
+      window.localStorage.removeItem(selectedBranchStorageKey);
+    }
   }
 
   function addItem(item: AddCartItemInput) {
-    const key = createCartKey(item.itemId, item.variantKey);
+    const addonIds = item.addonIds ?? [];
+    const addons = item.addons ?? [];
+    const key = createCartKey(item.itemId, item.variantKey, addonIds);
 
     setItems((currentItems) => {
       const existing = currentItems.find((cartItem) => cartItem.key === key);
@@ -289,6 +346,8 @@ export function SmogyStorefrontProvider({
         ...currentItems,
         {
           ...item,
+          addonIds,
+          addons,
           key,
           quantity: 1,
           image: item.image ?? null,
@@ -298,15 +357,13 @@ export function SmogyStorefrontProvider({
     setDrawerOpen(true);
   }
 
-  function removeItem(itemId: string, variantKey: string) {
-    const key = createCartKey(itemId, variantKey);
+  function removeItem(key: string) {
     setItems((currentItems) =>
       currentItems.filter((cartItem) => cartItem.key !== key),
     );
   }
 
-  function updateQuantity(itemId: string, delta: number, variantKey: string) {
-    const key = createCartKey(itemId, variantKey);
+  function updateQuantity(key: string, delta: number) {
     setItems((currentItems) =>
       currentItems
         .map((item) =>

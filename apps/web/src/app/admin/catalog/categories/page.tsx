@@ -20,7 +20,6 @@ import {
   SecondaryButton,
   StatusBadge,
   ToggleInput,
-  UploadBox,
   formatAdminMoney,
 } from "@/components/admin/phase45-ui";
 import { PageNotice } from "@/components/admin/primitives";
@@ -28,9 +27,9 @@ import { requireAdminSession } from "@/lib/auth/admin-session";
 import { getCatalogManagementData } from "@/server/repositories/restaurant-admin";
 import {
   ChevronRight,
-  Filter,
   Folder,
   Plus,
+  Search,
   Trash2,
 } from "lucide-react";
 
@@ -96,11 +95,12 @@ export default async function CatalogCategoriesPage({
                 placeholder="Search categories..."
               />
               <button
-                aria-label="Filter categories"
-                className="flex size-12 items-center justify-center rounded-[10px] border border-[#deded8] bg-white text-[#111]"
+                aria-label="Search categories"
+                className="flex h-12 items-center justify-center gap-2 rounded-[10px] border border-[#deded8] bg-white px-4 text-sm font-semibold text-[#111]"
                 type="submit"
               >
-                <Filter className="size-5 text-[#111]" />
+                <Search className="size-4 text-[#111]" />
+                Search
               </button>
             </form>
 
@@ -227,8 +227,18 @@ export default async function CatalogCategoriesPage({
                         </span>
                       </div>
                     </FormField>
-                    <FormField label={<span>Category image <span className="font-normal text-[#777]">(optional)</span></span>}>
-                      <UploadBox name="image" />
+                    <FormField label="Category image">
+                      <div className="flex min-h-[136px] items-center justify-center rounded-[12px] border border-dashed border-[#deded8] bg-[#fbfbf9] p-5 text-center">
+                        <div>
+                          <p className="text-sm font-semibold text-[#111]">
+                            Product images power the storefront menu.
+                          </p>
+                          <p className="mt-2 text-xs leading-5 text-[#777]">
+                            Category images are not part of the MVP data model,
+                            so this section stays informational for now.
+                          </p>
+                        </div>
+                      </div>
                     </FormField>
                   </div>
 
@@ -295,7 +305,11 @@ export default async function CatalogCategoriesPage({
                   </div>
 
                   <div className="grid gap-4 border-t border-[#e7e7e3] pt-6 md:grid-cols-[1fr_240px]">
-                    <SecondaryButton type="button">Cancel</SecondaryButton>
+                    <SecondaryButton
+                      href={`/admin/catalog/categories?category=${selectedCategory.id}`}
+                    >
+                      Cancel
+                    </SecondaryButton>
                     <PrimaryButton type="submit">Save changes</PrimaryButton>
                   </div>
                 </form>
@@ -306,7 +320,7 @@ export default async function CatalogCategoriesPage({
                 <input
                   name="redirectTo"
                   type="hidden"
-                  value="/admin/catalog/categories"
+                  value="/admin/catalog/categories?category=__CATEGORY_ID__"
                 />
                 <input name="categoryId" type="hidden" value="" />
                 <input name="slug" type="hidden" value="" />

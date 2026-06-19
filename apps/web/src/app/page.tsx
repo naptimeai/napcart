@@ -70,7 +70,7 @@ export default function Home() {
                     buttonBaseClassName,
                     "border-border bg-background text-foreground hover:bg-muted border",
                   )}
-                  href="/storefront/smogyice-demo"
+                  href={`/storefront/${process.env.NEXT_PUBLIC_DEFAULT_RESTAURANT_SLUG ?? "smogyice"}`}
                 >
                   View Smogy storefront
                 </Link>

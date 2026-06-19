@@ -140,7 +140,7 @@ function SummaryCard({
     <Card>
       <CardHeader>
         <CardTitle>
-          <div className="flex size-7 items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+          <div className="flex size-7 items-center justify-center rounded-lg border border-[var(--admin-primary-border)] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
             {icon}
           </div>
         </CardTitle>

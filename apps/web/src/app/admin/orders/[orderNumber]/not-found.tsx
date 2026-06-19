@@ -6,7 +6,7 @@ export default function OrderNotFound() {
   return (
     <AdminWorkspace>
       <Panel className="flex min-h-[420px] flex-col items-center justify-center p-8 text-center">
-        <span className="flex size-16 items-center justify-center rounded-full bg-[#f1f1ef] text-[#555]">
+        <span className="flex size-16 items-center justify-center rounded-full bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
           <SearchX className="size-7" />
         </span>
         <h1 className="mt-6 text-3xl font-semibold tracking-normal text-[#111]">

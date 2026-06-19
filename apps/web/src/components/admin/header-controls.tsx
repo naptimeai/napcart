@@ -6,8 +6,6 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { AdminAccountPanel } from "@/components/admin/admin-account-panel";
 import { Button } from "@/components/ui/button";
@@ -37,10 +35,14 @@ export function AdminHeaderControls({
   restaurantName: string;
   restaurantSlug: string;
 }) {
+  React.useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("napcart-theme", "light");
+  }, []);
+
   return (
     <div className="flex items-center gap-2">
       <DateRangeSelector />
-      <ThemeToggle />
       <AdminAccountPanel
         adminEmail={adminEmail}
         adminName={adminName}
@@ -222,63 +224,4 @@ function DateRangeSelector() {
       ) : null}
     </div>
   );
-}
-
-function ThemeToggle() {
-  const isDark = React.useSyncExternalStore(
-    subscribeToTheme,
-    getThemeSnapshot,
-    getServerThemeSnapshot,
-  );
-
-  React.useEffect(() => {
-    const savedTheme = localStorage.getItem("napcart-theme");
-    const shouldUseDark =
-      savedTheme === "dark" ||
-      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-    document.documentElement.classList.toggle("dark", shouldUseDark);
-    window.dispatchEvent(new Event("napcart-theme-change"));
-  }, []);
-
-  function toggleTheme() {
-    const nextIsDark = !isDark;
-    document.documentElement.classList.toggle("dark", nextIsDark);
-    localStorage.setItem("napcart-theme", nextIsDark ? "dark" : "light");
-    window.dispatchEvent(new Event("napcart-theme-change"));
-  }
-
-  return (
-    <Button
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      size="icon"
-      type="button"
-      variant="outline"
-      onClick={toggleTheme}
-    >
-      {isDark ? (
-        <Sun className="size-4" aria-hidden="true" />
-      ) : (
-        <Moon className="size-4" aria-hidden="true" />
-      )}
-    </Button>
-  );
-}
-
-function subscribeToTheme(callback: () => void) {
-  window.addEventListener("storage", callback);
-  window.addEventListener("napcart-theme-change", callback);
-
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener("napcart-theme-change", callback);
-  };
-}
-
-function getThemeSnapshot() {
-  return document.documentElement.classList.contains("dark");
-}
-
-function getServerThemeSnapshot() {
-  return false;
 }

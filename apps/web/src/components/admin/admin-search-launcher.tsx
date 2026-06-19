@@ -118,7 +118,7 @@ export function AdminSearchLauncher({
           : branch.isAcceptingOrders
             ? "Branch is accepting orders."
             : "Branch is currently paused.",
-        href: "/admin/branches",
+        href: `/admin/branches?branch=${branch.id}`,
         icon: MapPinned,
       })),
     [branches],
@@ -177,7 +177,7 @@ export function AdminSearchLauncher({
               <Input
                 autoFocus
                 className="h-11 rounded-xl pl-9"
-                placeholder="Search pages, branches, or customers..."
+                placeholder="Search pages, branches, orders, or customers..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />

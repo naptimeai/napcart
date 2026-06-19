@@ -45,6 +45,7 @@ const sortOptions = [
   "Newest customer",
   "Name A-Z",
 ] as const;
+const rowsPerPageOptions = [10, 20, 50, 100] as const;
 
 export function CustomerRecordsTable({
   currency,
@@ -62,6 +63,7 @@ export function CustomerRecordsTable({
     React.useState<(typeof customerTypeOptions)[number]>("All");
   const [sort, setSort] =
     React.useState<(typeof sortOptions)[number]>("Latest order");
+  const [rowsPerPage, setRowsPerPage] = React.useState(pageSize);
   const [page, setPage] = React.useState(0);
   const currencyFormatter = React.useMemo(
     () =>
@@ -102,9 +104,12 @@ export function CustomerRecordsTable({
     });
   }, [customerType, data, query, sort]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const safePage = Math.min(page, pageCount - 1);
-  const visibleRows = filtered.slice(safePage * pageSize, (safePage + 1) * pageSize);
+  const visibleRows = filtered.slice(
+    safePage * rowsPerPage,
+    (safePage + 1) * rowsPerPage,
+  );
 
   return (
     <div className="space-y-4">
@@ -230,10 +235,24 @@ export function CustomerRecordsTable({
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
-            <span className="text-sm font-medium">Rows per page</span>
-            <Button size="sm" variant="outline">
-              {pageSize}
-            </Button>
+            <label className="text-sm font-medium" htmlFor="customer-page-size">
+              Rows per page
+            </label>
+            <select
+              className="border-input bg-background h-8 rounded-md border px-2 text-sm"
+              id="customer-page-size"
+              value={rowsPerPage}
+              onChange={(event) => {
+                setRowsPerPage(Number(event.target.value));
+                setPage(0);
+              }}
+            >
+              {rowsPerPageOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex w-fit items-center justify-center text-sm font-medium">
             Page {safePage + 1} of {pageCount}

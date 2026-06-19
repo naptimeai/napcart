@@ -14,6 +14,7 @@ import {
   createOrUpdateDeliveryZone,
   deleteDeliveryZone,
 } from "@/app/admin/actions";
+import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import {
   AdminWorkspace,
   BranchIcon,
@@ -78,7 +79,7 @@ export default async function DeliveryZonesEditorPage({
           }
           description="Configure delivery zones, fees, and checkout rules for the selected branch."
           meta={
-            <form>
+            <form className="flex items-center gap-3">
               <FormSelect
                 className="min-w-[190px]"
                 defaultValue={selectedBranch?.id}
@@ -90,6 +91,12 @@ export default async function DeliveryZonesEditorPage({
                   </option>
                 ))}
               </FormSelect>
+              <button
+                className="inline-flex h-12 items-center justify-center rounded-[10px] border border-[#deded8] bg-white px-4 text-sm font-semibold text-[#111] transition hover:bg-[#f6f6f3]"
+                type="submit"
+              >
+                Apply
+              </button>
             </form>
           }
           title="Delivery"
@@ -204,9 +211,13 @@ export default async function DeliveryZonesEditorPage({
                                     type="hidden"
                                     value={`/admin/branches/delivery/zones?branch=${selectedBranch.id}`}
                                   />
-                                  <button className="flex size-9 items-center justify-center rounded-[10px] border border-[#deded8] bg-white text-[#111]" type="submit">
+                                  <ConfirmSubmitButton
+                                    className="flex size-9 items-center justify-center rounded-[10px] border border-[#deded8] bg-white text-[#111]"
+                                    confirmMessage={`Remove "${zone.name}" delivery zone?`}
+                                    label="Remove zone"
+                                  >
                                     <Trash2 className="size-4 text-[#111]" />
-                                  </button>
+                                  </ConfirmSubmitButton>
                                 </form>
                               </div>
                             </td>
@@ -226,8 +237,8 @@ export default async function DeliveryZonesEditorPage({
               </Panel>
 
               <Panel className="p-6">
-                <PanelHeader
-                  description="Configure rules that apply during checkout for this branch."
+                  <PanelHeader
+                  description="Configure branch delivery state and explain the selected zone's checkout rule."
                   title="Checkout rules"
                 />
                 <form action={createOrUpdateBranch} className="mt-5 space-y-3">
@@ -255,19 +266,19 @@ export default async function DeliveryZonesEditorPage({
                   ) : null}
                   <SettingToggleRow
                     defaultChecked={selectedBranch.isAcceptingOrders}
-                    description="Allow customers to place delivery orders."
+                    description="Allow this branch to receive new delivery or pickup orders."
                     icon={Truck}
                     name="isAcceptingOrders"
-                    title="Delivery enabled"
+                    title="Branch accepting orders"
                   />
                   <div className="flex items-center gap-4 rounded-[12px] border border-[#e5e5e1] p-4">
-                    <BriefcaseBusiness className="size-10 rounded-[10px] bg-[#f1f1ef] p-2" />
+                    <BriefcaseBusiness className="size-10 rounded-[10px] bg-[var(--admin-primary-soft)] p-2 text-[var(--admin-primary)]" />
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-[#111]">
-                        Require minimum order
+                        Selected zone minimum order
                       </p>
                       <p className="mt-1 text-xs text-[#777]">
-                        Customers must meet the minimum order to place delivery orders.
+                        Customers must meet this selected zone minimum to place delivery orders.
                       </p>
                     </div>
                     <span className="rounded-[10px] border border-[#deded8] px-4 py-2 text-sm font-semibold">
@@ -278,10 +289,10 @@ export default async function DeliveryZonesEditorPage({
                   </div>
                   <SettingToggleRow
                     defaultChecked={selectedBranch.isActive}
-                    description="Make this branch visible and selectable in the checkout."
+                    description="Inactive branches are hidden from storefront and checkout selection."
                     icon={Eye}
                     name="isActive"
-                    title="Show branch in checkout"
+                    title="Active in checkout"
                   />
                   <PrimaryButton className="w-full" type="submit">
                     Save checkout rules
@@ -294,6 +305,7 @@ export default async function DeliveryZonesEditorPage({
               <ZoneEditor
                 branchId={selectedBranch.id}
                 currency={data.restaurant.defaultCurrency}
+                existingZones={selectedBranch.deliveryZones}
                 zone={params?.zone === "new" ? undefined : selectedZone}
               />
               <Panel className="p-5">
@@ -350,13 +362,28 @@ function SummaryStat({
 
 function ZoneEditor({
   branchId,
+  existingZones,
   zone,
   currency,
 }: {
   branchId: string;
+  existingZones: Awaited<ReturnType<typeof getDeliveryZoneManagementData>>["branches"][number]["deliveryZones"];
   zone?: Awaited<ReturnType<typeof getDeliveryZoneManagementData>>["branches"][number]["deliveryZones"][number];
   currency: string;
 }) {
+  const nextSortOrder =
+    Math.max(0, ...existingZones.map((item) => item.sortOrder ?? 0)) + 1;
+  const largestDistance = Math.max(
+    0,
+    ...existingZones.map((item) => Number(item.maxDistanceKm ?? 0)),
+  );
+  const suggestedDistance = zone
+    ? Number(zone.maxDistanceKm ?? 3)
+    : largestDistance > 0
+      ? largestDistance + 2
+      : 3;
+  const suggestedName = zone?.name ?? `Up to ${suggestedDistance} km`;
+
   return (
     <Panel className="p-6">
       <div className="flex items-start justify-between gap-4">
@@ -380,10 +407,10 @@ function ZoneEditor({
           value={`/admin/branches/delivery/zones?branch=${branchId}`}
         />
         <FormField label="Zone name">
-          <FormInput defaultValue={zone?.name ?? ""} name="name" placeholder="Up to 3 km" required />
+          <FormInput defaultValue={suggestedName} name="name" placeholder="Up to 3 km" required />
         </FormField>
         <FormField label="Maximum distance (km)">
-          <FormInput defaultValue={Number(zone?.maxDistanceKm ?? 3)} min="0.1" name="maxDistanceKm" required step="0.1" type="number" />
+          <FormInput defaultValue={suggestedDistance} min="0.1" name="maxDistanceKm" required step="0.1" type="number" />
         </FormField>
         <FormField label={`Delivery fee (${currency})`}>
           <FormInput defaultValue={Number(zone?.fee ?? 120)} min="0" name="fee" required type="number" />
@@ -392,7 +419,7 @@ function ZoneEditor({
           <FormInput defaultValue={zone?.minimumOrderAmount ? Number(zone.minimumOrderAmount) : ""} min="0" name="minimumOrderAmount" type="number" />
         </FormField>
         <FormField label="Sort order">
-          <FormInput defaultValue={zone?.sortOrder ?? 1} name="sortOrder" type="number" />
+          <FormInput defaultValue={zone?.sortOrder ?? nextSortOrder} name="sortOrder" type="number" />
         </FormField>
         <SettingToggleRow
           defaultChecked={zone?.isActive ?? true}
@@ -415,9 +442,13 @@ function ZoneEditor({
             type="hidden"
             value={`/admin/branches/delivery/zones?branch=${branchId}`}
           />
-          <button className="h-12 w-full rounded-[10px] border border-[#f0a8ae] bg-[#fff4f4] text-sm font-semibold text-[#cc2434]" type="submit">
+          <ConfirmSubmitButton
+            className="h-12 w-full rounded-[10px] border border-[#f0a8ae] bg-[#fff4f4] text-sm font-semibold text-[#cc2434]"
+            confirmMessage={`Remove "${zone.name}" delivery zone?`}
+            label="Remove zone"
+          >
             Remove zone
-          </button>
+          </ConfirmSubmitButton>
         </form>
       ) : null}
     </Panel>

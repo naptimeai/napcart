@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { SmogyStorefrontShell } from "@/components/storefront/smogy-shell";
 import { publicEnv } from "@/lib/config/env";
-import { getStorefrontData } from "@/server/storefront/repository";
+import {
+  getFallbackStorefrontSlug,
+  getStorefrontData,
+} from "@/server/storefront/repository";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -28,7 +31,7 @@ export async function SmogyDefaultStorefrontRoute({
 }: {
   children: ReactNode;
 }) {
-  const restaurantSlug = getDefaultStorefrontSlug();
+  const restaurantSlug = getDefaultStorefrontSlug() || await getFallbackStorefrontSlug();
 
   if (!restaurantSlug) {
     notFound();

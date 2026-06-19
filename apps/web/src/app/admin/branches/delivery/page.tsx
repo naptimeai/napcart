@@ -29,6 +29,10 @@ import {
   formatAdminMoney,
 } from "@/components/admin/phase45-ui";
 import { PageNotice } from "@/components/admin/primitives";
+import {
+  formatOperatingHoursSummary,
+  getBranchOperationalStatus,
+} from "@/lib/branch-hours";
 import { requireAdminSession } from "@/lib/auth/admin-session";
 import {
   getCatalogManagementData,
@@ -55,14 +59,16 @@ export default async function DeliveryOverviewPage({
   ]);
   const query = params?.q?.toLowerCase() ?? "";
   const status = params?.status ?? "";
+  const branchFilter = params?.branch ?? "";
   const branches = data.branches.filter((branch) => {
-    const deliveryStatus = resolveDeliveryStatus(branch);
+    const deliveryStatus = resolveDeliveryStatus(branch, data.restaurant.timezone);
     return (
       (!query ||
         branch.name.toLowerCase().includes(query) ||
         branch.addressText.toLowerCase().includes(query) ||
         branch.deliveryZones.some((zone) => zone.name.toLowerCase().includes(query))) &&
-      (!status || deliveryStatus === status)
+      (!status || deliveryStatus === status) &&
+      (!branchFilter || branch.id === branchFilter)
     );
   });
   const selectedBranch =
@@ -78,7 +84,7 @@ export default async function DeliveryOverviewPage({
     allZones.reduce((total, zone) => total + Number(zone.fee), 0) /
     Math.max(allZones.length, 1);
   const openBranches = data.branches.filter(
-    (branch) => resolveDeliveryStatus(branch) === "open",
+    (branch) => resolveDeliveryStatus(branch, data.restaurant.timezone) === "open",
   ).length;
 
   return (
@@ -140,7 +146,7 @@ export default async function DeliveryOverviewPage({
             <option value="paused">Paused</option>
             <option value="closed">Closed</option>
           </FormSelect>
-          <FormSelect defaultValue={params?.branch ?? ""} name="branch">
+          <FormSelect defaultValue={branchFilter} name="branch">
             <option value="">All branches</option>
             {data.branches.map((branch) => (
               <option key={branch.id} value={branch.id}>
@@ -171,9 +177,12 @@ export default async function DeliveryOverviewPage({
               {branches.map((branch) => {
                 const isSelected = branch.id === selectedBranch?.id;
                 const firstZone = branch.deliveryZones[0];
-                const deliveryStatus = resolveDeliveryStatus(branch);
-                const firstOpenDay = branch.operatingHours.find(
-                  (hour) => !hour.isClosed,
+                const deliveryStatus = resolveDeliveryStatus(
+                  branch,
+                  data.restaurant.timezone,
+                );
+                const hoursSummary = formatOperatingHoursSummary(
+                  branch.operatingHours,
                 );
 
                 return (
@@ -200,14 +209,10 @@ export default async function DeliveryOverviewPage({
                     <DeliveryStatusBadge status={deliveryStatus} />
                     <span>
                       <span className="block text-sm text-[#111]">
-                        {branch.isTemporarilyClosed || !firstOpenDay
-                          ? "-"
-                          : `${firstOpenDay.openTime} - ${firstOpenDay.closeTime}`}
+                        {hoursSummary.hours}
                       </span>
                       <span className="mt-1 block text-xs text-[#777]">
-                        {branch.isTemporarilyClosed || !firstOpenDay
-                          ? "Closed"
-                          : "Every day"}
+                        {hoursSummary.label}
                       </span>
                     </span>
                     <span className="font-medium text-[#111]">
@@ -237,6 +242,7 @@ export default async function DeliveryOverviewPage({
             activeTab={panelTab}
             branch={selectedBranch}
             products={catalog.products}
+            timezone={data.restaurant.timezone}
           />
         </div>
       </div>
@@ -248,10 +254,12 @@ function DeliveryBranchPanel({
   activeTab,
   branch,
   products,
+  timezone,
 }: {
   activeTab: "overview" | "zones" | "fees";
   branch: Awaited<ReturnType<typeof getDeliveryZoneManagementData>>["branches"][number] | undefined;
   products: Awaited<ReturnType<typeof getCatalogManagementData>>["products"];
+  timezone: string;
 }) {
   if (!branch) {
     return <Panel className="p-6">No branch selected.</Panel>;
@@ -263,7 +271,7 @@ function DeliveryBranchPanel({
     );
     return availability?.isAvailable ?? product.isAvailable;
   });
-  const deliveryStatus = resolveDeliveryStatus(branch);
+  const deliveryStatus = resolveDeliveryStatus(branch, timezone);
 
   return (
     <Panel className="p-6 text-[#111]">
@@ -365,45 +373,44 @@ function DeliveryOverviewPanelContent({
       </section>
       <SettingToggleRow
         defaultChecked={branch.isAcceptingOrders}
-        description="Allow this branch to accept orders."
+        description="Allow this branch to accept new delivery or pickup orders."
         name="isAcceptingOrders"
-        title="Delivery availability"
+        title="Branch accepting orders"
       />
       <section>
         <h3 className="font-semibold text-[#111]">Fulfillment</h3>
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-4 rounded-[12px] border border-[#e5e5e1] bg-white p-4">
-            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[#f1f1ef]">
+            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
               <Truck className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-[#111]">Delivery</p>
               <p className="mt-1 text-xs leading-5 text-[#777]">
-                Customers can order for delivery.
+                Delivery requires an active delivery zone and accepting-orders status.
               </p>
             </div>
-            <ToggleVisual checked={branch.isAcceptingOrders} />
+            <ToggleVisual checked={branch.isAcceptingOrders && branch.deliveryZones.length > 0} />
           </div>
           <div className="flex items-center gap-4 rounded-[12px] border border-[#e5e5e1] bg-white p-4">
-            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[#f1f1ef]">
+            <span className="flex size-10 items-center justify-center rounded-[10px] bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]">
               <Package className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-[#111]">Pickup</p>
+              <p className="text-sm font-semibold text-[#111]">Pickup follows branch status</p>
               <p className="mt-1 text-xs leading-5 text-[#777]">
-                Pickup follows this branch&apos;s open or closed state.
+                Pickup is controlled by restaurant settings plus this branch&apos;s active/open state.
               </p>
             </div>
-            <ToggleVisual checked={!branch.isTemporarilyClosed} />
           </div>
         </div>
       </section>
       <SettingToggleRow
         defaultChecked={branch.isActive}
-        description="This branch is visible to customers."
+        description="Inactive branches are hidden from storefront and checkout branch selection."
         icon={Eye}
         name="isActive"
-        title="Visible in checkout"
+        title="Active in checkout"
       />
       <section>
         <h3 className="font-semibold text-[#111]">Available products</h3>
@@ -527,12 +534,9 @@ function DeliveryFeesPanelContent({
 
 function resolveDeliveryStatus(
   branch: Awaited<ReturnType<typeof getDeliveryZoneManagementData>>["branches"][number],
+  timezone: string,
 ) {
-  if (branch.isTemporarilyClosed) {
-    return "closed";
-  }
-
-  return branch.isAcceptingOrders ? "open" : "paused";
+  return getBranchOperationalStatus(branch, timezone);
 }
 
 function DeliveryStatusBadge({ status }: { status: string }) {

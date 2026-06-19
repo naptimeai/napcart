@@ -274,6 +274,7 @@ export async function getCustomerDirectoryData(restaurantId: string) {
         id: true,
         defaultCurrency: true,
         name: true,
+        timezone: true,
       },
     }),
     prisma.customer.count({
@@ -689,10 +690,11 @@ export async function getDeliveryZoneManagementData(restaurantId: string) {
         id: true,
         defaultCurrency: true,
         name: true,
+        timezone: true,
       },
     }),
     prisma.branch.findMany({
-      where: { restaurantId, isActive: true },
+      where: { restaurantId },
       include: {
         deliveryZones: {
           orderBy: [{ sortOrder: "asc" }, { maxDistanceKm: "asc" }],
