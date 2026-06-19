@@ -103,7 +103,7 @@ export default async function AdminLayout({
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset className="min-w-0 min-h-svh bg-[#f7f4f8] peer-data-[variant=inset]:border-0">
+        <SidebarInset className="admin-shell min-w-0 min-h-svh bg-[#f7f4f8] peer-data-[variant=inset]:border-0">
           <div className="flex min-h-svh flex-col gap-4 p-3 md:p-4">
             <header className="sticky top-3 z-30 flex min-h-16 flex-col gap-3 rounded-[22px] border border-[var(--admin-primary-border)]/60 bg-white/95 px-4 py-3 shadow-[0_18px_50px_rgba(100,43,147,0.08)] backdrop-blur md:flex-row md:items-center md:justify-between">
               <div className="flex w-full min-w-0 items-center gap-3 md:w-auto">

@@ -192,7 +192,8 @@ function normalizeOptionalInt(value?: string) {
 
 function buildRedirectPath(pathname: string, params: Record<string, string>) {
   const searchParams = new URLSearchParams(params);
-  return `${pathname}?${searchParams.toString()}`;
+  const separator = pathname.includes("?") ? "&" : "?";
+  return `${pathname}${separator}${searchParams.toString()}`;
 }
 
 function resolveAdminRedirectTarget(value?: string | null) {

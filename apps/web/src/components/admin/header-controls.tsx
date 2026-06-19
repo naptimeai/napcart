@@ -6,6 +6,8 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { AdminAccountPanel } from "@/components/admin/admin-account-panel";
 import { Button } from "@/components/ui/button";
@@ -38,14 +40,10 @@ export function AdminHeaderControls({
   const pathname = usePathname();
   const isDashboardRoute = pathname === "/admin";
 
-  React.useEffect(() => {
-    document.documentElement.classList.remove("dark");
-    localStorage.setItem("napcart-theme", "light");
-  }, []);
-
   return (
     <div className="flex items-center gap-2">
       {isDashboardRoute ? <DateRangeSelector /> : null}
+      <ThemeModeToggle />
       <AdminAccountPanel
         adminEmail={adminEmail}
         adminName={adminName}
@@ -55,6 +53,36 @@ export function AdminHeaderControls({
         triggerVariant="header"
       />
     </div>
+  );
+}
+
+function ThemeModeToggle() {
+  React.useEffect(() => {
+    const storedTheme = localStorage.getItem("napcart-theme");
+    const shouldUseDark = storedTheme === "dark";
+
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+  }, []);
+
+  function toggleTheme() {
+    const nextValue = !document.documentElement.classList.contains("dark");
+
+    document.documentElement.classList.toggle("dark", nextValue);
+    localStorage.setItem("napcart-theme", nextValue ? "dark" : "light");
+  }
+
+  return (
+    <Button
+      aria-label="Toggle dark mode"
+      className="size-8 border-[var(--admin-primary-border)] bg-background text-[var(--admin-primary)] hover:bg-[var(--admin-primary-soft)]"
+      size="icon"
+      type="button"
+      variant="outline"
+      onClick={toggleTheme}
+    >
+      <Moon className="size-4 dark:hidden" aria-hidden="true" />
+      <Sun className="hidden size-4 dark:block" aria-hidden="true" />
+    </Button>
   );
 }
 
