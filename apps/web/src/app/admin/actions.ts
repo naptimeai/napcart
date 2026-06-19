@@ -1158,6 +1158,17 @@ export async function deleteCategory(formData: FormData) {
 export async function createOrUpdateProduct(formData: FormData) {
   const session = await requireAdminSession();
   const redirectTo = resolveFormRedirectTarget(formData, "/admin/catalog/products");
+  const rawProductIdValue = formData.get("productId");
+  const rawProductId =
+    typeof rawProductIdValue === "string"
+      ? normalizeOptionalString(rawProductIdValue)
+      : undefined;
+  const stepOneRedirect = rawProductId
+    ? `/admin/catalog/products/new?step=1&product=${rawProductId}`
+    : "/admin/catalog/products/new?step=1";
+  const errorRedirectTo = redirectTo.includes("__PRODUCT_ID__")
+    ? stepOneRedirect
+    : redirectTo;
   const parsed = productSchema.safeParse({
     productId: formData.get("productId"),
     categoryId: formData.get("categoryId"),
@@ -1169,14 +1180,14 @@ export async function createOrUpdateProduct(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectWithError(redirectTo, "Please review the product fields.");
+    redirectWithError(errorRedirectTo, "Please review the product fields.");
   }
 
   await assertCategoryOwnership(parsed.data.categoryId, session.restaurantId);
 
   const basePrice = normalizeRequiredMoney(parsed.data.basePrice);
   if (basePrice === null) {
-    redirectWithError(redirectTo, "Product price must be a valid amount.");
+    redirectWithError(errorRedirectTo, "Product price must be a valid amount.");
   }
 
   const productId = normalizeOptionalString(parsed.data.productId) ?? undefined;
@@ -1192,20 +1203,31 @@ export async function createOrUpdateProduct(formData: FormData) {
     select: { slug: true },
   });
   const maybeProductImage = formData.get("image");
+  const productImageFile =
+    maybeProductImage instanceof File && maybeProductImage.size > 0
+      ? maybeProductImage
+      : null;
   let uploadedImageUrl: string | null = null;
-
-  if (maybeProductImage instanceof File && maybeProductImage.size > 0) {
-    const upload = await uploadRestaurantAsset({
-      restaurantSlug: restaurant.slug,
-      scope: "products",
-      file: maybeProductImage,
-    });
-
-    uploadedImageUrl = upload?.publicUrl ?? null;
-  }
 
   if (productId) {
     const existingProduct = await assertProductOwnership(productId, session.restaurantId);
+
+    if (productImageFile) {
+      try {
+        const upload = await uploadRestaurantAsset({
+          restaurantSlug: restaurant.slug,
+          scope: "products",
+          file: productImageFile,
+        });
+
+        uploadedImageUrl = upload?.publicUrl ?? null;
+      } catch {
+        redirectWithError(
+          stepOneRedirect,
+          "Image upload failed. Save the product again with a PNG, JPG, or WebP image under 5MB.",
+        );
+      }
+    }
 
     await getPrisma().product.update({
       where: { id: productId },
@@ -1246,6 +1268,31 @@ export async function createOrUpdateProduct(formData: FormData) {
       select: { id: true },
     });
     savedProductId = createdProduct.id;
+
+    if (productImageFile) {
+      try {
+        const upload = await uploadRestaurantAsset({
+          restaurantSlug: restaurant.slug,
+          scope: "products",
+          file: productImageFile,
+        });
+
+        uploadedImageUrl = upload?.publicUrl ?? null;
+      } catch {
+        revalidateAdminPaths();
+        redirectWithError(
+          `/admin/catalog/products/new?step=1&product=${createdProduct.id}`,
+          "Product draft was saved, but image upload failed. Try a PNG, JPG, or WebP image under 5MB.",
+        );
+      }
+
+      if (uploadedImageUrl) {
+        await getPrisma().product.update({
+          where: { id: createdProduct.id },
+          data: { imageUrl: uploadedImageUrl },
+        });
+      }
+    }
 
     const branches = await getPrisma().branch.findMany({
       where: { restaurantId: session.restaurantId, isActive: true },

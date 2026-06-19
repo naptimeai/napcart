@@ -59,6 +59,8 @@ Out of scope for this audit:
 | BUG-U13 | Storefront Branch Availability | Temporary branch closure is bypassed by test-mode message, allowing orders even when branch is closed. | P0 | Fixed |
 | BUG-U14 | Delivery Zones | New delivery zone appears after creation but disappears after refresh/edit attempt, suggesting persistence or read/query issue. | P0 | Fixed |
 | BUG-U15 | Delivery Zones | Branch quick selector on branch-specific delivery zones page is not functional. | P1 | Fixed |
+| BUG-U16 | New Product Wizard | New product Step 1 can lose entered basics when moving to Availability. Step 2 shows `Product draft required` because a durable product draft ID is missing; returning to Basics resets the form. Image upload also appears broken in this flow. | P0 | Newly reported |
+| BUG-U17 | Admin Header Date Range | Dashboard date range selector is mounted globally. On non-dashboard pages it shows Today, and changing it redirects to `/admin`, so Orders/Catalog pages unexpectedly jump back to Dashboard instead of preserving context. | P1 | Newly reported |
 
 ## 4. Additional Issues Discovered By Audit
 
@@ -164,6 +166,10 @@ Out of scope for this audit:
 | BUG-A98 | Branch Delete | Branch delete exists in server action but is not exposed clearly in the main Branches UI. If branch deletion is intended, there is no discoverable workflow; if not intended, action should not remain reachable from future accidental forms. | P2 | MVP accepted |
 | BUG-A99 | Order Privacy | Admin order detail page exposes customer phone/address snapshots to any active admin user for the restaurant. MVP has one admin, but future multi-role support will need role/permission scoping. | P2 | Future risk |
 | BUG-A100 | QA Coverage | The repo now has a focused regression harness for branch operating hours, Pakistan phone normalization, and order-success access tokens. Browser/database regression coverage for checkout/product/branch/delivery/WhatsApp flows remains future hardening. | P1 | Partially fixed |
+| BUG-A101 | New Product Wizard Architecture | New product creation and product editing share one `/admin/catalog/products/new` wizard, but only edit mode has a reliable saved product record. New mode should create an explicit draft on Step 1 before any later step is reachable. | P0 | Newly discovered |
+| BUG-A102 | Product Image Upload UX | Product upload control is a hidden file input with no selected-file preview/name and no upload error boundary around storage failures. Users cannot tell whether the image was selected, uploaded, failed validation, or failed storage. | P1 | Newly discovered |
+| BUG-A103 | Product Wizard Data Loss | Step 1 form state exists only in the browser form until the server action succeeds. Failed create/upload/validation redirects do not repopulate submitted values, causing perceived data loss. | P0 | Newly discovered |
+| BUG-A104 | Admin Header Scope | `DateRangeSelector` reads the current page query params and always writes dashboard params to `/admin`. It needs route scoping: dashboard-only control, or a true global date-filter contract across pages. Current behavior is neither. | P1 | Newly discovered |
 
 ## 5. Questions Requiring Product Decision
 
@@ -209,6 +215,8 @@ Out of scope for this audit:
 11. Storefront production readiness needs a small SEO/navigation pass because several footer links and metadata fields are still placeholders.
 12. WhatsApp Phase 6A is structurally useful, but secret handling, unsigned webhook guardrails, and staff-facing brand copy need tightening before live Meta credentials.
 13. The codebase currently passes lint and typecheck, so the main risk is not compilation; it is workflow correctness, persistence, and demo-facing behavior.
+14. New product creation still has a flawed wizard contract: later steps depend on a persisted product draft, but the UI allows moving forward from unsaved client-only form state.
+15. Dashboard analytics date range is implemented as a dashboard-only feature but is displayed as a global header control, creating cross-page navigation bugs.
 
 ## 8. Recommended Fix Batches
 
@@ -238,6 +246,32 @@ Batch 4 - Regression and demo pass:
 - Admin order visibility.
 - Branch and delivery rule behavior.
 - Smogy Ice deployed environment verification.
+
+Batch 5 - Workflow stabilization pass:
+
+- Convert new product creation into an explicit draft-first flow.
+- Add product image upload feedback and storage error handling.
+- Scope Dashboard date range controls to the Dashboard route, or define a real global filter contract before showing it outside Dashboard.
+- Add browser-level regression scripts for create product, edit product, dashboard date range, and order placement.
+
+## 8.1 New Stabilization Approach - 2026-06-19
+
+The bug pattern now is not isolated UI mistakes; it is workflow contracts being unclear. The fix approach should change from patching individual symptoms to stabilizing complete flows.
+
+Principles:
+
+- Every multi-step workflow must have a durable server-side record before Step 2.
+- Every CTA must have one clear job: save, navigate, or submit-and-navigate. It must not silently do two different things depending on hidden state.
+- Every global header control must either be truly global or only appear on pages where it applies.
+- Every upload must show selected state, saved state, and failure state.
+- Every critical workflow needs a repeatable smoke test before we call it fixed.
+
+Immediate target flows:
+
+- New product creation from empty state through Basics, Availability, Variations/Add-ons, Review, and final product list visibility.
+- Existing product edit flow across all steps.
+- Dashboard date range persistence and non-dashboard navigation behavior.
+- Storefront order placement and admin order visibility.
 
 ## 9. Priority Definitions
 

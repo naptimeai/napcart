@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CalendarDays,
   Check,
@@ -35,6 +35,9 @@ export function AdminHeaderControls({
   restaurantName: string;
   restaurantSlug: string;
 }) {
+  const pathname = usePathname();
+  const isDashboardRoute = pathname === "/admin";
+
   React.useEffect(() => {
     document.documentElement.classList.remove("dark");
     localStorage.setItem("napcart-theme", "light");
@@ -42,7 +45,7 @@ export function AdminHeaderControls({
 
   return (
     <div className="flex items-center gap-2">
-      <DateRangeSelector />
+      {isDashboardRoute ? <DateRangeSelector /> : null}
       <AdminAccountPanel
         adminEmail={adminEmail}
         adminName={adminName}
